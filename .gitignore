@@ -1,0 +1,8 @@
+# Source research papers (available via arXiv links in the docs)
+research/*.pdf
+
+# Build spec (internal, not part of the published repo)
+repo-build-prompt.md
+
+# OS files
+.DS_Store
