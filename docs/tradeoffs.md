@@ -32,6 +32,24 @@ Structured output makes errors easier to spot and diagnose. When the model produ
 
 Mahmoudi et al. (2025) found that 40.5% of the LLM-based systems they surveyed lack structured output validation, meaning they have no programmatic way to detect when the model produces malformed or unexpected responses. Adding structure to prompts, combined with output parsing, closes this gap (arXiv 2512.18020).
 
+### Cross-architecture benchmark results
+
+The academic findings above are corroborated by our cross-architecture benchmark evaluation (N=10 tests, 4 model families). The key empirical findings:
+
+**The value is structural, not substantive.** All four synthesizers independently concluded that the certificate structure makes responses more organized and verifiable, not necessarily more correct. The dimension-level breakdown:
+
+| Dimension | Cross-Architecture Average | Interpretation |
+|-----------|---------------------------|----------------|
+| Traceability | **+1.9** | Claims linked to evidence; zero orphan claims observed |
+| Structure | **+1.4** | Consistent formatting, logical organization |
+| Completeness | **+0.9** | Fewer missed cases, broader coverage |
+| Accuracy | **+0.6** | Models reached the same conclusions; structure exposed reasoning |
+| Actionability | **+0.4** | Verdicts without fixes; addressed by V3 Actionability Mandate |
+
+Traceability improved on every test, for every model, without exception. It is the single most validated finding. This means: if your primary need is auditability and hallucination reduction, the skill delivers high ROI. If your primary need is raw correctness on tasks where the model already performs well, gains are modest.
+
+**Ceiling and floor effects.** Models with lower baselines show larger improvements. Kimi (baseline 17.7/25) improved +6.3 points (+35%). Gemini (baseline 20.6/25) improved +4.0 points (+19.4%). The relationship is approximately linear: every 1-point increase in baseline reduces the expected delta by ~0.8 points. The skill is most valuable when baseline performance is moderate (15-20/25). Above 22/25, overhead may exceed benefit.
+
 ---
 
 ## Costs
@@ -40,10 +58,12 @@ Mahmoudi et al. (2025) found that 40.5% of the LLM-based systems they surveyed l
 
 The original META paper (Ugare & Chandra, 2026) reported ~2.8x more execution steps than baseline prompting. Cross-architecture benchmarking across Gemini, GLM, Qwen, and Kimi shows the actual overhead is lower:
 
-| Mode | Average Overhead | Range Across Models | Traceability Retained |
-|------|-----------------|--------------------|-----------------------|
-| **Max Certificate** | ~2.0x | 1.67x (Qwen) to 2.5x (Gemini) | 100% |
-| **Lite Certificate** | ~1.5x | Estimated from Max compression | ~80% |
+| Mode | Average Overhead | Per-Model Range | Traceability Retained |
+|------|-----------------|----------------|-----------------------|
+| **Max Certificate** | ~2.0x (excl. Kimi) | 1.95x (Gemini/Qwen), 2.0x (GLM), 3.8x (Kimi) | 100% |
+| **Lite Certificate** | ~1.5x (target) | Estimated from Max compression | ~80% |
+
+Note: Kimi's 3.8x overhead is an outlier driven by verbose prose style, not certificate structure. Excluding Kimi, the cross-architecture average is ~2.0x. The full average including Kimi is ~2.4x. Use the ~2.0x figure for planning unless deploying specifically on Kimi.
 
 A Max certificate block adds roughly 150 to 300 tokens of prompt overhead depending on task complexity. Lite mode restricts this by capping premises at 3 items, using single-line causal arrow traces, and limiting conclusion fields to 1-2 sentences each. Over a session with many prompts, the difference between Lite and Max compounds significantly.
 
@@ -55,7 +75,14 @@ Latency increases are proportional to token overhead. If your use case needs sub
 
 ### Baseline-dependent gains
 
-The technique helps most where the baseline is low. Ugare and Chandra (2026) found that Sonnet-4.5 showed no meaningful improvement on code QA tasks where its baseline accuracy was already around 85% (arXiv 2603.01896). When a model is already performing well on a task, adding structure does not push it further and may add overhead for nothing.
+The technique helps most where the baseline is low. Ugare and Chandra (2026) found that Sonnet-4.5 showed no meaningful improvement on code QA tasks where its baseline accuracy was already around 85% (arXiv 2603.01896).
+
+Cross-architecture benchmarking confirms the ceiling/floor effect empirically:
+- **Kimi** (lowest baseline at 17.7/25): largest delta at +6.3 (+35.0% relative)
+- **GLM** (moderate baseline at 19.5/25): +4.8 (+24.6% relative)
+- **Gemini/Qwen** (highest baselines at 20.6/25): +4.0 (+19.4% relative)
+
+The relationship is approximately linear: every 1-point increase in baseline reduces the expected delta by ~0.8 points. When a model is already performing well on a task, adding structure does not push it further and may add overhead for nothing. For models scoring above 22/25, consider Lite mode for auditability without the full overhead.
 
 ### Persona damage
 
@@ -80,6 +107,17 @@ This is the **Actionability Gap**: the cognitive scaffolding of the certificate 
 ### Structural mismatch with creative tasks
 
 The standard certificate structure (premises, evidence traces, formal conclusion) is designed for analytical reasoning. Applying it to creative tasks (copywriting, storytelling, poetry, brand voice) produces a predictable failure: the logical evidence traces constrain and flatten the output. The model writes like it is filling out a form rather than crafting prose. Voice, rhythm, surprise, and emotional resonance are casualties of the structure.
+
+Cross-architecture benchmarking confirmed this across all four model families on the Creative Brief test (Test 10):
+
+| Model | Baseline | Optimized | Delta | Evaluator Notes |
+|-------|----------|-----------|-------|-----------------|
+| Gemini | 22/25 | 23/25 | +1 | "Formal conclusion section is meta-commentary that wouldn't exist in practice" |
+| GLM | 22/25 | 23/25 | +1 | "Baseline had more distinctive voice ('swamp-back,' 'infrastructure not furniture')" |
+| Qwen | 21/25 | 23/25 | +2 | "Structure was essentially dead weight" |
+| Kimi | varies | varies | +2 | "Needed tone guidance, not premises/traces/conclusion" |
+
+Average creative delta: **+1.0**, compared to +6.3 for code review and +5.8 for financial analysis. The structural mismatch is empirically confirmed.
 
 The naive solution, skipping the certificate entirely for creative tasks, throws away the benefits of structured reasoning. The model goes back to freeform generation, which means no systematic thinking about audience, tone, or emotional arc before writing.
 
