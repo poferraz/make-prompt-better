@@ -41,8 +41,8 @@ real-world patches. Code QA accuracy 78% to 87%. Fault localization Top-5
 improved 5 to 12 percentage points. Pure prompt engineering, no model training
 required. The original paper reported ~2.8x execution step overhead; cross-
 architecture benchmarking (Gemini, GLM, Qwen, Kimi) shows the actual average
-is ~2.0x (ranging from 1.67x on Qwen to 2.5x on Gemini). This ~2.0x cost
-reliably buys a ~20-25% accuracy and traceability improvement for analytical
+is ~2.2x (ranging from ~1.7x on Qwen to ~2.7x on Kimi). This ~2.2x cost
+reliably buys a ~26% accuracy and traceability improvement for analytical
 tasks.
 
 ### Supporting Sources
@@ -84,8 +84,8 @@ arXiv 2502.15851
 Core finding: system/user prompt separation fails to enforce instruction
 priority. Models average 9.6% to 45.8% primary obedience rate on conflicting
 constraints. However, societal hierarchy framings (authority, expertise,
-consensus) show stronger influence: consensus framing reached 65.8 to 77.8%
-priority adherence vs. 14.4 to 47.5% for system/user separation. Models have
+consensus) show stronger influence: societal hierarchy framings achieve 54% to
+77.8% compliance vs. 9.6% to 45.8% for system/user separation. Models have
 strong inherent biases toward certain constraint types (favoring lowercase, longer
 text, keyword avoidance) regardless of priority designation.
 
@@ -198,9 +198,10 @@ It adds less value when:
 
 **Creative Pivot (for creative and alignment tasks):**
 
-Logical evidence traces constrain and flatten creative writing. However, cross-
-architecture benchmarking revealed that psychological scaffolding improves
-creative output quality without killing voice or imagination. For creative tasks
+Logical evidence traces constrain and flatten creative writing. Cross-
+architecture benchmarking suggested that creative tasks need a different
+structure than logical evidence traces (see Creative Brief results), leading
+to the Narrative Traces proposal for V3.1. For creative tasks
 (copywriting, storytelling, poetry, brand voice, persuasive writing), replace
 the standard certificate with **Narrative Traces**:
 
@@ -392,8 +393,8 @@ Show the user:
 
 Be honest with the user about costs:
 
-- Semi-formal reasoning uses roughly 2.0x more tokens than standard prompting
-  on average (ranging from 1.67x on Qwen to 2.5x on Gemini, per cross-
+- Semi-formal reasoning uses roughly ~2.2x more tokens than standard prompting
+  on average (ranging from ~1.7x on Qwen to ~2.7x on Kimi, per cross-
   architecture benchmarking). The original META paper reported ~2.8x; empirical
   measurement across four model families shows the real overhead is lower.
   Lite Certificate mode (see below) reduces this further to ~1.5x.
@@ -404,7 +405,7 @@ Be honest with the user about costs:
   (the structure makes errors easier to spot, but does not eliminate them)
 - Adding expert persona framing will improve format compliance but may reduce
   factual accuracy by 3 to 5 percentage points (PRISM)
-- Certificate structure adds approximately 150 to 300 tokens of overhead to each prompt
+- Certificate structure adds a moderate amount of token overhead to each prompt
 
 ## Output Format
 

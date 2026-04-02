@@ -9,12 +9,12 @@ Research-grounded prompt optimization using semi-formal reasoning. Six papers. O
 **What it does:** Forces LLMs to produce a structured reasoning certificate (premises, evidence traces, conclusions) before answering. The `[P1]`, `[T1]` identifier system structurally binds conclusions to evidence, eliminating "orphan claims" (hallucinated conclusions with no supporting trace). Zero orphan claims were observed across 40 benchmark tests spanning four model families.
 
 **Does it work?** Cross-architecture benchmarking across Gemini, GLM, Qwen, and Kimi:
-- **+24.6%** average relative improvement (range: +19.4% on Gemini to +35.0% on Kimi)
-- **97.5%** win rate over unstructured prompts on analytical tasks
+- **+25.9%** average relative improvement (range: +20.5% on Gemini to +37.8% on Kimi)
+- **96.3%** win rate over unstructured prompts on analytical tasks
 - **+1.9 avg** traceability gain (the primary value driver, larger than accuracy +0.6)
 - **+6.3 avg** delta on code review tasks (the strongest domain)
 
-**What it costs:** ~2.0x token overhead on average in Max mode (ranges from 1.95x on Gemini/Qwen to 3.8x on Kimi). New **Lite Certificate** mode targets ~1.5x for routine tasks while preserving ~80% of the traceability benefit. The cost is highly economical for accuracy-critical tasks (legal, financial, medical, code review) where a wrong answer costs more than extra tokens.
+**What it costs:** ~2.2x token overhead on average in Max mode (ranges from ~1.7x on Qwen to ~2.7x on Kimi). New **Lite Certificate** mode targets ~1.5x for routine tasks while preserving ~80% of the traceability benefit (projected target, not yet benchmarked). The cost is highly economical for accuracy-critical tasks (legal, financial, medical, code review) where a wrong answer costs more than extra tokens.
 
 **Where the value is (and is not):** The skill makes responses more **traceable and auditable**, not necessarily more correct. All four synthesizers confirmed: models reached the same conclusions with and without the certificate, but the optimized versions showed their work in a verifiable structure. If you need auditability, this is high-ROI. If you need raw accuracy on tasks where the model is already strong (baseline >85%), gains are minimal.
 
@@ -44,8 +44,8 @@ Not every task needs the full certificate. V3 introduces two modes:
 
 | Mode | When to Use | Token Overhead | Traceability |
 |------|-------------|----------------|--------------|
-| **Max** | High-stakes (medical, legal, financial), low baseline competence, full auditability required | ~2.0x | Full |
-| **Lite** | Routine analytical tasks (standard code reviews, basic document analysis, simple comparisons) | ~1.5x | ~80% of Max |
+| **Max** | High-stakes (medical, legal, financial), low baseline competence, full auditability required | ~2.2x | Full |
+| **Lite** | Routine analytical tasks (standard code reviews, basic document analysis, simple comparisons) | ~1.5x | ~80% of Max (projected target, not yet benchmarked) |
 
 **Lite mode constraints:** max 3 premises, single-line causal arrow traces (`[T1] Input -> Processing Step -> Finding`), conclusion fields capped at 1-2 sentences.
 
@@ -71,7 +71,7 @@ Models occasionally generate well-structured certificates where the conclusion i
 
 ### Updated Token Economics
 
-The original META paper (Ugare & Chandra, 2026) reported ~2.8x overhead. Cross-architecture benchmarking shows the actual average is **~2.0x** for most model families (1.95x on Gemini/Qwen, 2.0x on GLM), with Kimi as an outlier at 3.8x due to verbose prose style. This cost reliably buys a ~20-25% relative improvement for analytical tasks.
+The original META paper (Ugare & Chandra, 2026) reported ~2.8x overhead. Cross-architecture benchmarking shows the actual average is **~2.2x** across model families (~1.7x on Qwen, ~2.0x on GLM, ~2.5x on Gemini, ~2.7x on Kimi). This cost reliably buys a ~26% relative improvement for analytical tasks.
 
 ---
 
@@ -84,10 +84,10 @@ Cross-architecture evaluation across four model families (N=10 tests per model, 
 | Model | Baseline Avg | Optimized Avg | Delta | Relative Gain | Token Overhead | Win Rate |
 |-------|-------------|---------------|-------|---------------|----------------|----------|
 | **GLM-5.1** | 19.5/25 | 24.3/25 | +4.8 | +24.6% | ~2.0x | 90% |
-| **Gemini** | 20.6/25 | 24.6/25 | +4.0 | +19.4% | ~1.95x | 100% |
-| **Qwen Code** | 20.6/25 | 24.6/25 | +4.0 | +19.4% | ~1.95x | 100% |
-| **Kimi** | 17.7/25 | 23.9/25 | +6.3 | +35.0% | ~3.8x | 100% |
-| **Average** | **19.6/25** | **24.4/25** | **+4.8** | **+24.6%** | **~2.4x** | **97.5%** |
+| **Gemini** | 20.5/25 | 24.6/25 | +4.2 | +20.5% | ~2.5x | 95% |
+| **Qwen Code** | 20.3/25 | 24.5/25 | +4.2 | +20.7% | ~1.7x | 100% |
+| **Kimi** | 17.2/25 | 24.0/25 | +6.5 | +37.8% | ~2.7x | 100% |
+| **Average** | **19.4/25** | **24.4/25** | **+4.9** | **+25.9%** | **~2.2x** | **96.3%** |
 
 ### Where the Improvement Actually Lives
 
@@ -101,6 +101,8 @@ Cross-architecture evaluation across four model families (N=10 tests per model, 
 
 Traceability improved on every test, for every model, without exception. It is the single most validated finding across all four architectures. The certificate structure makes reasoning auditable; it does not make the model fundamentally smarter.
 
+*Note: Dimension deltas are from the Qwen Code evaluator summary only. Other evaluators partially reported dimension data but not all five dimensions for all models.*
+
 ### Strongest Domains
 
 | Domain | Avg Delta | Notes |
@@ -112,13 +114,15 @@ Traceability improved on every test, for every model, without exception. It is t
 | Medical Reasoning | +3.0 | Ceiling effect: strong baselines limit delta |
 | Creative Brief | +1.0 | Structural mismatch; see Creative Pivot above |
 
+*Note: Domain deltas are from the Qwen Code evaluator summary only. Other evaluators partially reported domain data but not all domains for all models.*
+
 ### Ceiling and Floor Effects
 
 Models with lower baselines show larger improvements. The relationship is approximately linear:
 
-- **Kimi** (baseline 17.7) saw the largest delta: +6.3
+- **Kimi** (baseline 17.2) saw the largest delta: +6.5
 - **GLM** (baseline 19.5) saw +4.8
-- **Gemini/Qwen** (baseline 20.6) saw +4.0
+- **Gemini/Qwen** (baseline ~20.4) saw +4.2
 
 Every 1-point increase in baseline reduces the expected delta by approximately 0.8 points. The skill is most valuable for models with moderate baseline performance on analytical tasks. For models already scoring above 22/25, the overhead may not justify the marginal gain.
 
@@ -148,7 +152,7 @@ This project would not exist without the research and engineering work below. Ev
    *Contributed: Itemized context design with unique identifiers, incremental delta updates, and the grow-and-refine principle. Identified brevity bias and context collapse as failure modes.*
 
 4. **Geng, Y., Li, H. et al.** (2025). "Control Illusion: The Failure of Instruction Hierarchies in Large Language Models." AAAI 2026. arXiv:2502.15851. https://arxiv.org/abs/2502.15851
-   *Contributed: Evidence that system/user separation fails to enforce instruction priority. Discovery that societal hierarchy framings (expertise, consensus) achieve 2x-5x better compliance.*
+   *Contributed: Evidence that system/user separation fails to enforce instruction priority. Discovery that societal hierarchy framings (expertise, consensus) achieve roughly 2x-4x better compliance.*
 
 5. **Mahmoudi, B., Chenail-Larcher, Z. et al.** (2025). "Specification and Detection of LLM Code Smells." arXiv:2512.18020. https://arxiv.org/abs/2512.18020
    *Contributed: The structured output requirement. Evidence that 40.5% of LLM systems lack enforced output schemas, causing silent downstream failures.*
@@ -341,7 +345,7 @@ The methodology is model-agnostic. The research findings were validated across m
 
 This methodology is not universally superior to unstructured prompting. Full details are in `docs/tradeoffs.md`. Key limitations:
 
-- **Token cost.** Certificate-structured prompts produce roughly 2.0x more tokens than unstructured equivalents on average (ranging from 1.67x on Qwen to 2.5x on Gemini, per cross-architecture benchmarking). The original META paper reported ~2.8x; empirical measurement across four model families shows the real overhead is lower. Lite Certificate mode reduces this further to ~1.5x. For high-volume, low-stakes tasks, Lite mode or unstructured prompting may be more appropriate.
+- **Token cost.** Certificate-structured prompts produce roughly ~2.2x more tokens than unstructured equivalents on average (ranging from ~1.7x on Qwen to ~2.7x on Kimi, per cross-architecture benchmarking). The original META paper reported ~2.8x; empirical measurement across four model families shows the real overhead is lower. Lite Certificate mode reduces this further to ~1.5x. For high-volume, low-stakes tasks, Lite mode or unstructured prompting may be more appropriate.
 
 - **Persona can hurt accuracy.** PRISM (Hu et al., 2026) found that expert personas reduce accuracy on factual tasks by 3-5 percentage points while improving alignment on normative tasks. The methodology compensates by classifying task type and omitting persona for accuracy-dominant tasks, but misclassification will degrade results.
 

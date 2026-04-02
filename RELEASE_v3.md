@@ -8,22 +8,22 @@ V3 hardens the make-prompt-better skill based on cross-architecture benchmark ev
 
 | Metric | Result |
 |--------|--------|
-| Average relative improvement | **+24.6%** |
-| Win rate (optimized beats baseline) | **97.5%** |
+| Average relative improvement | **+25.9%** |
+| Win rate (optimized beats baseline) | **96.3%** |
 | Traceability gain (primary value driver) | **+1.9 avg** (out of 5) |
 | Orphan claims (hallucinated conclusions) | **Zero** across 40 tests |
-| Token overhead (Max mode, excl. Kimi) | **~2.0x** |
+| Token overhead (Max mode, average) | **~2.2x** |
 | Token overhead (Lite mode, target) | **~1.5x** |
 
 ### What We Learned
 
 **The skill's value is structural, not substantive.** All four synthesizers independently concluded: models reached the same conclusions with and without the certificate. The improvement manifests as traceable, auditable reasoning chains, not raw accuracy. Traceability (+1.9) and Structure (+1.4) drove the gains. Accuracy (+0.6) and Actionability (+0.4) improved least, prompting two of the V3 features below.
 
-**Lower baselines benefit more.** Kimi (baseline 17.7/25) improved +6.3 points (+35%). Gemini (baseline 20.6/25) improved +4.0 points (+19.4%). Every 1-point baseline increase reduces the delta by ~0.8 points.
+**Lower baselines benefit more.** Kimi (baseline 17.2/25) improved +6.5 points (+37.8%). Gemini (baseline 20.5/25) improved +4.2 points (+20.5%). Every 1-point baseline increase reduces the delta by ~0.7 points.
 
 **Creative tasks are a structural mismatch.** The Creative Brief test averaged +1.0 delta across all models (vs. +6.3 for code review). Evaluators called the certificate structure "dead weight" and "meta-commentary" for creative output.
 
-**Token cost is lower than documented.** The META paper cited ~2.8x. Empirical measurement shows ~2.0x for most models (Kimi is an outlier at 3.8x due to prose verbosity).
+**Token cost is lower than documented.** The META paper cited ~2.8x. Empirical measurement shows ~2.2x on average (ranging from ~1.7x on Qwen to ~2.7x on Kimi).
 
 ## New Features
 
@@ -63,8 +63,8 @@ Appended to every optimized prompt:
 |-------|-------------|--------------|---------------|
 | **GLM-5.1** | Complex analytical tasks | Surgical precision, mathematical rigor, ~2.0x efficiency | N/A (most balanced) |
 | **Gemini** | High-baseline tasks | Highest baseline scores, plug-and-play efficiency | Actionability Gap (most prone to stopping at verdict) |
-| **Qwen Code** | Token-sensitive pipelines | Most token-efficient at ~1.95x, methodical risk analysis | N/A |
-| **Kimi** | Weak-baseline recovery | Massive +35% relative improvement, perfect traceability sweep | 3.8x token overhead, verbose prose style |
+| **Qwen Code** | Token-sensitive pipelines | Most token-efficient at ~1.7x, methodical risk analysis | N/A |
+| **Kimi** | Weak-baseline recovery | Massive +37.8% relative improvement, perfect traceability sweep | ~2.7x token overhead, verbose prose style |
 
 ## Breaking Changes
 

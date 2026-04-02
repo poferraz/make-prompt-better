@@ -10,7 +10,7 @@ Large language models produce better output when they show their work. This is n
 
 Semi-formal reasoning is a prompt engineering method that forces the model to follow a structured analytical process before producing an answer. The model must declare its starting conditions, trace concrete evidence paths step by step, and derive a formal conclusion that references the evidence it gathered. The output functions as a "reasoning certificate": an auditable record of how the model arrived at its answer, with every claim tied to a specific piece of evidence.
 
-The technique originates from work by Ugare and Chandra at Meta (2026), who demonstrated that structured reasoning templates improved code analysis accuracy by 10 to 15 percentage points without any model retraining. Their method raised patch equivalence accuracy from 78% to 88% on curated examples and reached 93% on real-world patches. Code QA accuracy climbed from 78% to 87%. The original paper reported ~2.8x more reasoning steps than standard prompting. Cross-architecture benchmarking (Gemini, GLM, Qwen, Kimi) shows the actual average overhead is ~2.0x (ranging from 1.67x on Qwen to 2.5x on Gemini), a tradeoff that reliably buys a ~20-25% accuracy and traceability improvement for analytical tasks (Ugare & Chandra, 2026).
+The technique originates from work by Ugare and Chandra at Meta (2026), who demonstrated that structured reasoning templates improved code analysis accuracy by 10 to 15 percentage points without any model retraining. Their method raised patch equivalence accuracy from 78% to 88% on curated examples and reached 93% on real-world patches. Code QA accuracy climbed from 78% to 87%. The original paper reported ~2.8x more reasoning steps than standard prompting. Cross-architecture benchmarking (Gemini, GLM, Qwen, Kimi) shows the actual average overhead is ~2.2x (ranging from ~1.7x on Qwen to ~2.7x on Kimi), a tradeoff that reliably buys a ~26% accuracy and traceability improvement for analytical tasks (Ugare & Chandra, 2026).
 
 This document describes the full methodology: the certificate structure, the six research constraints that shape it, the prompt framework that operationalizes it, and the optimization process that applies it. It is written for anyone who wants to understand the theory behind the approach, whether or not they use the accompanying Claude Code skill.
 
@@ -74,7 +74,7 @@ The certificate structure is necessary but not sufficient. Six research papers c
 
 The foundational paper. Ugare and Chandra demonstrated that semi-formal reasoning templates, requiring the model to state premises, trace execution paths, and derive formal conclusions, improved accuracy by 10 to 15 percentage points across code analysis tasks. Patch equivalence accuracy rose from 78% to 88% on curated examples and hit 93% on real-world patches. Code QA accuracy improved from 78% to 87%. The technique required no model retraining: it is pure prompt engineering.
 
-The original paper reported ~2.8x more reasoning steps than standard prompting. Cross-architecture benchmarking shows the actual average is ~2.0x (ranging from 1.67x on Qwen to 2.5x on Gemini). V3 introduces Lite Certificate mode at ~1.5x overhead for routine tasks. In domains where errors are costly, the Max mode tradeoff is clearly worthwhile; for routine analytical tasks, Lite mode offers a cost-effective middle path.
+The original paper reported ~2.8x more reasoning steps than standard prompting. Cross-architecture benchmarking shows the actual average is ~2.2x (ranging from ~1.7x on Qwen to ~2.7x on Kimi). V3 introduces Lite Certificate mode at ~1.5x overhead for routine tasks. In domains where errors are costly, the Max mode tradeoff is clearly worthwhile; for routine analytical tasks, Lite mode offers a cost-effective middle path.
 
 **What this means for prompt optimization:** Every optimized prompt must embed a three-part certificate structure. The model fills premises before tracing, traces before concluding. Conclusions must reference traces by identifier. The certificate acts as both a reasoning scaffold and an audit trail.
 
@@ -110,7 +110,7 @@ Their solution: use structured, itemized bullets with unique identifiers (like [
 
 Geng and colleagues demonstrated that the common practice of separating "system" and "user" messages to enforce instruction priority simply does not work reliably. On conflicting constraints, models achieved only 9.6% to 45.8% compliance with the designated priority level. Placing an instruction in the system message does not make the model treat it as more important than the user message.
 
-However, they found that **societal hierarchy framings** achieve much stronger compliance. Consensus framing ("90% of experts recommend...") reached 65.8% to 77.8% priority adherence. Expertise framing ("Peer-reviewed methodology requires...") was the second strongest. Authority framing ("Your manager requires...") was third. All three significantly outperformed system/user separation, which managed only 14.4% to 47.5%.
+However, they found that **societal hierarchy framings** achieve much stronger compliance. Consensus framing ("90% of experts recommend...") reached 54% to 77.8% priority adherence. Expertise framing ("Peer-reviewed methodology requires...") was the second strongest. Authority framing ("Your manager requires...") was third. All three significantly outperformed system/user separation, which managed only 9.6% to 45.8%.
 
 Models also have inherent biases. They favor lowercase text over uppercase, longer text over shorter, and avoid certain keywords regardless of instruction priority. These biases mean that constraints fighting model defaults (like length limits or format requirements) need extra reinforcement.
 
@@ -208,9 +208,9 @@ This classification comes directly from the PRISM findings (Hu, Rostami & Thomas
 
 After classifying the task type, select the certificate intensity level:
 
-- **Max Certificate** (default for high-stakes tasks): The full exhaustive structure with comprehensive premises, detailed multi-step evidence traces, and a formal conclusion with gap analysis. Use for high-stakes domains (medical, legal, financial), when baseline model competence is expected to be low, or when full auditability is required. Cost: ~2.0x token overhead. Delivers the full ~20-25% accuracy improvement.
+- **Max Certificate** (default for high-stakes tasks): The full exhaustive structure with comprehensive premises, detailed multi-step evidence traces, and a formal conclusion with gap analysis. Use for high-stakes domains (medical, legal, financial), when baseline model competence is expected to be low, or when full auditability is required. Cost: ~2.2x token overhead. Delivers the full ~26% accuracy improvement.
 
-- **Lite Certificate** (for routine analytical tasks): A compressed variant. Premises capped at 3 items, traces restricted to single-line causal arrows (`[T1] Input -> Processing Step -> Finding`), conclusion fields limited to 1-2 sentences. Cost: ~1.5x token overhead. Preserves approximately 80% of the traceability benefits.
+- **Lite Certificate** (for routine analytical tasks): A compressed variant. Premises capped at 3 items, traces restricted to single-line causal arrows (`[T1] Input -> Processing Step -> Finding`), conclusion fields limited to 1-2 sentences. Cost: ~1.5x token overhead. Preserves approximately 80% of the traceability benefits (projected target, not yet benchmarked).
 
 **Selection heuristic:** If a wrong answer would cause real harm (patient safety, legal liability, financial loss, security breach), use Max. If the task is analytical but routine, use Lite. When uncertain, default to Max.
 
@@ -267,7 +267,7 @@ These instructions, appended to any certificate template, consistently reduce ha
 
 These guards work because they target specific failure modes rather than offering generic "be accurate" instructions. Each guard addresses a concrete way that models hallucinate: inferring from names, guessing when uncertain, hiding contradictions, blurring confidence levels, and biasing toward desired outcomes.
 
-Additionally, every optimized prompt must include the **traceability self-check** as a final validation layer: "Before finalizing, verify that every claim in your conclusion references at least one T-identifier from your evidence traces. If any claim lacks a supporting trace, either add the missing trace or remove the claim." Cross-architecture benchmarking showed that without this guard, approximately 5-10% of certificate outputs contain orphaned conclusions.
+Additionally, every optimized prompt must include the **traceability self-check** as a final validation layer: "Before finalizing, verify that every claim in your conclusion references at least one T-identifier from your evidence traces. If any claim lacks a supporting trace, either add the missing trace or remove the claim." Cross-architecture benchmarking showed that without this guard, a minority of certificate outputs contain orphaned conclusions.
 
 ### Step 6: Present the Optimized Prompt
 
@@ -277,7 +277,7 @@ The final deliverable includes:
 
 2. **What changed and why**, organized by which research principle drove each change. This helps the user understand the methodology, not just receive its output.
 
-3. **Expected tradeoffs**: more tokens and higher latency in exchange for higher accuracy and auditable reasoning. The certificate adds roughly 150 to 300 tokens of overhead per prompt. Token overhead averages ~2.0x in Max mode, ~1.5x in Lite mode (cross-architecture benchmarking across Gemini, GLM, Qwen, Kimi).
+3. **Expected tradeoffs**: more tokens and higher latency in exchange for higher accuracy and auditable reasoning. Token overhead averages ~2.2x in Max mode, ~1.5x in Lite mode (cross-architecture benchmarking across Gemini, GLM, Qwen, Kimi).
 
 4. **Task classification and persona decision**, with explicit reasoning so the user can adjust if they disagree with the classification.
 
@@ -308,7 +308,7 @@ Semi-formal reasoning is not a universal improvement. The research is clear abou
 
 For a detailed decision framework with specific criteria, see `docs/when-to-use.md`.
 
-The honest summary: semi-formal reasoning produces larger accuracy gains on harder tasks where the baseline is lower. Cross-architecture benchmarking confirmed a 24.6% average relative improvement with a 97.5% win rate across four model families. On tasks where modern models are already highly accurate, the gains are smaller but the auditability benefit remains. The ~2.0x token overhead (Max mode) or ~1.5x (Lite mode) is always a cost. Whether it is worth paying depends on how much the answer matters.
+The honest summary: semi-formal reasoning produces larger accuracy gains on harder tasks where the baseline is lower. Cross-architecture benchmarking confirmed a 25.9% average relative improvement with a 96.3% win rate across four model families. On tasks where modern models are already highly accurate, the gains are smaller but the auditability benefit remains. The ~2.2x token overhead (Max mode) or ~1.5x (Lite mode) is always a cost. Whether it is worth paying depends on how much the answer matters.
 
 ---
 
