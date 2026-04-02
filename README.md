@@ -221,11 +221,11 @@ The methodology is model-agnostic. The research findings were validated across m
 
 This methodology is not universally superior to unstructured prompting. Full details are in `docs/tradeoffs.md`. Key limitations:
 
-- **Token cost.** Certificate-structured prompts produce roughly 2.8x more tokens than unstructured equivalents. The explicit premises, traces, and structured output format add overhead. For high-volume, low-stakes tasks, this cost may not be justified.
+- **Token cost.** Certificate-structured prompts produce roughly 2.0x more tokens than unstructured equivalents on average (ranging from 1.67x on Qwen to 2.5x on Gemini, per cross-architecture benchmarking). The original META paper reported ~2.8x; empirical measurement across four model families shows the real overhead is lower. Lite Certificate mode reduces this further to ~1.5x. For high-volume, low-stakes tasks, Lite mode or unstructured prompting may be more appropriate.
 
 - **Persona can hurt accuracy.** PRISM (Hu et al., 2026) found that expert personas reduce accuracy on factual tasks by 3-5 percentage points while improving alignment on normative tasks. The methodology compensates by classifying task type and omitting persona for accuracy-dominant tasks, but misclassification will degrade results.
 
-- **Not always better.** For simple lookup tasks, creative writing, or open-ended brainstorming, the overhead of certificate structure adds no value and may constrain useful exploration. Use the methodology for tasks where traceable reasoning matters.
+- **Not always better.** For simple lookup tasks or open-ended brainstorming, the overhead of certificate structure adds no value and may constrain useful exploration. Creative writing now uses the Creative Pivot (Narrative Traces) instead of the standard certificate, but simple creative tasks may still work better unstructured.
 
 - **Goal-blind discipline is hard.** The constraint from Cao et al. (2026) to omit evaluation criteria is counterintuitive. Most prompt engineering advice encourages specifying what "good" looks like. This methodology deliberately avoids it, which means you must trust the certificate structure to produce quality without goal hints.
 
