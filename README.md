@@ -359,6 +359,12 @@ Read `docs/tradeoffs.md` for the full analysis, including when to use unstructur
 
 ---
 
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
+
+---
+
 ## License
 
 MIT
