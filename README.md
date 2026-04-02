@@ -20,7 +20,7 @@ Research-grounded prompt optimization using semi-formal reasoning. Six papers. O
 
 **New in V3:** Lite/Max certificate modes, mandatory remediation blocks, Narrative Tracing for creative tasks, and an automated traceability self-check guard.
 
-**Install:** `cp -r make-prompt-better/skill ~/.claude/skills/make-prompt-better`
+**Install:** `cp -r make-prompt-better/make-prompt-better ~/.claude/skills/make-prompt-better`
 
 ---
 
@@ -304,7 +304,7 @@ make-prompt-better is designed as a Claude Code skill. To install:
 
 2. Copy the skill directory into your Claude Code skills folder:
    ```
-   cp -r make-prompt-better/skill ~/.claude/skills/make-prompt-better
+   cp -r make-prompt-better/make-prompt-better ~/.claude/skills/make-prompt-better
    ```
 
 3. The skill will be available as `/make-prompt-better` in Claude Code.

@@ -62,7 +62,7 @@ The **Actionability Gap** was the most significant failure mode observed across 
 ## ACTIONABLE NEXT STEPS: Prioritized Roadmap for Skill and Template Hardening
 
 ### Priority 1: Harden the Actionability Mandate (Immediate)
-Update `skill/references/domain-templates.md` to include a **mandatory action field** in the conclusion of every task type where a user expects a deliverable:
+Update `make-prompt-better/references/domain-templates.md` to include a **mandatory action field** in the conclusion of every task type where a user expects a deliverable:
 - Code Review: `PROPOSED FIX: [corrected code snippet]`
 - Compliance Check: `REMEDIATION PATH: [step-by-step instructions]`
 - Decision-Making: `IMPLEMENTATION PLAN: [first 3 critical steps]`

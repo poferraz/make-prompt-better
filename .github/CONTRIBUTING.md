@@ -24,7 +24,7 @@ Every contribution must cite research or provide empirical evidence. We do not a
 
 To contribute a new domain certificate template:
 
-1. Open `skill/references/domain-templates.md`
+1. Open `make-prompt-better/references/domain-templates.md`
 2. Add a new numbered section following the established pattern. Every template must include:
    - **Authority-framed preamble**: Establish domain expertise in the opening lines (per Geng et al., 2025)
    - **PREMISES**: Numbered with [P1], [P2] identifiers (per ACE framework from Zhang, Hu et al., 2026)
@@ -32,17 +32,17 @@ To contribute a new domain certificate template:
    - **"Do NOT" instruction**: A domain-specific constraint that prevents common failure modes
    - **FORMAL CONCLUSION**: Must reference traces and remain goal-blind
    - **Persona guidance line**: State whether to OMIT, use MINIMAL, or use FULL persona (per PRISM: Hu, Rostami & Thomason, 2026)
-3. Update the template count in `skill/SKILL.md` and `README.md`
-4. Add a before/after example in `skill/references/examples.md` if the domain is commonly used
+3. Update the template count in `make-prompt-better/SKILL.md` and `README.md`
+4. Add a before/after example in `make-prompt-better/references/examples.md` if the domain is commonly used
 5. Verify: numbered identifiers present, authority framing used, goal-blind conclusion, persona guidance stated
 
 ### New Research Papers
 
 To incorporate a new paper into the methodology:
 
-1. Add an entry to `skill/references/research-principles.md` with three fields: Finding, Constraint, When to cite
-2. Add the paper to the Research Foundation section in `skill/SKILL.md`
-3. Update the Prompt Structure Framework table in `skill/SKILL.md` if the paper affects component mapping
+1. Add an entry to `make-prompt-better/references/research-principles.md` with three fields: Finding, Constraint, When to cite
+2. Add the paper to the Research Foundation section in `make-prompt-better/SKILL.md`
+3. Update the Prompt Structure Framework table in `make-prompt-better/SKILL.md` if the paper affects component mapping
 4. Add to `docs/methodology.md` with full citation and arXiv link
 5. Add to `README.md` Attribution section with full citation
 6. Add to `docs/tradeoffs.md` if the paper has cost/benefit implications

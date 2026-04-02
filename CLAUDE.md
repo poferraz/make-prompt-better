@@ -6,10 +6,10 @@ This repository is a research-grounded prompt optimization skill. It synthesizes
 
 ## File Organization
 
-- `skill/SKILL.md`: Core optimization workflow (under 500 lines)
-- `skill/references/domain-templates.md`: 10 domain certificate templates
-- `skill/references/research-principles.md`: Quick-reference for 6 papers
-- `skill/references/examples.md`: Before/after transformations
+- `make-prompt-better/SKILL.md`: Core optimization workflow (under 500 lines)
+- `make-prompt-better/references/domain-templates.md`: 10 domain certificate templates
+- `make-prompt-better/references/research-principles.md`: Quick-reference for 6 papers
+- `make-prompt-better/references/examples.md`: Before/after transformations
 - `docs/`: Standalone methodology documentation
 - `README.md`: Project overview with full attribution
 
@@ -22,7 +22,7 @@ This repository is a research-grounded prompt optimization skill. It synthesizes
 
 ## Adding a New Domain Template
 
-1. Open `skill/references/domain-templates.md`
+1. Open `make-prompt-better/references/domain-templates.md`
 2. Add a new numbered section following the established pattern:
    - Authority-framed preamble (per Geng et al., 2025)
    - PREMISES with [P1], [P2] identifiers (per ACE)
@@ -31,14 +31,14 @@ This repository is a research-grounded prompt optimization skill. It synthesizes
    - FORMAL CONCLUSION with trace references
    - Persona guidance line (OMIT/MINIMAL/FULL per PRISM)
 3. Update the template count in SKILL.md and README.md
-4. Add a before/after example in `skill/references/examples.md` if the domain is commonly used
+4. Add a before/after example in `make-prompt-better/references/examples.md` if the domain is commonly used
 5. Verify: numbered identifiers present, authority framing used, goal-blind conclusion, persona guidance stated
 
 ## Adding a New Research Paper
 
 When incorporating a new paper:
 
-1. Add entry to `skill/references/research-principles.md` with Finding, Constraint, When to cite
+1. Add entry to `make-prompt-better/references/research-principles.md` with Finding, Constraint, When to cite
 2. Add the paper to the Research Foundation section in SKILL.md
 3. Update the Prompt Structure Framework table in SKILL.md if the paper affects component mapping
 4. Add to docs/methodology.md with full citation and arXiv link
