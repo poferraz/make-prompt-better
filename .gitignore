@@ -6,3 +6,19 @@ repo-build-prompt.md
 
 # OS files
 .DS_Store
+Thumbs.db
+
+# Credentials and secrets
+.env
+.env.*
+*.key
+*.pem
+*.p12
+credentials*
+
+# Logs
+*.log
+
+# Working drafts
+PROMPT.md
+PROMPT_REMEDIATION.md
