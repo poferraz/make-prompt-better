@@ -10,7 +10,7 @@ Large language models produce better output when they show their work. This is n
 
 Semi-formal reasoning is a prompt engineering method that forces the model to follow a structured analytical process before producing an answer. The model must declare its starting conditions, trace concrete evidence paths step by step, and derive a formal conclusion that references the evidence it gathered. The output functions as a "reasoning certificate": an auditable record of how the model arrived at its answer, with every claim tied to a specific piece of evidence.
 
-The technique originates from work by Ugare and Chandra at Meta (2026), who demonstrated that structured reasoning templates improved code analysis accuracy by 10 to 15 percentage points without any model retraining. Their method raised patch equivalence accuracy from 78% to 88% on curated examples and reached 93% on real-world patches. Code QA accuracy climbed from 78% to 87%. The cost was roughly 2.8x more reasoning steps than standard prompting, a tradeoff that is worthwhile whenever accuracy matters more than speed (Ugare & Chandra, 2026).
+The technique originates from work by Ugare and Chandra at Meta (2026), who demonstrated that structured reasoning templates improved code analysis accuracy by 10 to 15 percentage points without any model retraining. Their method raised patch equivalence accuracy from 78% to 88% on curated examples and reached 93% on real-world patches. Code QA accuracy climbed from 78% to 87%. The original paper reported ~2.8x more reasoning steps than standard prompting. Cross-architecture benchmarking (Gemini, GLM, Qwen, Kimi) shows the actual average overhead is ~2.0x (ranging from 1.67x on Qwen to 2.5x on Gemini), a tradeoff that reliably buys a ~20-25% accuracy and traceability improvement for analytical tasks (Ugare & Chandra, 2026).
 
 This document describes the full methodology: the certificate structure, the six research constraints that shape it, the prompt framework that operationalizes it, and the optimization process that applies it. It is written for anyone who wants to understand the theory behind the approach, whether or not they use the accompanying Claude Code skill.
 
@@ -74,7 +74,7 @@ The certificate structure is necessary but not sufficient. Six research papers c
 
 The foundational paper. Ugare and Chandra demonstrated that semi-formal reasoning templates, requiring the model to state premises, trace execution paths, and derive formal conclusions, improved accuracy by 10 to 15 percentage points across code analysis tasks. Patch equivalence accuracy rose from 78% to 88% on curated examples and hit 93% on real-world patches. Code QA accuracy improved from 78% to 87%. The technique required no model retraining: it is pure prompt engineering.
 
-The method uses roughly 2.8x more reasoning steps than standard prompting. This overhead is the cost of forcing the model to show its work rather than jumping directly to an answer. In domains where errors are costly, this tradeoff is clearly worthwhile.
+The original paper reported ~2.8x more reasoning steps than standard prompting. Cross-architecture benchmarking shows the actual average is ~2.0x (ranging from 1.67x on Qwen to 2.5x on Gemini). V3 introduces Lite Certificate mode at ~1.5x overhead for routine tasks. In domains where errors are costly, the Max mode tradeoff is clearly worthwhile; for routine analytical tasks, Lite mode offers a cost-effective middle path.
 
 **What this means for prompt optimization:** Every optimized prompt must embed a three-part certificate structure. The model fills premises before tracing, traces before concluding. Conclusions must reference traces by identifier. The certificate acts as both a reasoning scaffold and an audit trail.
 
@@ -191,17 +191,28 @@ This framework produces four prompt strategies depending on task complexity:
 
 ## The Optimization Process
 
-When applying semi-formal reasoning to optimize an existing prompt, follow these six steps. Each step is grounded in one or more of the research constraints above.
+When applying semi-formal reasoning to optimize an existing prompt, follow these seven steps. Each step is grounded in one or more of the research constraints above.
 
 ### Step 1: Classify the Task Type
 
 Before touching the prompt, determine whether it is accuracy-dependent, alignment-dependent, or mixed. This classification drives every downstream decision about persona, certificate depth, and output format.
 
 - **Accuracy-dependent:** fact retrieval, classification, math, coding logic, diagnostic reasoning, compliance verification, legal analysis. No persona. Full certificate.
-- **Alignment-dependent:** format following, style matching, safety compliance, tone adjustment, creative writing with structural constraints. Full persona. Certificate optional.
+- **Alignment-dependent:** format following, style matching, safety compliance, tone adjustment. Full persona. Certificate optional.
+- **Creative:** copywriting, storytelling, poetry, brand voice, persuasive writing. Route to the Creative Pivot (Narrative Traces) instead of the standard certificate.
 - **Mixed:** analytical reports, research summaries, decision recommendations that need both factual accuracy and good presentation. Minimal persona (five words or fewer). Full certificate with structured output.
 
-This classification comes directly from the PRISM findings (Hu, Rostami & Thomason, 2026). Getting it wrong has measurable consequences: adding persona to an accuracy task drops performance by 3 to 5 percentage points.
+This classification comes directly from the PRISM findings (Hu, Rostami & Thomason, 2026). Getting it wrong has measurable consequences: adding persona to an accuracy task drops performance by 3 to 5 percentage points. The Creative Pivot routing was added in V3 after cross-architecture benchmarking showed that logical evidence traces consistently flatten creative output.
+
+### Step 1b: Select Certificate Mode (Lite vs. Max)
+
+After classifying the task type, select the certificate intensity level:
+
+- **Max Certificate** (default for high-stakes tasks): The full exhaustive structure with comprehensive premises, detailed multi-step evidence traces, and a formal conclusion with gap analysis. Use for high-stakes domains (medical, legal, financial), when baseline model competence is expected to be low, or when full auditability is required. Cost: ~2.0x token overhead. Delivers the full ~20-25% accuracy improvement.
+
+- **Lite Certificate** (for routine analytical tasks): A compressed variant. Premises capped at 3 items, traces restricted to single-line causal arrows (`[T1] Input -> Processing Step -> Finding`), conclusion fields limited to 1-2 sentences. Cost: ~1.5x token overhead. Preserves approximately 80% of the traceability benefits.
+
+**Selection heuristic:** If a wrong answer would cause real harm (patient safety, legal liability, financial loss, security breach), use Max. If the task is analytical but routine, use Lite. When uncertain, default to Max.
 
 ### Step 2: Analyze the Original Prompt
 
@@ -223,7 +234,7 @@ Each template in that file incorporates numbered identifiers (Zhang, Hu et al., 
 
 ### Step 4: Rewrite the Prompt
 
-Transform the original prompt through eight specific operations:
+Transform the original prompt through nine specific operations:
 
 1. **Remove goal leakage.** Strip any mention of downstream use, evaluation criteria, or success metrics. The certificate template specifies what evidence to gather, not what answer is desired (Cao, Jiang & Xu, 2026).
 
@@ -235,11 +246,13 @@ Transform the original prompt through eight specific operations:
 
 5. **Structure the conclusion format.** The conclusion template must require references to evidence by identifier. No new claims in the conclusion.
 
-6. **Add gap-detection instruction.** If the model cannot complete a trace, it must say so explicitly rather than guessing. This transforms invisible uncertainty into visible gaps.
+6. **Append a mandatory REMEDIATION / NEXT ACTION block** after the conclusion. Instruct the model: "The task is incomplete until the final, copy-pasteable artifact or specific fix is generated." This closes the Actionability Gap, where models analyze correctly but stop at the verdict without outputting the fix (identified through cross-architecture benchmarking).
 
-7. **Add structured output format** if the output will be parsed downstream. A JSON schema alongside the certificate prevents silent integration failures (Mahmoudi et al., 2025).
+7. **Add gap-detection instruction.** If the model cannot complete a trace, it must say so explicitly rather than guessing. This transforms invisible uncertainty into visible gaps.
 
-8. **Calibrate persona.** Based on the task classification from Step 1: omit for accuracy tasks, use minimally for mixed tasks, use fully for alignment tasks (Hu, Rostami & Thomason, 2026).
+8. **Add structured output format** if the output will be parsed downstream. A JSON schema alongside the certificate prevents silent integration failures (Mahmoudi et al., 2025).
+
+9. **Calibrate persona.** Based on the task classification from Step 1: omit for accuracy tasks, use minimally for mixed tasks, use fully for alignment tasks (Hu, Rostami & Thomason, 2026).
 
 ### Step 5: Add Anti-Hallucination Guards
 
@@ -254,6 +267,8 @@ These instructions, appended to any certificate template, consistently reduce ha
 
 These guards work because they target specific failure modes rather than offering generic "be accurate" instructions. Each guard addresses a concrete way that models hallucinate: inferring from names, guessing when uncertain, hiding contradictions, blurring confidence levels, and biasing toward desired outcomes.
 
+Additionally, every optimized prompt must include the **traceability self-check** as a final validation layer: "Before finalizing, verify that every claim in your conclusion references at least one T-identifier from your evidence traces. If any claim lacks a supporting trace, either add the missing trace or remove the claim." Cross-architecture benchmarking showed that without this guard, approximately 5-10% of certificate outputs contain orphaned conclusions.
+
 ### Step 6: Present the Optimized Prompt
 
 The final deliverable includes:
@@ -262,7 +277,7 @@ The final deliverable includes:
 
 2. **What changed and why**, organized by which research principle drove each change. This helps the user understand the methodology, not just receive its output.
 
-3. **Expected tradeoffs**: more tokens and higher latency in exchange for higher accuracy and auditable reasoning. The certificate adds roughly 150 to 300 tokens of overhead per prompt. Reasoning steps increase by roughly 2.8x (Ugare & Chandra, 2026).
+3. **Expected tradeoffs**: more tokens and higher latency in exchange for higher accuracy and auditable reasoning. The certificate adds roughly 150 to 300 tokens of overhead per prompt. Token overhead averages ~2.0x in Max mode, ~1.5x in Lite mode (cross-architecture benchmarking across Gemini, GLM, Qwen, Kimi).
 
 4. **Task classification and persona decision**, with explicit reasoning so the user can adjust if they disagree with the classification.
 
@@ -288,12 +303,12 @@ Semi-formal reasoning is not a universal improvement. The research is clear abou
 
 **It should be avoided when:**
 - The task is simple factual lookup where the model already knows the answer
-- Creative generation where structured reasoning constrains the output in undesirable ways
+- Fully unconstrained brainstorming or stream-of-consciousness generation (creative tasks with structural goals should use the Creative Pivot with Narrative Traces instead)
 - A reasoning-distilled model is already in use, because these models benefit from context length alone rather than certificate structure specifically (Hu, Rostami & Thomason, 2026)
 
 For a detailed decision framework with specific criteria, see `docs/when-to-use.md`.
 
-The honest summary: semi-formal reasoning produces larger accuracy gains on harder tasks where the baseline is lower. On tasks where modern models are already highly accurate, the gains are smaller but the auditability benefit remains. The roughly 2.8x increase in reasoning steps is always a cost. Whether it is worth paying depends on how much the answer matters.
+The honest summary: semi-formal reasoning produces larger accuracy gains on harder tasks where the baseline is lower. Cross-architecture benchmarking confirmed a 24.6% average relative improvement with a 97.5% win rate across four model families. On tasks where modern models are already highly accurate, the gains are smaller but the auditability benefit remains. The ~2.0x token overhead (Max mode) or ~1.5x (Lite mode) is always a cost. Whether it is worth paying depends on how much the answer matters.
 
 ---
 
