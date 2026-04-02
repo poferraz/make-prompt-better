@@ -22,7 +22,7 @@ Zhang, Hu et al. (2026) show that structured context engineering (systematic opt
 
 ### Instruction compliance
 
-Geng et al. (2025) found that consensus framing, where the model reasons about instruction compliance explicitly, achieves 65.8% to 77.8% compliance rates. This compares to 9.6% to 45.8% when instructions are split across system and user messages without structured enforcement (arXiv 2502.15851). The gap is large and consistent.
+Geng et al. (2025) found that consensus framing, where the model reasons about instruction compliance explicitly, achieves 54% to 77.8% compliance rates. This compares to 9.6% to 45.8% when instructions are split across system and user messages without structured enforcement (arXiv 2502.15851). The gap is large and consistent.
 
 ### Error visibility
 
@@ -48,7 +48,7 @@ The academic findings above are corroborated by our cross-architecture benchmark
 
 Traceability improved on every test, for every model, without exception. It is the single most validated finding. This means: if your primary need is auditability and hallucination reduction, the skill delivers high ROI. If your primary need is raw correctness on tasks where the model already performs well, gains are modest.
 
-**Ceiling and floor effects.** Models with lower baselines show larger improvements. Kimi (baseline 17.7/25) improved +6.3 points (+35%). Gemini (baseline 20.6/25) improved +4.0 points (+19.4%). The relationship is approximately linear: every 1-point increase in baseline reduces the expected delta by ~0.8 points. The skill is most valuable when baseline performance is moderate (15-20/25). Above 22/25, overhead may exceed benefit.
+**Ceiling and floor effects.** Models with lower baselines show larger improvements. Kimi (baseline 17.2/25) improved +6.5 points (+37.8%). Gemini (baseline 20.5/25) improved +4.2 points (+20.5%). The relationship is approximately linear: every 1-point increase in baseline reduces the expected delta by ~0.7 points. The skill is most valuable when baseline performance is moderate (15-20/25). Above 22/25, overhead may exceed benefit.
 
 ---
 
@@ -60,14 +60,14 @@ The original META paper (Ugare & Chandra, 2026) reported ~2.8x more execution st
 
 | Mode | Average Overhead | Per-Model Range | Traceability Retained |
 |------|-----------------|----------------|-----------------------|
-| **Max Certificate** | ~2.0x (excl. Kimi) | 1.95x (Gemini/Qwen), 2.0x (GLM), 3.8x (Kimi) | 100% |
-| **Lite Certificate** | ~1.5x (target) | Estimated from Max compression | ~80% |
+| **Max Certificate** | ~2.2x (average) | ~1.7x (Qwen), ~2.0x (GLM), ~2.5x (Gemini), ~2.7x (Kimi) | 100% |
+| **Lite Certificate** | ~1.5x (target) | Estimated from Max compression | ~80% (projected target, not yet benchmarked) |
 
-Note: Kimi's 3.8x overhead is an outlier driven by verbose prose style, not certificate structure. Excluding Kimi, the cross-architecture average is ~2.0x. The full average including Kimi is ~2.4x. Use the ~2.0x figure for planning unless deploying specifically on Kimi.
+Note: Token overhead ranges from ~1.7x (Qwen, most efficient) to ~2.7x (Kimi). The cross-architecture average is ~2.2x.
 
 A Max certificate block adds roughly 150 to 300 tokens of prompt overhead depending on task complexity. Lite mode restricts this by capping premises at 3 items, using single-line causal arrow traces, and limiting conclusion fields to 1-2 sentences each. Over a session with many prompts, the difference between Lite and Max compounds significantly.
 
-**The cost/benefit equation:** ~2.0x token overhead (Max mode) reliably buys a ~20-25% accuracy and traceability improvement for analytical tasks, with a 97.5% win rate over unstructured prompts across all four model families tested. Lite mode trades approximately 20% of that traceability for a ~25% reduction in overhead.
+**The cost/benefit equation:** ~2.2x token overhead (Max mode) reliably buys a ~26% accuracy and traceability improvement for analytical tasks, with a 96.3% win rate over unstructured prompts across all four model families tested. Lite mode trades approximately 20% of that traceability for a ~25% reduction in overhead.
 
 ### Latency
 
@@ -78,11 +78,11 @@ Latency increases are proportional to token overhead. If your use case needs sub
 The technique helps most where the baseline is low. Ugare and Chandra (2026) found that Sonnet-4.5 showed no meaningful improvement on code QA tasks where its baseline accuracy was already around 85% (arXiv 2603.01896).
 
 Cross-architecture benchmarking confirms the ceiling/floor effect empirically:
-- **Kimi** (lowest baseline at 17.7/25): largest delta at +6.3 (+35.0% relative)
+- **Kimi** (lowest baseline at 17.2/25): largest delta at +6.5 (+37.8% relative)
 - **GLM** (moderate baseline at 19.5/25): +4.8 (+24.6% relative)
-- **Gemini/Qwen** (highest baselines at 20.6/25): +4.0 (+19.4% relative)
+- **Gemini/Qwen** (highest baselines at ~20.4/25): +4.2 (+20.5% relative)
 
-The relationship is approximately linear: every 1-point increase in baseline reduces the expected delta by ~0.8 points. When a model is already performing well on a task, adding structure does not push it further and may add overhead for nothing. For models scoring above 22/25, consider Lite mode for auditability without the full overhead.
+The relationship is approximately linear: every 1-point increase in baseline reduces the expected delta by ~0.7 points. When a model is already performing well on a task, adding structure does not push it further and may add overhead for nothing. For models scoring above 22/25, consider Lite mode for auditability without the full overhead.
 
 ### Persona damage
 
@@ -102,7 +102,7 @@ Cross-architecture benchmarking revealed a consistent failure mode across all fo
 
 This is the **Actionability Gap**: the cognitive scaffolding of the certificate is so thorough that the model treats the analysis itself as the deliverable. In production, this means a human still has to translate the analysis into action, which defeats half the purpose of structured prompting.
 
-**V3 mitigation:** A mandatory `REMEDIATION / NEXT ACTION` block is now appended to every certificate's formal conclusion. The instruction is explicit: "The task is incomplete until the final, copy-pasteable artifact or specific fix is generated." This adds a small amount of token overhead (typically 50-100 tokens in the output) but closes the gap between analysis and action.
+**V3 mitigation:** A mandatory `REMEDIATION / NEXT ACTION` block is now appended to every certificate's formal conclusion. The instruction is explicit: "The task is incomplete until the final, copy-pasteable artifact or specific fix is generated." This adds a small amount of token overhead in the output but closes the gap between analysis and action.
 
 ### Structural mismatch with creative tasks
 
@@ -131,7 +131,7 @@ These narrative traces act as backstage scaffolding. The model reasons about the
 
 ### Traceability self-check overhead
 
-The mandatory traceability self-check ("verify that every claim in your conclusion references at least one T-identifier") adds a small amount of generation overhead as the model performs a final validation pass. In practice, this is negligible (typically under 50 tokens of internal reasoning). The benefit is catching orphaned conclusions, where the model introduces a claim in the conclusion that was not established in any evidence trace. Cross-architecture testing showed this failure mode occurs in approximately 5-10% of certificate outputs without the self-check guard.
+The mandatory traceability self-check ("verify that every claim in your conclusion references at least one T-identifier") adds a small amount of generation overhead as the model performs a final validation pass. In practice, this is negligible (typically under 50 tokens of internal reasoning). The benefit is catching orphaned conclusions, where the model introduces a claim in the conclusion that was not established in any evidence trace. Cross-architecture testing showed this failure mode occurs in a minority of certificate outputs without the self-check guard.
 
 ---
 
@@ -158,7 +158,7 @@ There are situations where semi-formal reasoning is the wrong tool:
 
 **Creative generation where you want zero scaffolding.** The Creative Pivot (Narrative Traces) now handles creative tasks within the methodology, but for fully unconstrained brainstorming, open-ended ideation, or stream-of-consciousness generation, even narrative traces add unnecessary overhead. Use unstructured prompting for these.
 
-**Real-time applications where latency is critical.** The ~2.0x token overhead (empirical average across model families) translates directly to longer response times. Lite mode reduces this to ~1.5x, which may be acceptable for some latency-sensitive pipelines. If you need sub-second responses, neither mode is appropriate.
+**Real-time applications where latency is critical.** The ~2.2x token overhead (empirical average across model families) translates directly to longer response times. Lite mode reduces this to ~1.5x, which may be acceptable for some latency-sensitive pipelines. If you need sub-second responses, neither mode is appropriate.
 
 **Tasks using reasoning-distilled models.** Hu, Rostami and Thomason (2026) found that reasoning models benefit from longer context windows, not from persona or structure tricks (arXiv 2603.18507). If your model already does chain-of-thought internally, adding external structure is redundant.
 
@@ -166,9 +166,9 @@ There are situations where semi-formal reasoning is the wrong tool:
 
 ## Bottom Line
 
-Semi-formal reasoning is a precision tool, not a default setting. Cross-architecture benchmarking (Gemini, GLM, Qwen, Kimi) confirms a 24.6% average relative improvement with a 97.5% win rate on analytical tasks. The improvements are consistent across model families and domains: code analysis, fault localization, instruction compliance, agent orchestration, financial due diligence, and legal analysis.
+Semi-formal reasoning is a precision tool, not a default setting. Cross-architecture benchmarking (Gemini, GLM, Qwen, Kimi) confirms a 25.9% average relative improvement with a 96.3% win rate on analytical tasks. The improvements are consistent across model families and domains: code analysis, fault localization, instruction compliance, agent orchestration, financial due diligence, and legal analysis.
 
-The costs are real: ~2.0x token overhead in Max mode (~1.5x in Lite), proportional latency increase, no gain on already-strong baselines, the Actionability Gap (mitigated by the mandatory remediation block), structural mismatch with creative tasks (mitigated by Narrative Tracing), and the risk of active harm if persona framing is misapplied.
+The costs are real: ~2.2x token overhead in Max mode (~1.5x in Lite), proportional latency increase, no gain on already-strong baselines, the Actionability Gap (mitigated by the mandatory remediation block), structural mismatch with creative tasks (mitigated by Narrative Tracing), and the risk of active harm if persona framing is misapplied.
 
 **Decision framework:**
 - High-stakes analytical task with low baseline? **Max Certificate.**

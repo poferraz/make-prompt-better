@@ -29,7 +29,7 @@ arXiv: 2602.09504
 ## [ACE] Agentic Context Engineering (Zhang, Hu et al. 2026)
 arXiv: 2510.04618 (ICLR 2026)
 
-**Finding:** Contexts perform best as comprehensive, itemized playbooks with unique identifiers per entry. Two failure modes: brevity bias (optimization collapses to short generic instructions) and context collapse (iterative rewriting erodes accumulated detail). Incremental delta updates outperform full rewrites. +10.6% on agent tasks, +8.6% on finance.
+**Finding:** Contexts perform best as comprehensive, itemized playbooks with unique identifiers per entry. Two failure modes: brevity bias (optimization collapses to short generic instructions) and context collapse (iterative rewriting erodes accumulated detail). Incremental delta updates outperform full rewrites. +10.6% on agent tasks, +8.6% on finance, 86.9% lower adaptation latency through incremental delta updates.
 
 **Constraint:** Use numbered/labeled identifiers ([P1], [T1]) for every premise and trace. Prefer comprehensive detail over brevity. When iterating across sessions, make targeted edits rather than rewriting the whole prompt.
 
