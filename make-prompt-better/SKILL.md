@@ -1,5 +1,5 @@
 ---
-name: semi-formal-prompt-optimizer
+name: make-prompt-better
 description: >
   Optimize any prompt using semi-formal reasoning templates grounded in Meta's
   "Agentic Code Reasoning" research (Ugare & Chandra, arXiv 2603.01896, 2026)

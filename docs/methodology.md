@@ -14,7 +14,7 @@ The technique originates from work by Ugare and Chandra at Meta (2026), who demo
 
 This document describes the full methodology: the certificate structure, the six research constraints that shape it, the prompt framework that operationalizes it, and the optimization process that applies it. It is written for anyone who wants to understand the theory behind the approach, whether or not they use the accompanying Claude Code skill.
 
-For quick-reference versions of the research constraints, see `skill/references/research-principles.md`. For ready-to-use certificate templates across ten domains, see `skill/references/domain-templates.md`.
+For quick-reference versions of the research constraints, see `make-prompt-better/references/research-principles.md`. For ready-to-use certificate templates across ten domains, see `make-prompt-better/references/domain-templates.md`.
 
 ---
 
@@ -228,7 +228,7 @@ Read the user's prompt and identify structural weaknesses:
 
 Map the three certificate components (premises, traces, conclusion) to the specific domain. The general pattern is always the same, but the content of each section varies by domain.
 
-Domain-specific templates are available in `skill/references/domain-templates.md` for: code review, document analysis, research synthesis, compliance checking, decision-making, comparative analysis, medical/clinical reasoning, legal analysis, financial due diligence, and a blank template for custom domains.
+Domain-specific templates are available in `make-prompt-better/references/domain-templates.md` for: code review, document analysis, research synthesis, compliance checking, decision-making, comparative analysis, medical/clinical reasoning, legal analysis, financial due diligence, and a blank template for custom domains.
 
 Each template in that file incorporates numbered identifiers (Zhang, Hu et al., 2026), authority framing (Geng et al., 2025), goal-blind conclusion formats (Cao, Jiang & Xu, 2026), and persona guidance per the PRISM findings (Hu, Rostami & Thomason, 2026).
 
