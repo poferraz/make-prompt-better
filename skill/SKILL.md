@@ -39,7 +39,11 @@ premises, trace execution paths, and derive formal conclusions before answering.
 Results: patch equivalence accuracy 78% to 88% on curated examples, 93% on
 real-world patches. Code QA accuracy 78% to 87%. Fault localization Top-5
 improved 5 to 12 percentage points. Pure prompt engineering, no model training
-required. Uses roughly 2.8x more execution steps than standard reasoning.
+required. The original paper reported ~2.8x execution step overhead; cross-
+architecture benchmarking (Gemini, GLM, Qwen, Kimi) shows the actual average
+is ~2.0x (ranging from 1.67x on Qwen to 2.5x on Gemini). This ~2.0x cost
+reliably buys a ~20-25% accuracy and traceability improvement for analytical
+tasks.
 
 ### Supporting Sources
 
@@ -187,11 +191,41 @@ It adds less value when:
 - Speed matters more than precision
 - The domain has no ambiguity
 
-**When to AVOID certificate structure entirely:**
+**When to AVOID the standard certificate structure:**
 - Simple factual lookups where the model already knows the answer
-- Creative generation where structured reasoning constrains the output
 - Tasks where a reasoning-distilled model is already being used (per PRISM:
   these models get gains from context length alone, not certificate structure)
+
+**Creative Pivot (for creative and alignment tasks):**
+
+Logical evidence traces constrain and flatten creative writing. However, cross-
+architecture benchmarking revealed that psychological scaffolding improves
+creative output quality without killing voice or imagination. For creative tasks
+(copywriting, storytelling, poetry, brand voice, persuasive writing), replace
+the standard certificate with **Narrative Traces**:
+
+```
+### PREMISES
+- [P1] Audience: [who is reading this, what do they care about]
+- [P2] Emotional target: [what feeling or shift should the piece produce]
+- [P3] Constraints: [tone, length, format, brand voice requirements]
+
+### NARRATIVE TRACES (backstage scaffold; do not surface in final output)
+- [NT1] Audience Empathy: [what does the reader already believe or feel?
+  What resistance or preconceptions exist? How does the opening meet them?]
+- [NT2] Emotional Arc: [map the intended emotional trajectory from opening
+  to close; identify the turn, climax, or pivot point]
+- [NT3] Tone Calibration: [what specific word choices, sentence rhythms,
+  and register decisions serve P2 and P3?]
+
+### FORMAL CONCLUSION
+Present the final creative output cleanly. The narrative traces above are
+backstage reasoning; the reader sees only the finished piece. The output
+must feel crafted, not templated.
+```
+
+This approach preserves structured reasoning (the model still reasons before
+writing) while keeping the final output free of analytical scaffolding.
 
 ## The Optimization Process
 
@@ -208,6 +242,37 @@ Before touching the prompt, determine:
   Minimal persona, full certificate, structured output format.
 
 This classification drives all downstream decisions per PRISM research.
+
+### Step 1b: Select Certificate Mode (Lite vs. Max)
+
+After classifying the task type, select the certificate intensity level:
+
+**Max Certificate** (default for high-stakes tasks):
+The full exhaustive structure: comprehensive Premises, detailed multi-step
+Evidence Traces, and a Formal Conclusion with gap analysis. Use this mode for
+high-stakes domains (medical, legal, financial), when baseline model competence
+on the task is expected to be low, or when full auditability is required.
+Cost: ~2.0x token overhead. Delivers the full ~20-25% accuracy improvement.
+
+**Lite Certificate** (for routine analytical tasks):
+A compressed variant that preserves traceability while reducing overhead.
+Constraints:
+- PREMISES: maximum 3 bullet items. Each must be the single most relevant
+  fact for its category.
+- EVIDENCE TRACES: single-line causal arrows only. Format each trace as:
+  `[T1] Input → Processing Step → Finding`
+  No multi-step sub-traces, no nested reasoning chains.
+- FORMAL CONCLUSION: same structure as Max (verdict, supporting traces, gaps),
+  but shorter; each field is 1-2 sentences maximum.
+
+Use Lite for routine tasks where the model already has moderate competence:
+standard code reviews, basic document analysis, simple compliance checks,
+straightforward comparisons. Cost: ~1.5x token overhead. Preserves
+approximately 80% of the traceability benefits of Max mode.
+
+**Selection heuristic:** If a wrong answer would cause real harm (patient
+safety, legal liability, financial loss, security breach), use Max. If the
+task is analytical but routine, use Lite. When uncertain, default to Max.
 
 ### Step 2: Analyze the Original Prompt
 
@@ -248,6 +313,12 @@ Based solely on the premises and traces above:
 - Verdict: [state the conclusion]
 - Supporting evidence: [reference T1, T2, etc. by identifier]
 - Gaps: [flag any uncertainties discovered during tracing]
+
+### REMEDIATION / NEXT ACTION
+The task is incomplete until this section is filled. Provide one of:
+- A copy-pasteable fix (code patch, revised clause, corrected formula)
+- A concrete next action with specific steps the user can execute
+- If no action is needed, state explicitly: "No remediation required: [reason]"
 ```
 
 Note the identifiers [P1], [T1], etc. Per ACE research, these allow precise
@@ -267,11 +338,16 @@ Transform the user's original prompt by:
 4. **Specify what must be traced**: the concrete paths the model must walk,
    with numbered identifiers (ACE)
 5. **Structure the conclusion format** so it references evidence by identifier
-6. **Add gap-detection instruction**: if the model cannot complete a trace,
+6. **Append a mandatory REMEDIATION / NEXT ACTION block** after the conclusion.
+   Instruct the model: "The task is incomplete until the final, copy-pasteable
+   artifact or specific fix is generated." This closes the Actionability Gap,
+   where models analyze correctly but stop at the verdict without outputting
+   the fix.
+7. **Add gap-detection instruction**: if the model cannot complete a trace,
    it must say so rather than guess
-7. **Add structured output format** if the output will be parsed downstream
+8. **Add structured output format** if the output will be parsed downstream
    (Mahmoudi et al.)
-8. **Calibrate persona**: omit for accuracy tasks, minimal for mixed, full
+9. **Calibrate persona**: omit for accuracy tasks, minimal for mixed, full
    for alignment tasks (PRISM)
 
 ### Step 5: Add Anti-Hallucination Guards
@@ -283,6 +359,24 @@ From the research, these patterns consistently reduce hallucination:
 - "State counterexamples when they exist, even if the overall conclusion is positive"
 - "Each claim in your conclusion must reference a specific trace by identifier"
 - "Do not adjust your analysis based on how the output might be used" (Cao/Jiang/Xu)
+
+**Mandatory Traceability Self-Check (append to every optimized prompt):**
+
+The following instruction must be appended to every optimized prompt, after the
+certificate template and anti-hallucination guards:
+
+```
+TRACEABILITY SELF-CHECK (mandatory before finalizing):
+Before submitting your response, verify that every claim in your conclusion
+references at least one T-identifier from your evidence traces. If any claim
+lacks a supporting trace, either add the missing trace or remove the claim.
+No orphaned conclusions are permitted.
+```
+
+This self-check acts as a final automated validation layer. Cross-architecture
+benchmarking showed that models occasionally generate well-structured certificates
+where the conclusion introduces claims not grounded in any trace. The self-check
+instruction catches this failure mode at generation time.
 
 ### Step 6: Present the Optimized Prompt
 
@@ -298,7 +392,11 @@ Show the user:
 
 Be honest with the user about costs:
 
-- Semi-formal reasoning uses roughly 2.8x more execution steps than standard prompting
+- Semi-formal reasoning uses roughly 2.0x more tokens than standard prompting
+  on average (ranging from 1.67x on Qwen to 2.5x on Gemini, per cross-
+  architecture benchmarking). The original META paper reported ~2.8x; empirical
+  measurement across four model families shows the real overhead is lower.
+  Lite Certificate mode (see below) reduces this further to ~1.5x.
 - Latency increases proportionally
 - For tasks where the model is already highly accurate, gains may be minimal
   (Sonnet-4.5 showed no gain on code QA where baseline was already approximately 85%)
