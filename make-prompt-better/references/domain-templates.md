@@ -438,19 +438,19 @@ When to use: Optimizing `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `.windsurfrule
 ```
 # [Repository / System Name] Agent Operating Contract
 
-## 1. Non-Inferable Environment & Tooling Commands
+### 1. Non-Inferable Environment & Tooling Commands
 (Include only exact commands that cannot be guessed from standard defaults; omit
 directory trees and file inventories per Gloaguen et al., 2026.)
 - Environment / Dependency Sync: `[exact command, e.g., uv sync --all-extras]`
 - Single-File Test Execution: `[exact command, e.g., uv run pytest <path> -q]`
 - Typecheck & Linter Gate: `[exact command, e.g., uv run ruff check . && uv run mypy src]`
 
-## 2. Hard Architectural & Boundary Invariants
+### 2. Hard Architectural & Boundary Invariants
 - [I1] Module boundary: [state non-obvious dependency direction or forbidden imports]
 - [I2] Schema / Contract rule: [state required validation or serialization boundary]
 - [I3] Security / State rule: [state protected files, credentials, or migration rules]
 
-## 3. Multi-Step Execution & Context-as-a-File Protocol
+### 3. Multi-Step Execution & Context-as-a-File Protocol
 - Plan Sufficiency Gate: When a task modifies 3+ files or alters a public interface,
   write a brief Premise & Verification checklist to a scratchpad file before editing
   source files.
@@ -458,7 +458,7 @@ directory trees and file inventories per Gloaguen et al., 2026.)
   Store intermediate findings and test logs in the scratchpad file so active context
   stays compact.
 
-## 4. Mandatory Verification Gate (Before Claiming Completion)
+### 4. Mandatory Verification Gate (Before Claiming Completion)
 1. Execute the Single-File Test and Linter commands from Section 1 on all touched modules.
 2. Confirm exit code 0 and cite the exact command output in your final response.
 3. If any check fails or cannot run in the current sandbox, report `VERIFICATION BLOCKED: [command + error]` rather than claiming success.

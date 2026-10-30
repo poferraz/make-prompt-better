@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090D16"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="barBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+    <linearGradient id="barPurple" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="400" rx="16" fill="url(#bg3)" stroke="#1E293B" stroke-width="1.5"/>
+
+  <!-- Left Panel: Per-Model Scores -->
+  <text x="48" y="48" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="800" fill="#F8FAFC">Cross-Architecture Benchmark (Score / 25)</text>
+  <text x="48" y="72" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#94A3B8">Baseline prompt vs. Semi-Formal Certificate across 4 frontier model families</text>
+
+  <!-- Gemini -->
+  <text x="48" y="118" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" fill="#E2E8F0">Gemini</text>
+  <rect x="150" y="98" width="287" height="14" rx="4" fill="#334155"/>
+  <text x="445" y="110" font-family="ui-monospace, monospace" font-size="11.5" fill="#94A3B8">20.5</text>
+  <rect x="150" y="116" width="344" height="16" rx="4" fill="url(#barBlue)"/>
+  <text x="502" y="129" font-family="ui-monospace, monospace" font-size="12.5" font-weight="700" fill="#38BDF8">24.6 (+20.5%)</text>
+
+  <!-- Qwen Code -->
+  <text x="48" y="182" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" fill="#E2E8F0">Qwen Code</text>
+  <rect x="150" y="162" width="284" height="14" rx="4" fill="#334155"/>
+  <text x="442" y="174" font-family="ui-monospace, monospace" font-size="11.5" fill="#94A3B8">20.3</text>
+  <rect x="150" y="180" width="343" height="16" rx="4" fill="url(#barBlue)"/>
+  <text x="501" y="193" font-family="ui-monospace, monospace" font-size="12.5" font-weight="700" fill="#38BDF8">24.5 (+20.7%)</text>
+
+  <!-- GLM-5.1 -->
+  <text x="48" y="246" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" fill="#E2E8F0">GLM-5.1</text>
+  <rect x="150" y="226" width="273" height="14" rx="4" fill="#334155"/>
+  <text x="431" y="238" font-family="ui-monospace, monospace" font-size="11.5" fill="#94A3B8">19.5</text>
+  <rect x="150" y="244" width="340" height="16" rx="4" fill="url(#barBlue)"/>
+  <text x="498" y="257" font-family="ui-monospace, monospace" font-size="12.5" font-weight="700" fill="#38BDF8">24.3 (+24.6%)</text>
+
+  <!-- Kimi -->
+  <text x="48" y="310" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" fill="#E2E8F0">Kimi</text>
+  <rect x="150" y="290" width="241" height="14" rx="4" fill="#334155"/>
+  <text x="399" y="302" font-family="ui-monospace, monospace" font-size="11.5" fill="#94A3B8">17.2</text>
+  <rect x="150" y="308" width="336" height="16" rx="4" fill="url(#barBlue)"/>
+  <text x="494" y="321" font-family="ui-monospace, monospace" font-size="12.5" font-weight="700" fill="#34D399">24.0 (+37.8%)</text>
+
+  <!-- Legend -->
+  <rect x="150" y="352" width="14" height="14" rx="3" fill="#334155"/>
+  <text x="172" y="364" font-family="-apple-system, sans-serif" font-size="12.5" fill="#94A3B8">Unstructured Baseline (Avg: 19.4/25)</text>
+  <rect x="390" y="352" width="14" height="14" rx="3" fill="#38BDF8"/>
+  <text x="412" y="364" font-family="-apple-system, sans-serif" font-size="12.5" fill="#E2E8F0">Certificate Optimized (Avg: 24.4/25)</text>
+
+  <!-- Divider -->
+  <line x1="620" y1="40" x2="620" y2="365" stroke="#1E293B" stroke-width="2"/>
+
+  <!-- Right Panel: Where the Gains Come From -->
+  <text x="656" y="48" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="800" fill="#F8FAFC">Where the Gains Live (Dimension Delta / 5.0)</text>
+  <text x="656" y="72" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#94A3B8">Traceability &amp; structure drive the analytical leap; v4.0 closes Creative &amp; Harness gaps</text>
+
+  <!-- Traceability -->
+  <text x="656" y="118" font-family="-apple-system, sans-serif" font-size="14" font-weight="600" fill="#E2E8F0">Traceability</text>
+  <rect x="790" y="103" width="266" height="18" rx="4" fill="url(#barPurple)"/>
+  <text x="1068" y="117" font-family="ui-monospace, monospace" font-size="13" font-weight="700" fill="#C084FC">+1.9 / 5.0</text>
+
+  <!-- Structure -->
+  <text x="656" y="160" font-family="-apple-system, sans-serif" font-size="14" font-weight="600" fill="#E2E8F0">Structure</text>
+  <rect x="790" y="145" width="196" height="18" rx="4" fill="url(#barPurple)"/>
+  <text x="998" y="159" font-family="ui-monospace, monospace" font-size="13" font-weight="700" fill="#C084FC">+1.4 / 5.0</text>
+
+  <!-- Completeness -->
+  <text x="656" y="202" font-family="-apple-system, sans-serif" font-size="14" font-weight="600" fill="#E2E8F0">Completeness</text>
+  <rect x="790" y="187" width="126" height="18" rx="4" fill="url(#barPurple)"/>
+  <text x="928" y="201" font-family="ui-monospace, monospace" font-size="13" font-weight="700" fill="#C084FC">+0.9 / 5.0</text>
+
+  <!-- Accuracy -->
+  <text x="656" y="244" font-family="-apple-system, sans-serif" font-size="14" font-weight="600" fill="#E2E8F0">Raw Accuracy</text>
+  <rect x="790" y="229" width="84" height="18" rx="4" fill="url(#barPurple)"/>
+  <text x="886" y="243" font-family="ui-monospace, monospace" font-size="13" font-weight="700" fill="#C084FC">+0.6 / 5.0</text>
+
+  <!-- v4.0 Empirical Callout Box -->
+  <rect x="656" y="276" width="496" height="92" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1.2"/>
+  <text x="676" y="302" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#34D399">NEW EMPIRICAL GAINS IN v4.0 RESEARCH BASE:</text>
+  <text x="676" y="324" font-family="-apple-system, sans-serif" font-size="12.5" fill="#E2E8F0">• <tspan font-weight="700" fill="#38BDF8">1.6x to 2.1x</tspan> creative diversity via Verbalized Sampling (arXiv:2510.01171)</text>
+  <text x="676" y="344" font-family="-apple-system, sans-serif" font-size="12.5" fill="#E2E8F0">• <tspan font-weight="700" fill="#C084FC">98.0 macro-F1</tspan> AI SlopShape signature defense (arXiv:2609.15369)</text>
+  <text x="676" y="364" font-family="-apple-system, sans-serif" font-size="12.5" fill="#E2E8F0">• <tspan font-weight="700" fill="#818CF8">+7.7 pts</tspan> &amp; <tspan font-weight="700" fill="#818CF8">-20% cost</tspan> via Meta-Harness &amp; AGENTS.md pruning</text>
+</svg>

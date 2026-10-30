@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090D16"/>
+      <stop offset="50%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#131C31"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#C084FC"/>
+    </linearGradient>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.95"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#334155" stroke-width="0.6" stroke-opacity="0.35"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="420" rx="18" fill="url(#bg)"/>
+  <rect width="1200" height="420" rx="18" fill="url(#grid)"/>
+
+  <!-- Decorative Glows -->
+  <circle cx="180" cy="80" r="220" fill="#38BDF8" opacity="0.08"/>
+  <circle cx="1020" cy="340" r="240" fill="#818CF8" opacity="0.09"/>
+
+  <!-- Top Pill Badge -->
+  <rect x="60" y="42" width="430" height="32" rx="16" fill="#1E293B" stroke="#38BDF8" stroke-width="1" stroke-opacity="0.5"/>
+  <circle cx="80" cy="58" r="5" fill="#38BDF8"/>
+  <text x="96" y="63" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12.5" font-weight="600" fill="#E2E8F0" letter-spacing="0.8">RELEASE v4.0.0 • UNIVERSAL AGENT SKILL STANDARD</text>
+
+  <!-- Main Title -->
+  <text x="60" y="132" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="56" font-weight="800" fill="#F8FAFC" letter-spacing="-1.2">make-prompt-better</text>
+
+  <!-- Subtitle -->
+  <text x="60" y="176" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#94A3B8">
+    Stop guessing with folk prompting. Turn vague prompts, <tspan fill="#38BDF8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="19">AGENTS.md</tspan> files, and
+  </text>
+  <text x="60" y="206" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#94A3B8">
+    agent harnesses into verifiable <tspan fill="#E2E8F0" font-weight="700">Semi-Formal Reasoning Certificates</tspan>.
+  </text>
+
+  <!-- Metric Cards Row -->
+  <!-- Card 1 -->
+  <rect x="60" y="242" width="250" height="106" rx="12" fill="url(#cardBg)" stroke="#334155" stroke-width="1.2"/>
+  <text x="82" y="286" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="800" fill="#38BDF8">11 Papers</text>
+  <text x="82" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="500" fill="#94A3B8">Peer-reviewed ArXiv synthesis</text>
+  <text x="82" y="330" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#64748B">Meta • Stanford • MIT • ETH</text>
+
+  <!-- Card 2 -->
+  <rect x="330" y="242" width="250" height="106" rx="12" fill="url(#cardBg)" stroke="#334155" stroke-width="1.2"/>
+  <text x="352" y="286" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="800" fill="#818CF8">+25.9%</text>
+  <text x="352" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="500" fill="#94A3B8">Cross-architecture quality gain</text>
+  <text x="352" y="330" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#64748B">96.3% win rate • 4 LLM families</text>
+
+  <!-- Card 3 -->
+  <rect x="600" y="242" width="250" height="106" rx="12" fill="url(#cardBg)" stroke="#334155" stroke-width="1.2"/>
+  <text x="622" y="286" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="800" fill="#34D399">0 Orphans</text>
+  <text x="622" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="500" fill="#94A3B8">Zero unsupported conclusions</text>
+  <text x="622" y="330" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#64748B">[P1] → [T1] → [C1] bound</text>
+
+  <!-- Card 4 -->
+  <rect x="870" y="242" width="270" height="106" rx="12" fill="url(#cardBg)" stroke="#334155" stroke-width="1.2"/>
+  <text x="892" y="286" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="800" fill="#C084FC">4 Modes</text>
+  <text x="892" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="500" fill="#94A3B8">Max • Lite • LRM/Harness • Creative</text>
+  <text x="892" y="330" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#64748B">12 ready-to-use templates</text>
+
+  <!-- Bottom Compatibility Bar -->
+  <text x="60" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="600" fill="#64748B">
+    WORKS WITH: <tspan fill="#E2E8F0">Claude Code</tspan> • <tspan fill="#E2E8F0">Antigravity</tspan> • <tspan fill="#E2E8F0">Gemini CLI</tspan> • <tspan fill="#E2E8F0">OpenAI Codex</tspan> • <tspan fill="#E2E8F0">Cursor</tspan> • <tspan fill="#E2E8F0">Windsurf</tspan> • <tspan fill="#E2E8F0">Qwen Code</tspan> • <tspan fill="#E2E8F0">Copilot CLI</tspan>
+  </text>
+</svg>

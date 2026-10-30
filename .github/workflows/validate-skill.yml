@@ -1,0 +1,67 @@
+name: Validate Skill & Documentation Integrity
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate SKILL.md, Templates, and CLAUDE.md Constraints
+        run: |
+          python3 - << 'EOF'
+          import re, sys
+
+          # 1. Progressive disclosure check (<500 lines)
+          skill_path = "make-prompt-better/SKILL.md"
+          with open(skill_path, encoding="utf-8") as f:
+              skill_lines = f.read().splitlines()
+          assert len(skill_lines) < 500, f"SKILL.md is {len(skill_lines)} lines (must be < 500)"
+          print(f"[PASS] SKILL.md line count: {len(skill_lines)} / 500")
+
+          # 2. Universal agentskills.io YAML frontmatter check
+          skill_text = "\n".join(skill_lines)
+          m = re.match(r"^---\nname:\s*([a-z0-9-]+)\ndescription:\s*\"(Use when [^\"]+)\"\n---\n", skill_text)
+          assert m, "SKILL.md frontmatter must have clean name and single-line quoted 'Use when...' description"
+          assert len(m.group(0)) <= 1024, "Frontmatter exceeds 1024 characters"
+          print(f"[PASS] Universal frontmatter valid ({len(m.group(0))} chars)")
+
+          # 3. Domain templates check (12 templates)
+          with open("make-prompt-better/references/domain-templates.md", encoding="utf-8") as f:
+              tmpl_text = f.read()
+          headings = re.findall(r"^## \d+\. .+$", tmpl_text, re.M)
+          assert len(headings) == 12, f"Expected 12 domain templates, found {len(headings)}"
+          print(f"[PASS] Found all {len(headings)} domain templates")
+
+          # 4. No em/en dashes in core documentation
+          target_files = [
+              "make-prompt-better/SKILL.md",
+              "make-prompt-better/references/domain-templates.md",
+              "make-prompt-better/references/research-principles.md",
+              "make-prompt-better/references/examples.md",
+              "docs/methodology.md",
+              "docs/tradeoffs.md",
+              "docs/when-to-use.md",
+              "docs/task-classification.md",
+              "README.md",
+              "CLAUDE.md",
+              "AGENTS.md",
+          ]
+          for path in target_files:
+              with open(path, encoding="utf-8") as f:
+                  txt = f.read()
+              bad = re.findall(r"[\u2014\u2013]", txt)
+              assert not bad, f"Found {len(bad)} em/en dash(es) in {path}"
+          print("[PASS] Zero em/en dashes across all core files")
+          EOF

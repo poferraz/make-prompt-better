@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "make-prompt-better: Research-Grounded Prompt, Context, and Harness Optimization via Semi-Formal Reasoning"
+message: "If you use this methodology or skill, please cite both this repository and the underlying research papers listed in README.md."
+type: software
+authors:
+  - family-names: Ferraz
+    given-names: Paulo
+    alias: poferraz
+repository-code: "https://github.com/poferraz/make-prompt-better"
+url: "https://github.com/poferraz/make-prompt-better"
+license: MIT
+version: 4.0.0
+date-released: "2026-10-29"
+keywords:
+  - prompt-engineering
+  - context-engineering
+  - semi-formal-reasoning
+  - agent-skills
+  - llm
+  - claude-code
+  - gemini-cli
+  - codex
+  - agents-md
