@@ -1,26 +1,33 @@
 # make-prompt-better
 
-Research-grounded prompt optimization using semi-formal reasoning. Six papers. One methodology. Any domain.
+Research-grounded prompt, context, and harness optimization using semi-formal reasoning. Eleven papers. Four certificate modes. Any coding agent or LLM.
 
 ---
 
 ## TL;DR for Developers
 
-**What it does:** Forces LLMs to produce a structured reasoning certificate (premises, evidence traces, conclusions) before answering. The `[P1]`, `[T1]` identifier system structurally binds conclusions to evidence, eliminating "orphan claims" (hallucinated conclusions with no supporting trace). Zero orphan claims were observed across 40 benchmark tests spanning four model families.
+**What it does:** Rewrites vague, brittle, or goal-biased prompts and context files into verifiable **reasoning certificates** (`[P1]` Premises, `[T1]` Evidence Traces or `[V1]` Verification Gates, and a Formal Conclusion with Remediation). Works universally across **Claude Code, Antigravity, Gemini CLI, OpenAI Codex CLI, Qwen Code, GitHub Copilot CLI, Cursor, Windsurf, AdaL, and raw LLM APIs**.
 
 **Does it work?** Cross-architecture benchmarking across Gemini, GLM, Qwen, and Kimi:
 - **+25.9%** average relative improvement (range: +20.5% on Gemini to +37.8% on Kimi)
 - **96.3%** win rate over unstructured prompts on analytical tasks
 - **+1.9 avg** traceability gain (the primary value driver, larger than accuracy +0.6)
 - **+6.3 avg** delta on code review tasks (the strongest domain)
+- **Zero** orphan claims (hallucinated conclusions without supporting trace IDs) across 40 benchmark tests
 
-**What it costs:** ~2.2x token overhead on average in Max mode (ranges from ~1.7x on Qwen to ~2.7x on Kimi). New **Lite Certificate** mode targets ~1.5x for routine tasks while preserving ~80% of the traceability benefit (projected target, not yet benchmarked). The cost is highly economical for accuracy-critical tasks (legal, financial, medical, code review) where a wrong answer costs more than extra tokens.
+**What it costs:** ~2.2x token overhead in **Max mode**, ~1.5x in **Lite mode**, ~1.1x to 1.3x in **LRM / Harness mode**, and ~1.6x in **Creative & Divergent v2 mode**.
 
-**Where the value is (and is not):** The skill makes responses more **traceable and auditable**, not necessarily more correct. All four synthesizers confirmed: models reached the same conclusions with and without the certificate, but the optimized versions showed their work in a verifiable structure. If you need auditability, this is high-ROI. If you need raw accuracy on tasks where the model is already strong (baseline >85%), gains are minimal.
+**New in V4 (The Context, Harness & Diversity Update):**
+- **Expanded Research Foundation (6 to 11 papers):** Adds Verbalized Sampling (`[VS]`, Zhang et al., 2025), Structural Signatures of AI Writing (`[SLOPSHAPE]`, Madler, 2026), Repository Context File Evaluation (`[CONTEXT-FILES]`, Gloaguen et al., 2026), Harness & Context-as-a-File Optimization (`[HARNESS]`, Lee et al., 2026; Zhang et al., 2026; Shao et al., 2026; Nam et al., 2025), and Skill Residency & Positive Recipe Shaping (`[SKILLS-SDO]`, Yin et al., 2026).
+- **Mode 3 (LRM / Harness Mode):** Dedicated optimization for reasoning models (o3, DeepSeek-R1, Claude Extended Thinking, Gemini Thinking) that uses `[V]` Verification Gates instead of forced visible step-by-step CoT (preventing the LRM Overthinking Trap), plus Minimal Viable Context pruning for `AGENTS.md` and `CLAUDE.md` files (removing directory trees that add >20% token cost and -3% task success).
+- **Mode 4 (Creative & Divergent v2):** Combines `[NT0]` Verbalized Distribution Sampling (1.6x to 2.1x diversity gain against post-training mode collapse) with Narrative Traces and the 4-part Anti-SlopShape Structural Rarity Contract.
+- **Universal Cross-Tool Compatibility:** Follows the `agentskills.io` standard with parser-safe frontmatter and ships with `install.sh` for one-command installation into `~/.agents/skills/`, `~/.claude/skills/`, and `~/.qwen/skills/`.
 
-**New in V3:** Lite/Max certificate modes, mandatory remediation blocks, Narrative Tracing for creative tasks, and an automated traceability self-check guard.
-
-**Install:** `cp -r make-prompt-better/make-prompt-better ~/.claude/skills/make-prompt-better`
+**Quick Install (All Coding Tools):**
+```bash
+./install.sh
+```
+Or copy manually to `~/.agents/skills/make-prompt-better` (universal cross-runtime alias) and `~/.claude/skills/make-prompt-better`.
 
 ---
 
@@ -160,15 +167,30 @@ This project would not exist without the research and engineering work below. Ev
 6. **Hu, Z., Rostami, M. & Thomason, J.** (2026). "Expert Personas Improve LLM Alignment but Damage Accuracy: Bootstrapping Intent-Based Persona Routing with PRISM." arXiv:2603.18507. https://arxiv.org/abs/2603.18507
    *Contributed: The persona calibration framework. Evidence that expert personas damage accuracy tasks by 3-5pp but improve alignment tasks.*
 
+7. **Zhang, J., Yu, S., Chong, D., Sicilia, A., Tomz, M. R., Manning, C. D. & Shi, W.** (2025). "Verbalized Sampling: How to Mitigate Mode Collapse and Unlock LLM Diversity." arXiv:2510.01171. https://arxiv.org/abs/2510.01171
+   *Contributed: Verbalized distribution sampling (`[NT0]`) to overcome preference-data typicality bias and mode collapse, increasing creative and open-ended diversity by 1.6x to 2.1x.*
+
+8. **Madler, J.** (2026). "SlopShape: Identifying AI-Generated Commercial Web Content." arXiv:2609.15369. https://arxiv.org/abs/2609.15369 (extending StoryScope, Russell et al., 2026).
+   *Contributed: Discourse-level structural signatures of AI text (98.0 macro-F1 across 187 structural features; 93.5 macro-F1 on 10 core features) and the 4-part Structural Rarity Contract.*
+
+9. **Gloaguen, T., Mundler, N., Muller, M., Raychev, V. & Vechev, M.** (2026). "Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?" arXiv:2602.11988. https://arxiv.org/abs/2602.11988
+   *Contributed: Empirical evaluation of `AGENTS.md` and `CLAUDE.md` files on coding agents, showing that LLM-generated context files reduce task resolution by 3% while raising inference costs by >20%, and that directory overviews do not speed up file localization.*
+
+10. **Lee, Y., Nair, R., Zhang, Q., Lee, K., Khattab, O. & Finn, C.** (2026). "Meta-Harness: End-to-End Optimization of Model Harnesses." arXiv:2603.28052. https://arxiv.org/abs/2603.28052 (alongside **Self-Harness**, Zhang et al., 2026, arXiv:2606.09498; **Context Language Models**, Shao et al., 2026, arXiv:2609.37725; and **DS-STAR**, Nam et al., 2025, arXiv:2509.21825).
+    *Contributed: Model-specific harness optimization (+7.7 points over ACE with 4x fewer context tokens), file-backed context management (`Context-as-a-File`, +11.4% accuracy with 21.5% fewer FLOPs), and iterative plan-sufficiency verification gates.*
+
+11. **Yin, L., Li, Z., Shi, Z., Zhang, H., Seong, H. & Wang, Z.** (2026). "@skills: Attention Is All You Have." arXiv:2608.12610. https://arxiv.org/abs/2608.12610
+    *Contributed: Skill residency economics (`<100` reliable attention slots in the system prompt) and the shift from negative prohibitions to positive structural recipes.*
+
 ### Engineering Inspiration
 
-7. **severity1/claude-code-prompt-improver** (MIT License). https://github.com/severity1/claude-code-prompt-improver
-   *Contributed: Architectural patterns for skill-based prompt improvement. The progressive disclosure model (lightweight hook + on-demand skill loading), the 4-phase workflow pattern, bypass prefix conventions, and the plugin marketplace format.*
+12. **severity1/claude-code-prompt-improver** (MIT License). https://github.com/severity1/claude-code-prompt-improver
+    *Contributed: Architectural patterns for skill-based prompt improvement. The progressive disclosure model (lightweight hook + on-demand skill loading), the 4-phase workflow pattern, bypass prefix conventions, and the plugin marketplace format.*
 
 ### Additional References
 
-8. **Anthropic Prompt Engineering Documentation.** https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview
-   *Contributed: The 5-component Prompt Structure Framework (Identity, Task, Context, Constraints, Output Format) used to map certificate components.*
+13. **Anthropic Prompt Engineering & Context Engineering Documentation.** https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview
+    *Contributed: The 5-component Prompt Structure Framework (Identity, Task, Context, Constraints, Output Format) used to map certificate components.*
 
 ### Assembly Statement
 
@@ -263,53 +285,73 @@ The optimization process follows seven steps:
 
 | Paper | Key Finding | Constraint on Methodology | Link |
 |-------|-------------|---------------------------|------|
-| META (Ugare & Chandra, 2026) | Certificate structure improves accuracy 10-15pp | Every prompt needs premises, traces, conclusion | [arXiv](https://arxiv.org/abs/2603.01896) |
-| GOAL-BLIND (Cao, Jiang & Xu, 2026) | Disclosing objectives degrades generalization | Never include evaluation criteria or downstream use | [arXiv](https://arxiv.org/abs/2602.09504) |
-| ACE (Zhang, Hu et al., 2026) | Itemized identifiers prevent context collapse | Use [P1], [T1] identifiers, prefer detail over brevity | [arXiv](https://arxiv.org/abs/2510.04618) |
-| HIERARCHY (Geng et al., 2025) | System/user separation fails (9.6-45.8%) | Use authority/consensus framing for constraints | [arXiv](https://arxiv.org/abs/2502.15851) |
-| CODE-SMELLS (Mahmoudi et al., 2025) | 40.5% lack structured output | Add JSON schema when output is parsed | [arXiv](https://arxiv.org/abs/2512.18020) |
-| PRISM (Hu et al., 2026) | Personas damage accuracy 3-5pp | Omit persona for accuracy, use for alignment | [arXiv](https://arxiv.org/abs/2603.18507) |
+| META (Ugare & Chandra, 2026) | Certificate structure improves accuracy 10-15pp | Analytical prompts require premises, traces, conclusion | [arXiv](https://arxiv.org/abs/2603.01896) |
+| GOAL-BLIND (Cao, Jiang & Xu, 2026) | Disclosing objectives degrades generalization | Omit evaluation criteria, stakes, or downstream use | [arXiv](https://arxiv.org/abs/2602.09504) |
+| ACE (Zhang, Hu et al., 2026) | Itemized identifiers prevent context collapse | Use `[P1]`, `[T1]` identifiers and incremental delta edits | [arXiv](https://arxiv.org/abs/2510.04618) |
+| HIERARCHY (Geng et al., 2025) | System/user separation fails (9.6-45.8%) | Use expertise/consensus authority framing for rules | [arXiv](https://arxiv.org/abs/2502.15851) |
+| CODE-SMELLS (Mahmoudi et al., 2025) | 40.5% lack structured output | Add JSON schema when output is parsed downstream | [arXiv](https://arxiv.org/abs/2512.18020) |
+| PRISM (Hu et al., 2026) | Personas damage accuracy 3-5pp | Omit persona for accuracy and LRMs; use for alignment | [arXiv](https://arxiv.org/abs/2603.18507) |
+| VS (Zhang et al., 2025) | Typicality bias drives post-training mode collapse | Verbalize candidate distribution (`p <= 0.20`) in creative mode | [arXiv](https://arxiv.org/abs/2510.01171) |
+| SLOPSHAPE (Madler, 2026) | 10 structural features detect AI text at 93.5 F1 | Enforce Delayed Thesis, Direct Progression, Actionable Close | [arXiv](https://arxiv.org/abs/2609.15369) |
+| CONTEXT-FILES (Gloaguen et al., 2026) | Auto `AGENTS.md` files cut success 3%, raise cost >20% | Strip directory trees; keep only non-inferable commands & invariants | [arXiv](https://arxiv.org/abs/2602.11988) |
+| HARNESS (Lee et al., 2026) | Harness optimization beats static ACE by +7.7 pts | Use `[V]` Verification Gates for LRMs & scratchpad files for agents | [arXiv](https://arxiv.org/abs/2603.28052) |
+| SKILLS-SDO (Yin et al., 2026) | Skills compete for `<100` prompt attention slots | Use trigger-only frontmatter & positive observable-predicate recipes | [arXiv](https://arxiv.org/abs/2608.12610) |
 
-Each paper contributes a constraint the methodology must satisfy. The table above summarizes what each paper found and what that finding means for prompt design. The methodology is the intersection of all six constraints applied simultaneously.
-
----
-
-## Domain Templates
-
-The methodology ships with ten domain templates, each pre-configured with the appropriate certificate structure, constraint framing, and output format for its domain:
-
-1. **Code Review / Patch Verification** - Security-focused certificate with OWASP/CWE references, severity levels, and concrete remediation steps.
-2. **Document Analysis / Review** - Structured reading with premise extraction, thematic traces, and evidence-backed conclusions.
-3. **Research Synthesis** - Multi-source certificate that tracks claims through source material with explicit provenance.
-4. **Compliance / Regulatory Check** - Norm-by-norm verification with pass/fail traces and regulatory citation requirements.
-5. **Decision-Making / Recommendation** - Option enumeration with explicit tradeoff traces and a ranked conclusion certificate.
-6. **Comparative Analysis** - Side-by-side evaluation with dimension-specific traces and a synthesized conclusion.
-7. **Medical / Clinical Reasoning** - Differential diagnosis certificate with evidence weighting and confidence levels.
-8. **Legal Analysis** - Issue-rule-application-conclusion certificate with jurisdiction-specific constraint framing.
-9. **Financial Due Diligence** - Risk-factor certificate with materiality thresholds and red-flag escalation traces.
-10. **Blank Template (Custom Domain)** - A general certificate scaffold you adapt to any domain not covered above.
-
-Each template lives in `domain-templates.md` with full instructions for customization.
+Each paper contributes an empirical constraint the methodology satisfies.
 
 ---
 
-## Installation
+## Domain Templates (12)
 
-make-prompt-better is designed as a Claude Code skill. To install:
+The methodology ships with twelve domain templates in `make-prompt-better/references/domain-templates.md`:
 
-1. Clone this repository:
-   ```
-   git clone https://github.com/poferraz/make-prompt-better.git
-   ```
+1. **Code Review / Patch Verification** (Security, correctness, call-chain tracing, and patch remediation)
+2. **Document Analysis / Review** (Premise extraction, passage-grounded traces, and redline edits)
+3. **Research Synthesis** (Multi-source synthesis with study design, effect size, and contradiction tracking)
+4. **Compliance / Regulatory Check** (Clause-by-clause verification with substantive match dispositions)
+5. **Decision-Making / Recommendation** (Option traces against ordered criteria, failure modes, and reversibility)
+6. **Comparative Analysis** (Dimension-by-dimension evidence matrix and workload crossover conditions)
+7. **Medical / Clinical Reasoning** (Evidence-ranked differential separating probability from acuity)
+8. **Legal Analysis** (Rule-application-counterargument traces and contract symmetry analysis)
+9. **Financial Due Diligence** (Statement reconciliation, unit economics arithmetic, and diligence gap lists)
+10. **Blank Template (Custom Domain)** (Adaptable certificate scaffold for any analytical domain)
+11. **Agentic System Prompt / `AGENTS.md` / `CLAUDE.md` Context File (NEW in v4.0)** (Minimal Viable Context contract with non-inferable tooling commands, hard boundary invariants, and verification gates)
+12. **Creative / Editorial Writing with Verbalized Sampling & Anti-SlopShape (NEW in v4.0)** (Backstage `[NT0]` candidate distribution sampling plus discourse-level Structural Rarity Contract)
 
-2. Copy the skill directory into your Claude Code skills folder:
-   ```
-   cp -r make-prompt-better/make-prompt-better ~/.claude/skills/make-prompt-better
-   ```
+---
 
-3. The skill will be available as `/make-prompt-better` in Claude Code.
+## Universal Installation (Any Coding Tool)
 
-For marketplace distribution, the skill follows the plugin format established by severity1/claude-code-prompt-improver: a lightweight entry point that loads the full methodology on demand, keeping baseline context usage minimal.
+`make-prompt-better` follows the open [Agent Skills specification](https://agentskills.io/specification) and works out of the box across every major coding agent.
+
+### Option 1: One-Command Installer (Recommended)
+
+```bash
+git clone https://github.com/poferraz/make-prompt-better.git
+cd make-prompt-better
+./install.sh
+```
+
+`./install.sh` installs the skill into:
+- `~/.agents/skills/make-prompt-better` (Universal cross-runtime directory recognized by **Antigravity**, **Gemini CLI**, **OpenAI Codex CLI**, **GitHub Copilot CLI**, and **OpenCode**)
+- `~/.claude/skills/make-prompt-better` (**Claude Code**)
+- `~/.qwen/skills/make-prompt-better` (**Qwen Code**)
+
+### Option 2: Manual / Per-Tool Installation
+
+```bash
+# Universal (Antigravity, Gemini CLI, Codex CLI, Copilot CLI, OpenCode)
+mkdir -p ~/.agents/skills && cp -r make-prompt-better ~/.agents/skills/make-prompt-better
+
+# Claude Code
+mkdir -p ~/.claude/skills && cp -r make-prompt-better ~/.claude/skills/make-prompt-better
+
+# Qwen Code
+mkdir -p ~/.qwen/skills && cp -r make-prompt-better ~/.qwen/skills/make-prompt-better
+
+# Cursor / Windsurf / Repository-Level Agent Usage
+cp make-prompt-better/SKILL.md .cursor/rules/make-prompt-better.mdc
+```
 
 ---
 

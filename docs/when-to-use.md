@@ -38,57 +38,51 @@ When the input is ambiguous and the model could reasonably reach different concl
 
 If the model already knows the answer from pre-training ("What is the capital of Japan?"), adding a verification chain adds latency without adding accuracy. The baseline is already at ceiling.
 
-### Creative generation
+### Creative generation vs. unconstrained stream-of-consciousness
 
-Structure constrains creative output. Semi-formal reasoning pushes the model toward correctness and consistency, which are the opposite of what creative tasks need. A poem, story, or brainstorm does not benefit from a certification phase (Ugare & Chandra, 2026, who note the technique targets technical tasks where correctness is measurable).
+Standard analytical certificates (premises, logical evidence traces, formal conclusion) constrain and flatten creative output (Ugare & Chandra, 2026). However, for structured creative, editorial, or commercial writing, route the prompt to **Mode 4: Creative & Divergent v2**, which combines backstage Narrative Traces with Verbalized Sampling (Zhang et al., 2025, 1.6x to 2.1x diversity gain) and discourse-level anti-SlopShape rules (Madler, 2026). Only skip scaffolding entirely for pure stream-of-consciousness generation.
 
 ### Model already achieves very high baseline accuracy
 
-If the model gets the answer right 95%+ of the time without structure, the 10 to 15pp improvement from semi-formal reasoning is impossible to realize. The ceiling effect means you pay the latency cost for no gain.
+If the model gets the answer right 95%+ of the time without structure, the 10 to 15pp improvement from semi-formal reasoning is impossible to realize. The ceiling effect means you pay the latency cost for no gain. Use Lite mode (~1.5x overhead) only if you require an audit trail.
 
 ### Speed matters more than precision
 
-Real-time applications (chat interfaces, live recommendations, interactive tools) may not tolerate the 2x to 3x latency increase from specification-certification-answer pipelines. If a fast, good-enough answer beats a slow, perfect one, skip the structure.
+Real-time applications (chat interfaces, live recommendations, interactive tools) may not tolerate the ~2.2x latency increase from Max mode. Use Lite mode (~1.5x) or skip the structure if sub-second latency is mandatory.
 
-### Using a reasoning-distilled model
+### Using a reasoning-distilled model (LRM)
 
-Per PRISM (Hu, Rostami & Thomason, 2026), reasoning-distilled models gain accuracy from longer, more detailed context rather than from structured reasoning scaffolds or identity framing. The model has already internalized the reasoning patterns during distillation. Adding external structure can actually interfere with the model's own chain of thought. The gains come from giving the model more relevant context, not from forcing it into a specification-certification format.
+Per PRISM (Hu, Rostami & Thomason, 2026) and agentic harness evaluations (Lee et al., 2026), reasoning-distilled and extended-thinking models (such as o3, DeepSeek-R1, Claude Extended Thinking, and Gemini Thinking) perform path exploration internally. Forcing verbose step-by-step trace narration in the visible output triggers the overthinking trap and inflates token costs. For LRMs, route to **Mode 3: LRM / Harness Mode**, which keeps explicit `[P]` Premises and `[V]` Verification Gates while leaving path exploration to the model's native thinking tokens.
 
 ## 4. Decision Flowchart
 
 ```
 START
 │
+├─► Is this an AGENTS.md, CLAUDE.md, or multi-turn agent harness?
+│   ├─► YES → Use Mode 3 (LRM / Harness Mode: Minimal Viable Context).
+│   │         Prune directory overviews (Gloaguen et al., 2026); keep only
+│   │         non-inferable commands, invariants, and verification gates.
+│   └─► NO → Continue below.
+│
+├─► Are you targeting a Large Reasoning Model (o3, R1, Extended Thinking)?
+│   ├─► YES → Use Mode 3 (LRM Verification Certificate).
+│   │         Omit persona (Hu et al., 2026) and visible step-by-step CoT;
+│   │         enforce [P] Premises + [V] Verification Gates.
+│   └─► NO → Continue below.
+│
+├─► Is the task creative, editorial, or divergent ideation?
+│   ├─► YES → Use Mode 4 (Creative & Divergent v2).
+│   │         Apply [NT0] Verbalized Sampling (Zhang et al., 2025) +
+│   │         Narrative Traces + Anti-SlopShape rules (Madler, 2026).
+│   └─► NO → Continue below.
+│
 ├─► Is the task accuracy-critical?
 │   ├─► YES
-│   │   └─► Is baseline accuracy already above 95%?
-│   │       ├─► YES → Skip semi-formal reasoning.
-│   │       │         The model already handles it.
-│   │       └─► NO → Use semi-formal reasoning.
-│   │                 The 10-15pp gain is in play (Ugare & Chandra, 2026).
-│   └─► NO → Continue below.
-│
-├─► Is the task creative or open-ended?
-│   ├─► YES → Skip semi-formal reasoning.
-│   │         Structure constrains creative output.
-│   └─► NO → Continue below.
-│
-├─► Is the task alignment-only (format, tone, style)?
-│   ├─► YES → Use persona + constraints.
-│   │         Semi-formal reasoning is optional here.
-│   │         Persona helps alignment (Hu, Rostami & Thomason, 2026).
-│   │         Certification is unnecessary unless
-│   │         the format constraints are complex.
-│   └─► NO → Continue below.
-│
-├─► Are you using a reasoning-distilled model?
-│   ├─► YES → Skip semi-formal reasoning.
-│   │         Gains come from context, not structure
-│   │         (Hu, Rostami & Thomason, 2026).
-│   └─► NO → Use semi-formal reasoning with minimal persona.
-│             5-word persona max (Hu, Rostami & Thomason, 2026).
-│             Full specification-certification-answer structure
-│             (Ugare & Chandra, 2026).
+│   │   └─► Is it high-stakes (medical, legal, financial, security) or low baseline?
+│   │       ├─► YES → Use Mode 1 (Max Certificate, ~2.2x overhead, no persona).
+│   │       └─► NO  → Use Mode 2 (Lite Certificate, ~1.5x overhead, no persona).
+│   └─► NO → Use Persona + Constraints (or Lite Certificate with <=5-word persona).
 │
 └─► END
 ```

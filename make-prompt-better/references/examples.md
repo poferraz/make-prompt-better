@@ -510,3 +510,119 @@ counsel for compliance determinations.
 - **Evidence premises [P1]-[P4]:** Per META (Ugare & Chandra, 2026), defining what documentation the model should work from prevents it from evaluating hypothetical practices or generating findings based on assumed organizational behavior.
 - **Incomplete analysis handling:** Per ACE, explicitly instructing the model to flag when source materials are missing prevents it from silently skipping article clusters or making assumptions about undocumented practices.
 - **No prioritization instruction:** The complaint context would have caused the model to front-load findings related to the specific complaint; without it, the analysis proceeds structurally through all article clusters equally.
+
+---
+
+### Example 8: Repository Context File (`AGENTS.md` / `CLAUDE.md`)
+
+**Task Classification:** Persistent Context / Agent Harness (Mode 3: LRM / Harness Mode)
+**Persona Decision:** OMIT. Coding agents perform best with direct operational contracts rather than roleplay personas (Gloaguen et al., 2026; Hu, Rostami & Thomason, 2026).
+
+#### Original Prompt / Context File
+
+```
+You are an elite 10x Staff Principal Python Architect working on our FastAPI billing microservice.
+Always write clean, modular, PEP8-compliant, well-documented code and think step by step before every action.
+Repository Overview:
+- src/api/: FastAPI routers
+- src/models/: SQLAlchemy models
+- src/services/: Business logic
+- tests/: Unit and integration tests
+Make sure we don't break anything because we have a critical investor audit next week.
+```
+
+#### Problems Identified
+
+1. **Codebase overview bloat:** Enumerating standard directories (`src/api/`, `src/models/`, `tests/`) does not speed up agent file localization, increases token costs by over 20%, and reduces task resolution success when auto-generated (Gloaguen et al., 2026).
+2. **Redundant persona and CoT instructions:** "Elite 10x Staff Principal Architect" and "think step by step" add noise for coding agents and trigger overthinking loops on reasoning-distilled models (Hu, Rostami & Thomason, 2026; Lee et al., 2026).
+3. **Goal leakage:** "critical investor audit next week" leaks downstream business pressure rather than specifying technical invariants (Cao, Jiang & Xu, 2026).
+4. **Missing non-inferable tooling commands:** The agent is not given the exact environment manager (`uv`), test runner flags, or database migration invariants that actually prevent failures (Gloaguen et al., 2026).
+
+#### Optimized Context File (`AGENTS.md` / `CLAUDE.md`)
+
+```
+# Billing Service Agent Operating Contract
+
+## 1. Non-Inferable Environment & Execution Commands
+- Dependency & virtualenv runner: `uv run <command>` (never invoke bare `python` or `pip`)
+- Single-file test execution: `uv run pytest <path/to/test_file.py> -q --tb=short`
+- Typecheck & lint gate: `uv run ruff check src tests && uv run mypy src`
+
+## 2. Hard Architectural Invariants
+- [I1] Monetary arithmetic: Represent all currency values as integer minor units (cents) or `Decimal` with explicit `ROUND_HALF_EVEN`; floating-point (`float`) types in `src/services/` or `src/models/` fail CI.
+- [I2] Transaction boundary: Routers in `src/api/` must call service functions using the injected `AsyncSession` dependency; routers never execute ORM queries directly.
+- [I3] Schema migrations: Any change to `src/models/` requires generating and verifying an Alembic revision via `uv run alembic check`.
+
+## 3. Multi-File Task & Context-as-a-File Protocol
+- When a task modifies 3+ files or alters a public schema, record your Premise & Verification checklist in `.agent-scratchpad.md` before editing source files.
+
+## 4. Mandatory Verification Gate
+Before declaring any task complete:
+1. Run the single-file `pytest` command and `ruff`/`mypy` gate from Section 1 on all modified modules.
+2. Cite the exact exit codes and test counts in your completion summary.
+3. When a test cannot run due to missing external services, report `VERIFICATION BLOCKED: [command + error]`.
+```
+
+#### What Changed and Why
+
+- **Stripped directory overview and generic PEP8 platitudes:** Per CONTEXT-FILES (Gloaguen et al., 2026), removing inferable directory trees and generic coding advice avoids the >20% token cost penalty and -3% resolution drop caused by bloated context files.
+- **Replaced persona and "think step by step" with executable invariants [I1]-[I3]:** Per PRISM (Hu, Rostami & Thomason, 2026) and HARNESS (Lee et al., 2026), coding agents and reasoning models need non-inferable tooling commands (`uv run`) and hard boundary rules (`Decimal` only, router-to-service session boundary).
+- **Added Context-as-a-File scratchpad rule and Verification Gate:** Per CLM (Shao et al., 2026) and DS-STAR (Nam et al., 2025), externalizing multi-file plans to a scratchpad file and enforcing a pre-completion verification gate improves accuracy while lowering compute overhead.
+
+---
+
+### Example 9: Creative / Editorial Blog Post
+
+**Task Classification:** Creative / Divergent (Mode 4: Creative & Divergent v2)
+**Persona Decision:** MINIMAL: `"You are a systems engineer."` Five-word practitioner framing grounds the voice without triggering over-stylized roleplay (Hu, Rostami & Thomason, 2026).
+
+#### Original Prompt
+
+```
+Write an 800-word blog post for our engineering blog about why teams should switch from manual prompt tweaking to structured context engineering. We want this post to go viral on Hacker News and drive signups for our developer platform.
+```
+
+#### Problems Identified
+
+1. **Goal leakage:** "go viral on Hacker News and drive signups" biases the model toward clickbait hyperbole and promotional CTA fluff (Cao, Jiang & Xu, 2026).
+2. **Mode collapse risk:** A direct prompt for a blog post on "prompt engineering vs. context engineering" defaults to the highest-typicality cliché opening ("In recent years, as LLMs have evolved...") due to preference-data typicality bias (Zhang et al., 2025).
+3. **SlopShape structural signature risk:** Without discourse-level structure constraints, frontier LLMs produce the "tidy, self-announcing shape" detected at 98.0 macro-F1: promising the payoff in the title, stating the thesis before section 1, using a formulaic "Legacy vs. Modern" contrast, adopting an editorial-explainer voice, and closing with a restated-thesis summary (Madler, 2026).
+
+#### Optimized Prompt
+
+```
+You are a systems engineer. The editorial craft protocol requires completing
+the backstage scaffolding block before drafting the final article.
+
+### PREMISES
+- [P1] Reader & context: Senior backend and ML engineers debugging brittle multi-turn agent pipelines in production.
+- [P2] Target shift: Move the reader from treating prompts as magic strings to treating the context window as a bounded state buffer with explicit schemas and invariants.
+- [P3] Constraints: 750-850 words, technical engineering essay, zero product promotion.
+
+### BACKSTAGE SCAFFOLD
+- [NT0] Verbalized Distribution Sampling: Enumerate 4 structurally distinct entry angles for this essay and estimate each angle's typicality probability (p = likelihood a default LLM prompt produces it):
+  1. [Angle 1: chronological history of prompt engineering to context engineering] (p = ...)
+  2. [Angle 2: high-level definition comparing prompts to RAM/OS] (p = ...)
+  3. [Angle 3: post-mortem of a specific production failure caused by a 12-line system prompt rewrite] (p = ...)
+  4. [Angle 4: side-by-side token trace of what happens inside a 40-turn coding agent session] (p = ...)
+  Selection: Commit to the strongest angle with p <= 0.20 that satisfies [P1]-[P3].
+- [NT1] Opening Anchor: Start directly inside the concrete failure artifact or token trace from the selected [NT0] angle.
+- [NT2] Inductive Trajectory: Let the core principle emerge after walking through the concrete failure mechanism and its fix.
+- [NT3] Cadence & Texture: Use concrete systems nouns (context buffer, schema drift, delta updates, prefill cache) and vary paragraph lengths naturally.
+
+### STRUCTURAL RARITY CONTRACT (Discourse-Level Anti-SlopShape Rules)
+Construct the final essay to satisfy these four structural rules:
+1. Delayed Thesis: Use a specific, non-spoiler title and open inside [NT1]'s concrete artifact before stating the overarching thesis.
+2. Direct Evidence Progression: Advance the argument through failure mechanics and concrete diffs rather than a formulaic "Old Way vs. New Way" contrast section.
+3. Practitioner Voice: Write from a direct engineering perspective rather than a symmetric "editorial explainer" voice.
+4. Actionable Close: End on a specific diagnostic check the reader can run on their own repository today, without a summary paragraph that restates the thesis.
+
+### FINAL DELIVERABLE
+Present the finished 750-850 word essay executing the selected [NT0] angle and adhering to the Structural Rarity Contract.
+```
+
+#### What Changed and Why
+
+- **Removed "go viral on Hacker News and drive signups":** Per GOAL-BLIND (Cao, Jiang & Xu, 2026), removing promotional goals prevents hype inflation and sales-pitch framing.
+- **Added `[NT0]` Verbalized Distribution Sampling:** Per VS (Zhang et al., 2025), forcing the model to enumerate 4 candidate angles with typicality probabilities (`p`) and select a low-typicality (`p <= 0.20`) angle increases structural diversity by 1.6x to 2.1x and avoids the generic history-lesson opening.
+- **Enforced the 4-part Structural Rarity Contract:** Per SLOPSHAPE (Madler, 2026), explicitly replacing pre-announced theses, "Legacy vs. Modern" contrasts, editorial-explainer voice, and summary endings targets the exact core features that separate human writing (mean rarity 0.838) from AI writing (mean rarity 0.435, Cohen's `d = 1.83`).

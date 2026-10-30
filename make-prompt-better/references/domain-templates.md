@@ -1,429 +1,537 @@
 # Domain-Specific Certificate Templates
 
-Reference file for the semi-formal prompt optimizer skill. Each template adapts
-the three core components (premises, evidence traces, formal conclusion) from
-Meta's semi-formal reasoning research to a specific domain.
+Reference library for the `make-prompt-better` skill (v4.0). Each template adapts semi-formal reasoning to a specific domain and incorporates:
+- **Itemized identifiers** `[P1]`, `[T1]`, `[V1]` for verifiable cross-referencing (Zhang, Hu et al., 2026)
+- **Authority-framed preambles** using expertise or consensus language (Geng et al., 2025)
+- **Goal-blind conclusion formats** that omit downstream evaluation criteria (Cao, Jiang & Xu, 2026)
+- **Persona calibration** per task type (Hu, Rostami & Thomason, 2026)
+- **Positive conditional recipes** instead of brittle prohibition lists (Yin et al., 2026)
+- **Mandatory Remediation and Traceability Self-Check blocks** (Ugare & Chandra, 2026)
 
-All templates incorporate:
-- **Numbered identifiers** [P1], [T1], etc. for precise cross-referencing (ACE)
-- **Authority-framed instructions** using expertise/consensus language (Geng et al.)
-- **Goal-blind conclusion format** that never hints at desired outcome (Cao/Jiang/Xu)
-- **Persona guidance** per PRISM findings (noted per template)
-
-Pick the template closest to the user's domain, then customize it for their
-specific task.
+Pick the template closest to the user's task, select the intensity mode (Max, Lite, LRM/Harness, or Creative v2), and customize the fields.
 
 ---
 
 ## 1. Code Review / Patch Verification
 
-Origin: This is the original domain from the paper (arXiv 2603.01896).
-Persona: OMIT (accuracy-dependent task, persona damages code correctness).
+Origin: Primary domain from Ugare & Chandra (2026), arXiv:2603.01896.
+Persona: OMIT (accuracy-dependent task; persona framing reduces code analysis precision per Hu, Rostami & Thomason, 2026).
 
 ```
 The standard code review protocol requires completing the following analytical
-certificate before providing any verdict. Each section must be filled completely.
+certificate before issuing any verdict. Every section must be completed using
+observable code artifacts.
 
 ### PREMISES
-- [P1] Files modified: [list each file and what changed]
-- [P2] Functions affected: [list each function, its location, and its role]
-- [P3] Test coverage: [which tests exercise the modified code paths]
-- [P4] Known constraints: [language version, framework rules, project conventions]
+- [P1] Files modified: [list each file and the scope of changes]
+- [P2] Symbols affected: [list each function, class, or method with file:line]
+- [P3] Test coverage: [which existing or new tests exercise the modified paths]
+- [P4] Runtime constraints: [language version, framework invariants, type rules]
 
 ### EXECUTION TRACES
-For each test that exercises the modified code:
-- [T1] Trace [test_name]:
-  1. Entry point: [where execution begins]
-  2. Call chain: [function A -> function B -> ... with file:line references]
-  3. Data flow: [what values pass through each step]
-  4. Exit condition: [what the test asserts and whether it holds]
+For each modified code path or test case (in Lite mode, use single-line causal
+arrows: `[T1] Entry -> Call Chain -> State Mutation -> Result`):
+- [T1] Trace [path_or_test_name]:
+  1. Entry point: [where execution begins and with what input types/values]
+  2. Call chain: [function A -> function B with exact file:line citations]
+  3. Data flow & state: [how values transform and what invariants hold or break]
+  4. Exit condition: [return value, side effect, or exception raised]
 
-Do NOT infer function behavior from names. Trace the actual implementation.
-If a function shadows a built-in or has unexpected behavior, document it.
+Grounding rule: Trace the actual implementation body of every called function
+rather than inferring behavior from function or variable names. When a called
+symbol is outside the provided context, record `UNABLE TO TRACE: [symbol]`
+and state what behavior is assumed.
 
 ### FORMAL CONCLUSION
 - Verdict: [PASS / FAIL / EQUIVALENT / NOT EQUIVALENT]
-- Supporting traces: [reference specific T-identifiers above]
-- Gaps: [any paths you could not fully trace and why]
-- Confidence: [HIGH / MEDIUM / LOW with justification]
+- Supporting traces: [cite specific T-identifiers for every finding]
+- Verification gaps: [paths marked UNABLE TO TRACE and the files needed]
+- Confidence: [HIGH / MEDIUM / LOW with justification tied to T-identifiers]
+
+### REMEDIATION / NEXT ACTION
+The task is incomplete until this section provides one of:
+- A complete, copy-pasteable code patch fixing all defects identified in [T]
+- Exact test cases to cover any unverified paths in Verification Gaps
+- The explicit statement: "No remediation required: [reason citing T-identifiers]"
+
+TRACEABILITY SELF-CHECK: Verify that every claim in the Formal Conclusion cites
+at least one [T] identifier. Remove or trace any unreferenced claim.
 ```
 
 ---
 
 ## 2. Document Analysis / Review
 
-Persona: MINIMAL for mixed tasks ("You are an analyst."), OMIT for fact extraction.
+Persona: MINIMAL for mixed tasks (`"You are an analyst."`), OMIT for pure fact extraction.
 
 ```
 The established analytical protocol for document review requires completing this
 certificate before providing any assessment.
 
 ### PREMISES
-- [P1] Document identity: [title, author, date, version, source]
-- [P2] Scope of analysis: [what aspects you are evaluating]
-- [P3] Reference standards: [what criteria, guidelines, or benchmarks apply]
-- [P4] Known context: [relevant background the reader needs]
+- [P1] Document identity: [title, author, date, version, source artifact]
+- [P2] Analysis scope: [specific sections or dimensions under review]
+- [P3] Reference standards: [applicable specifications, policies, or benchmarks]
+- [P4] Contextual inputs: [supporting documents or baseline facts provided]
 
 ### EVIDENCE TRACES
-For each claim or finding:
-- [T1] Finding: [description]
-  1. Source location: [page/section/paragraph where evidence appears]
-  2. Content examined: [what the document states at that location]
-  3. Evaluation: [how this content maps to reference standards in P3]
-  4. Corroboration/conflict: [other sections that reinforce or contradict]
+For each finding or section evaluated:
+- [T1] Finding [topic]:
+  1. Source location: [exact page, section, heading, or paragraph]
+  2. Direct evidence: [quote or exact paraphrase of what the text states]
+  3. Standard mapping: [how the text aligns with or diverges from P3]
+  4. Internal consistency: [other sections in P1 that corroborate or conflict]
 
-Do NOT summarize sections without citing specific content. Walk through the
-actual text.
+Grounding rule: Anchor every trace in a specific passage from [P1]. When a
+topic in [P2] is absent from the text, record `ABSENT FROM [P1]: [topic]`.
 
 ### FORMAL CONCLUSION
-- Assessment: [your overall evaluation]
-- Key findings: [numbered, each referencing a T-identifier above]
-- Gaps: [areas the document does not address or where evidence is insufficient]
-- Recommendations: [specific, actionable, tied to findings]
+- Assessment: [overall structural and factual evaluation]
+- Key findings: [numbered list, each citing at least one T-identifier]
+- Verification gaps: [items marked ABSENT or requiring external documents]
+
+### REMEDIATION / NEXT ACTION
+Provide concrete, copy-pasteable redline edits for each gap or inconsistency
+cited in the conclusion, or state: "No remediation required: [reason]."
+
+TRACEABILITY SELF-CHECK: Verify that every finding in the conclusion cites at
+least one [T] identifier. Remove or trace any unreferenced claim.
 ```
 
 ---
 
 ## 3. Research Synthesis
 
-Persona: OMIT (accuracy-dependent: factual claims must not be steered by role framing).
+Persona: OMIT (accuracy-dependent; factual synthesis must remain free of role-induced bias per Hu, Rostami & Thomason, 2026).
 
 ```
-Peer-reviewed systematic review methodology requires the following structured
-certificate before presenting any synthesis.
+Peer-reviewed systematic synthesis methodology requires completing the following
+structured certificate before presenting any cross-source findings.
 
 ### PREMISES
-- [P1] Sources examined: [list each source with author, year, key contribution]
-- [P2] Research question: [the specific question this synthesis addresses]
-- [P3] Inclusion criteria: [what makes a source relevant]
-- [P4] Known limitations: [biases in the source set, gaps in coverage]
+- [P1] Sources examined: [list each paper/source with author, year, identifier]
+- [P2] Research question: [the exact question this synthesis addresses]
+- [P3] Methodological scope: [experimental, empirical, or theoretical boundaries]
+- [P4] Corpus limitations: [known sample limits or missing coverage in P1]
 
 ### EVIDENCE TRACES
-For each major claim in the synthesis:
-- [T1] Claim: [statement]
-  1. Primary evidence: [which source(s) support this, with specific findings]
-  2. Methodology: [how the evidence was generated, e.g. study design, sample]
-  3. Strength: [effect size, confidence interval, replication status]
-  4. Contradicting evidence: [sources that disagree, and on what basis]
-  5. Reconciliation: [how you resolve conflicts, or flag them as unresolved]
+For each source and cross-source claim:
+- [T1] Claim or Source [identifier]:
+  1. Primary evidence: [which P1 source(s) report this, with exact metrics]
+  2. Study design: [sample size, models/datasets tested, evaluation protocol]
+  3. Effect magnitude: [reported deltas, confidence intervals, replication]
+  4. Contradicting evidence: [sources in P1 that diverge, and on what variable]
+  5. Reconciliation: [mechanistic explanation for divergence, or flag UNRESOLVED]
 
-Do NOT treat absence of contradicting evidence as confirmation. Actively search
-for disconfirming sources.
+Grounding rule: Report findings exactly as measured in [P1]. Treat the absence
+of contradicting studies in [P1] as `UNEXAMINED IN CORPUS` rather than proof
+of consensus.
 
 ### FORMAL CONCLUSION
-- Synthesis: [your integrated finding]
-- Confidence level: [HIGH / MEDIUM / LOW with justification]
-- Consensus vs. contested: [which claims have broad support vs. active debate]
-- Knowledge gaps: [what remains unknown or understudied]
+- Integrated synthesis: [core findings citing T-identifiers]
+- Convergent vs. contested claims: [grouped by T-identifiers]
+- Open research gaps: [questions unresolved by P1]
+
+### REMEDIATION / NEXT ACTION
+Provide a structured summary table or actionable protocol derived from the
+convergent [T] traces, or specify the exact follow-up query needed to close
+the open research gaps.
+
+TRACEABILITY SELF-CHECK: Verify that every claim in the synthesis cites at
+least one [T] identifier and its underlying [P] source.
 ```
 
 ---
 
 ## 4. Compliance / Regulatory Check
 
-Persona: OMIT (accuracy-dependent: compliance verdicts must not be influenced by role framing).
+Persona: OMIT (accuracy-dependent; compliance determinations require neutral verification).
 
 ```
-Regulatory compliance assessment methodology, as established in audit best
-practice, requires completing this certificate before issuing any finding.
+Regulatory audit methodology requires completing this verification certificate
+before issuing any compliance disposition.
 
 ### PREMISES
-- [P1] Subject under review: [what is being checked]
-- [P2] Applicable requirements: [list each regulation, standard, or policy section]
-- [P3] Scope boundaries: [what is in scope vs. out of scope]
-- [P4] Evidence available: [what documentation, logs, or artifacts you can examine]
+- [P1] System or artifact under review: [exact scope]
+- [P2] Applicable clauses: [list each regulation, standard, or policy section]
+- [P3] Boundary scope: [in-scope components vs. out-of-scope dependencies]
+- [P4] Audit evidence provided: [logs, configs, code, or policy documents]
 
 ### COMPLIANCE TRACES
-For each requirement:
-- [T1] Requirement [ID/name]:
-  1. Requirement text: [the actual rule or standard clause]
-  2. Evidence examined: [what artifact demonstrates compliance or non-compliance]
-  3. Finding: [COMPLIANT / NON-COMPLIANT / PARTIALLY COMPLIANT / UNABLE TO VERIFY]
-  4. Rationale: [specific evidence supporting the finding]
-  5. Gap detail: [if non-compliant, what specifically is missing or incorrect]
+For each clause in [P2]:
+- [T1] Clause [ID/section]:
+  1. Normative requirement: [exact requirement from P2]
+  2. Artifact examined: [specific section or config in P4]
+  3. Disposition: [COMPLIANT / NON-COMPLIANT / PARTIAL / UNABLE TO VERIFY]
+  4. Substantive match: [how the artifact's actual mechanism satisfies or fails P2]
+  5. Deficit specification: [exact missing control or documentation if not COMPLIANT]
 
-Do NOT mark a requirement as compliant based on the existence of a document
-alone. Verify the content matches the requirement.
+Grounding rule: Assign `COMPLIANT` only when [P4] contains verifiable implementation
+evidence matching the clause's mechanism, not merely a policy title.
 
 ### FORMAL CONCLUSION
-- Overall status: [COMPLIANT / NON-COMPLIANT / CONDITIONALLY COMPLIANT]
-- Non-compliant items: [list with requirement IDs and T-identifier references]
-- Risk assessment: [severity of each gap]
-- Remediation path: [specific actions to close gaps]
+- Disposition summary: [overall status across all traced clauses]
+- Non-compliant & unverified items: [list with clause IDs and T-identifiers]
+- Severity ranking: [ordered by operational exposure grounded in T-traces]
+
+### REMEDIATION / NEXT ACTION
+For every NON-COMPLIANT, PARTIAL, or UNABLE TO VERIFY trace, provide the exact
+remediation artifact (configuration change, policy clause text, or evidence
+collection command).
+
+TRACEABILITY SELF-CHECK: Verify that every conclusion item cites a specific
+[T] identifier and [P2] clause.
 ```
 
 ---
 
 ## 5. Decision-Making / Recommendation
 
-Persona: MINIMAL ("You are an analyst.") for mixed tasks needing both accuracy and good structure.
+Persona: MINIMAL (`"You are a decision analyst."`) for mixed analytical and communication demands.
 
 ```
 The standard decision analysis framework requires completing this certificate
 before recommending any course of action.
 
 ### PREMISES
-- [P1] Decision to be made: [clear statement of what needs to be decided]
-- [P2] Options under consideration: [list each option]
-- [P3] Evaluation criteria: [what factors matter, in priority order]
-- [P4] Constraints: [budget, timeline, resources, dependencies]
-- [P5] Stakeholders: [who is affected and what their priorities are]
+- [P1] Decision statement: [exact choice to be made]
+- [P2] Candidate options: [list each distinct option under evaluation]
+- [P3] Evaluation criteria: [ordered list of technical or operational factors]
+- [P4] Hard constraints: [budget, latency, compatibility, timeline ceilings]
 
 ### OPTION TRACES
-For each option:
+For each candidate option in [P2]:
 - [T1] Option [name]:
-  1. Criteria assessment: [walk through P3 criteria one by one]
-  2. Risks: [what could go wrong, with likelihood and impact]
-  3. Dependencies: [what must be true for this option to work]
-  4. Precedent: [has this approach worked before, in what context]
-  5. Second-order effects: [downstream consequences beyond the immediate decision]
+  1. Criteria evaluation: [score and evidence against each factor in P3]
+  2. Constraint check: [whether P4 ceilings are satisfied or breached]
+  3. Failure modes: [primary technical or operational risks and triggers]
+  4. Dependencies: [preconditions required for this option to succeed]
+  5. Reversibility: [cost and effort required to migrate away later]
 
-Do NOT rank options by gut feel. Score each option against each criterion with
-explicit reasoning.
+Grounding rule: Evaluate every option against the exact same [P3] criteria list
+using observable evidence rather than general preference.
 
 ### FORMAL CONCLUSION
-- Recommended option: [which one and why]
-- Runner-up: [the next best alternative and when it would be preferred]
-- Key tradeoffs: [what you are giving up with the recommendation]
-- Decision reversibility: [how hard is it to change course later]
+- Primary selection: [option name citing T-identifiers and P3 criteria]
+- Conditional alternative: [runner-up option and the exact condition under which it wins]
+- Explicit tradeoffs accepted: [what the primary selection sacrifices per T-traces]
+
+### REMEDIATION / NEXT ACTION
+Provide a concrete, step-by-step execution checklist or architecture snippet to
+implement the primary selection.
+
+TRACEABILITY SELF-CHECK: Verify that every comparative claim in the conclusion
+cites the corresponding [T] option traces.
 ```
 
 ---
 
 ## 6. Comparative Analysis
 
-Persona: OMIT for factual comparisons, MINIMAL for subjective comparisons.
+Persona: OMIT for technical/factual comparisons; MINIMAL (`"You are an analyst."`) for mixed evaluations.
 
 ```
 Rigorous comparative methodology requires completing this certificate before
-providing any comparison result.
+issuing any comparison summary.
 
 ### PREMISES
-- [P1] Items being compared: [clear identification of each]
-- [P2] Comparison dimensions: [what aspects are being compared]
-- [P3] Context: [what use case or scenario frames the comparison]
-- [P4] Data sources: [where your information comes from]
+- [P1] Subjects compared: [exact versions, models, or systems]
+- [P2] Comparison dimensions: [explicit list of evaluation axes]
+- [P3] Workload context: [the operational environment framing the comparison]
+- [P4] Evidence sources: [benchmarks, docs, or code artifacts provided]
 
 ### COMPARISON TRACES
-For each dimension:
+For each dimension in [P2]:
 - [T1] Dimension [name]:
-  1. Item A: [specific, factual assessment with evidence]
-  2. Item B: [specific, factual assessment with evidence]
-  3. Advantage: [which item is stronger on this dimension and by how much]
-  4. Caveats: [conditions under which the advantage reverses]
+  1. Subject A evidence: [factual measurement or capability from P4]
+  2. Subject B evidence: [factual measurement or capability from P4]
+  3. Differential: [which subject leads on this axis and by what margin]
+  4. Crossover condition: [when the advantage reverses under P3 constraints]
 
-Do NOT make blanket superiority claims. Assess dimension by dimension with
-specific evidence.
+Grounding rule: Assess subjects dimension by dimension using [P4] evidence. When
+a metric is missing for one subject, record `UNMEASURED IN [P4]: [subject/metric]`.
 
 ### FORMAL CONCLUSION
-- Summary: [overall comparison result]
-- Context-dependent winner: [which item wins under which conditions]
-- Key differentiators: [the 2-3 dimensions that matter most]
-- Missing information: [what you would need for a more definitive comparison]
+- Dimension matrix: [summary of winners per axis citing T-identifiers]
+- Workload-conditional selection: [which subject fits which P3 condition]
+- Unmeasured gaps: [metrics requiring empirical testing]
+
+### REMEDIATION / NEXT ACTION
+Provide the exact benchmark command, configuration template, or migration snippet
+for the selected subject.
+
+TRACEABILITY SELF-CHECK: Verify that every claim in the conclusion references
+a specific [T] dimension trace.
 ```
 
 ---
 
 ## 7. Medical / Clinical Reasoning
 
-Persona: OMIT (accuracy-critical: persona framing damages diagnostic precision per PRISM).
+Persona: OMIT (accuracy-critical; roleplay framing degrades diagnostic accuracy per Hu, Rostami & Thomason, 2026).
 
 ```
 Clinical reasoning methodology, as established in evidence-based medicine,
-requires completing this structured certificate before presenting any assessment.
+requires completing this structured certificate before presenting any differential
+synthesis.
 
 ### PREMISES
-- [P1] Patient context: [relevant demographics, history, presenting symptoms]
-- [P2] Available data: [labs, imaging, examination findings, limited to what is provided]
-- [P3] Clinical question: [what specifically needs to be determined]
-- [P4] Applicable guidelines: [relevant clinical guidelines or standards of care]
+- [P1] Presenting context: [demographics, chief complaint, timeline, history]
+- [P2] Objective findings: [vitals, physical exam, labs, imaging provided]
+- [P3] Active regimen: [current medications, allergies, interventions]
+- [P4] Reference guidelines: [relevant clinical standards of care]
 
-### DIAGNOSTIC/THERAPEUTIC TRACES
-For each differential or treatment option:
-- [T1] Differential [name]:
-  1. Supporting evidence: [which findings in P1/P2 are consistent, with specificity]
-  2. Against evidence: [which findings argue against, with specificity]
-  3. Missing information: [what tests or history would confirm or rule out]
-  4. Guideline alignment: [what P4 guidelines recommend for this pattern]
-  5. Risk/benefit: [potential harms vs. benefits of pursuing this path]
+### DIAGNOSTIC & THERAPEUTIC TRACES
+For each plausible condition in the differential:
+- [T1] Condition [name]:
+  1. Supporting findings: [specific items from P1/P2/P3 that align]
+  2. Disconfirming findings: [specific items from P1/P2/P3 that argue against]
+  3. Discriminating gaps: [missing history, lab, or imaging needed to confirm/exclude]
+  4. Acuity & risk: [time-sensitivity and consensus urgency criteria per P4]
 
-Do NOT anchor on the most obvious diagnosis. Systematically evaluate each
-differential against all available evidence.
+Grounding rule: Evaluate multiple competing hypotheses across all data points in
+[P1]-[P3] before ranking, separating probability from acuity.
 
 ### FORMAL CONCLUSION
-- Most likely assessment: [with reasoning referencing T-identifiers]
-- Key differentials to rule out: [and how]
-- Recommended next steps: [tied to specific traces]
-- Uncertainty flags: [what you cannot determine from available information]
-- DISCLAIMER: This is analytical reasoning support, not medical advice. Clinical
-  decisions require a qualified healthcare provider.
+- Evidence-ranked differential: [conditions ordered by supporting T-traces]
+- High-acuity exclusions required: [urgent conditions citing T-identifiers]
+- Critical information gaps: [discriminating workup items from T-traces]
+
+### REMEDIATION / NEXT ACTION
+List the concrete diagnostic workup questions or verification checks needed to
+resolve the discriminating gaps in [T].
+DISCLAIMER: This output is structured analytical support, not clinical advice.
+All diagnostic and treatment decisions require a licensed healthcare clinician.
+
+TRACEABILITY SELF-CHECK: Verify that every condition and workup item in the
+conclusion cites a specific [T] trace and [P] premise.
 ```
 
 ---
 
 ## 8. Legal Analysis
 
-Persona: OMIT (accuracy-critical: legal conclusions must not be steered by role framing).
+Persona: OMIT (accuracy-critical; legal rule application requires neutral grounding).
 
 ```
 Legal analytical methodology requires completing this structured certificate
-before presenting any analysis.
+before presenting any legal assessment.
 
 ### PREMISES
-- [P1] Facts of the matter: [stated facts, clearly separated from inferences]
-- [P2] Jurisdiction: [which legal system applies]
-- [P3] Applicable law: [statutes, regulations, case law, or contractual provisions]
-- [P4] Question presented: [the specific legal question to answer]
+- [P1] Stated facts & text: [contract clauses, record facts, separated from inference]
+- [P2] Governing law: [jurisdiction, statutes, regulations, or case law provided]
+- [P3] Issues presented: [the specific legal or contractual questions to resolve]
 
 ### LEGAL TRACES
-For each legal issue:
+For each issue or provision category in [P3]:
 - [T1] Issue [name]:
-  1. Rule: [the applicable legal rule or standard]
-  2. Application: [how the rule applies to the specific facts in P1]
-  3. Counterargument: [the strongest argument against this application]
-  4. Precedent: [relevant cases or interpretations, with outcomes]
-  5. Distinguishing factors: [what makes this case similar to or different from
-     precedent]
+  1. Governing rule or clause: [exact section number and quoted text from P1/P2]
+  2. Fact application: [how the text or rule applies to the facts in P1]
+  3. Counter-interpretation: [the strongest competing reading of the text]
+  4. Structural symmetry: [whether rights/obligations are mutual or asymmetric]
 
-Do NOT state legal conclusions without tracing through the rule-application
-framework. Flag areas where the law is unsettled or where reasonable minds
-could disagree.
+Grounding rule: Quote exact section numbers and clause language from [P1]/[P2].
+When a standard provision is absent from [P1], record `NOT ADDRESSED IN [P1]`.
 
 ### FORMAL CONCLUSION
-- Analysis: [your legal assessment]
-- Strength of position: [STRONG / MODERATE / WEAK with reasoning]
-- Key risks: [where the analysis is most vulnerable]
-- Open questions: [issues requiring further research or facts]
-- DISCLAIMER: This is legal analysis support, not legal advice. Consult a
-  qualified attorney for legal decisions.
+- Issue-by-issue synthesis: [objective assessment citing T-identifiers]
+- Structural asymmetries & exposure points: [citing specific T-traces]
+- Unresolved interpretive questions: [areas requiring extrinsic facts or counsel]
+
+### REMEDIATION / NEXT ACTION
+Provide copy-pasteable redline clause revisions to resolve identified
+asymmetries or ambiguities.
+DISCLAIMER: This output is analytical support, not legal advice. Consult
+qualified legal counsel for binding determinations.
+
+TRACEABILITY SELF-CHECK: Verify that every conclusion claim cites at least one
+[T] trace and its underlying section in [P1]/[P2].
 ```
 
 ---
 
 ## 9. Financial Due Diligence
 
-Persona: OMIT (accuracy-critical: financial assessments must not be steered by role framing).
+Persona: OMIT (accuracy-critical; numerical and structural analysis must remain unanchored).
 
 ```
-Due diligence analytical methodology, as established in financial analysis best
-practice, requires completing this certificate before presenting any assessment.
+Financial due diligence methodology requires completing this analytical
+certificate before presenting any posture summary.
 
 ### PREMISES
-- [P1] Subject: [entity or transaction under review]
-- [P2] Data examined: [financial statements, filings, disclosures, with dates]
-- [P3] Analysis scope: [what aspects of financial health are being assessed]
-- [P4] Benchmarks: [industry averages, comparable companies, historical performance]
+- [P1] Entity & filings examined: [statements, cap table, metrics, dates]
+- [P2] Analytical dimensions: [revenue quality, unit economics, burn, structure]
+- [P3] Reference benchmarks: [historical periods or cohort baselines in P1]
 
 ### FINANCIAL TRACES
-For each area of analysis:
-- [T1] Area [name, e.g. revenue quality, debt structure, cash flow]:
-  1. Data points: [specific numbers with source and date]
-  2. Trend analysis: [direction and magnitude of change over time]
-  3. Benchmark comparison: [how this compares to peers or standards in P4]
-  4. Red flags: [anomalies, inconsistencies, or concerning patterns]
-  5. Mitigating factors: [context that explains or reduces concern]
+For each analytical dimension in [P2]:
+- [T1] Dimension [name]:
+  1. Reported figures: [exact numbers, periods, and source schedules from P1]
+  2. Derived calculation: [explicit formula and step-by-step arithmetic]
+  3. Period/cohort trajectory: [direction and rate of change across periods]
+  4. Statement reconciliation: [cross-checks between income, cash flow, and deck]
 
-Do NOT rely on management narrative alone. Verify claims against the actual
-financial data. Flag discrepancies between narrative and numbers.
+Grounding rule: Compute metrics exclusively from figures present in [P1]. When a
+required input is missing from [P1], record `INSUFFICIENT DATA FOR [T1]: [missing metric]`.
 
 ### FORMAL CONCLUSION
-- Overall assessment: [summary of financial health/risk]
-- Key strengths: [with T-identifier references]
-- Key risks: [with T-identifier references]
-- Information gaps: [what data would improve the analysis]
-- DISCLAIMER: This is analytical support, not investment advice.
+- Financial posture summary: [factual synthesis citing T-identifiers]
+- Verified strengths vs. structural divergences: [separated, citing T-traces]
+- Data completeness gaps: [all items marked INSUFFICIENT DATA]
+
+### REMEDIATION / NEXT ACTION
+Provide the exact diligence request list or spreadsheet verification formulas
+needed to close all Data Completeness Gaps.
+DISCLAIMER: This output is analytical support, not investment advice.
+
+TRACEABILITY SELF-CHECK: Verify that every figure and claim in the conclusion
+cites a specific [T] calculation trace.
 ```
 
 ---
 
 ## 10. Blank Template (Custom Domain)
 
-Use this as a starting point for any domain not covered above.
-Persona guidance: classify the task first per PRISM findings (accuracy vs. alignment vs. mixed).
+Persona: Classify task first per PRISM (`OMIT` for accuracy, `MINIMAL`<=5 words for mixed, `FULL` for alignment).
 
 ```
-[Authority framing, choose one]:
-"The standard analytical protocol requires..."
-"Established methodology in this domain requires..."
-"The peer-reviewed approach to this analysis requires..."
-
-You are performing [task description]. Before providing your [output type],
-complete this certificate:
+The standard analytical protocol in [DOMAIN] requires completing this reasoning
+certificate before providing your final deliverable.
 
 ### PREMISES
-- [P1] Subject: [what you are examining]
-- [P2] Scope: [boundaries of the analysis]
-- [P3] Criteria: [what standards or rules apply]
-- [P4] Available evidence: [what information you have access to]
-- [P5] Assumptions: [what you are taking as given, and why]
+- [P1] Primary inputs examined: [what artifacts or data are provided]
+- [P2] Scope & invariants: [rules, constraints, and boundaries]
+- [P3] Explicit assumptions: [what is taken as given and why]
 
 ### EVIDENCE TRACES
-For each key element of the analysis:
-- [T1] Element [name]:
-  1. Evidence: [what specific information supports this]
-  2. Reasoning: [step-by-step logic connecting evidence to claim]
-  3. Counterevidence: [what argues against this, if anything]
-  4. Confidence: [how certain you are, and what would change your mind]
+For each component of the analysis:
+- [T1] Component [name]:
+  1. Observable evidence: [specific data point or excerpt from P1]
+  2. Reasoning step: [how P2 rules apply to the evidence]
+  3. Counterevidence / edge case: [what challenges this step]
+  4. Verification status: [VERIFIED / PARTIAL / UNABLE TO TRACE]
 
-Do NOT make claims without tracing through specific evidence. If you cannot
-find evidence for a claim, mark it as UNSUPPORTED rather than asserting it.
+Grounding rule: Base every trace on explicit content in [P1]-[P3]. When evidence
+is missing, record `UNABLE TO TRACE: [missing input]`.
 
 ### FORMAL CONCLUSION
-- Result: [your finding or recommendation]
-- Evidence basis: [which T-identifiers support this]
-- Limitations: [what you could not determine]
-- Next steps: [what additional information or analysis would strengthen this]
+- Verdict / Synthesis: [derived strictly from T-identifiers]
+- Supporting traces: [cite T1, T2, etc.]
+- Verification gaps: [all items marked UNABLE TO TRACE]
+
+### REMEDIATION / NEXT ACTION
+The task is incomplete until you provide a copy-pasteable deliverable, fix, or
+concrete execution sequence addressing the conclusion.
+
+TRACEABILITY SELF-CHECK: Verify that every claim in the Formal Conclusion cites
+at least one [T] identifier.
 ```
 
 ---
 
-## Anti-Hallucination Guards (Apply to Any Template)
+## 11. Agentic System Prompt / `AGENTS.md` / `CLAUDE.md` Context File (NEW in v4.0)
 
-Add these instructions to any certificate template to further reduce
-hallucination:
+Origin: Grounded in `[CONTEXT-FILES]` (Gloaguen et al., 2026, arXiv:2602.11988) and `[HARNESS]` (Lee et al., 2026, arXiv:2603.28052; Shao et al., 2026, arXiv:2609.37725; Nam et al., 2025, arXiv:2509.21825).
+Persona: OMIT (coding agents and reasoning models perform best with direct operational contracts).
+When to use: Optimizing `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, or multi-turn agent harness prompts.
 
 ```
-REASONING CONSTRAINTS (established best practice across analytical disciplines):
-- Do not infer behavior, meaning, or content from labels or names alone.
-  Trace the actual substance.
-- If you cannot complete a trace, say "UNABLE TO TRACE: [reason]" rather
-  than filling in plausible-sounding content.
-- Each claim in your conclusion must reference a specific T-identifier. If a
-  claim has no supporting trace, remove it.
-- Actively search for counterexamples and contradictions. State them even
-  if your overall conclusion is positive.
-- Distinguish between "verified" (traced through evidence), "likely"
-  (partial evidence), and "assumed" (no direct evidence).
-- Do not adjust your analysis based on how the output might be used or
-  evaluated downstream.
+# [Repository / System Name] Agent Operating Contract
+
+## 1. Non-Inferable Environment & Tooling Commands
+(Include only exact commands that cannot be guessed from standard defaults; omit
+directory trees and file inventories per Gloaguen et al., 2026.)
+- Environment / Dependency Sync: `[exact command, e.g., uv sync --all-extras]`
+- Single-File Test Execution: `[exact command, e.g., uv run pytest <path> -q]`
+- Typecheck & Linter Gate: `[exact command, e.g., uv run ruff check . && uv run mypy src]`
+
+## 2. Hard Architectural & Boundary Invariants
+- [I1] Module boundary: [state non-obvious dependency direction or forbidden imports]
+- [I2] Schema / Contract rule: [state required validation or serialization boundary]
+- [I3] Security / State rule: [state protected files, credentials, or migration rules]
+
+## 3. Multi-Step Execution & Context-as-a-File Protocol
+- Plan Sufficiency Gate: When a task modifies 3+ files or alters a public interface,
+  write a brief Premise & Verification checklist to a scratchpad file before editing
+  source files.
+- Context Hygiene: Prefer targeted symbol/grep searches over reading entire directories.
+  Store intermediate findings and test logs in the scratchpad file so active context
+  stays compact.
+
+## 4. Mandatory Verification Gate (Before Claiming Completion)
+1. Execute the Single-File Test and Linter commands from Section 1 on all touched modules.
+2. Confirm exit code 0 and cite the exact command output in your final response.
+3. If any check fails or cannot run in the current sandbox, report `VERIFICATION BLOCKED: [command + error]` rather than claiming success.
 ```
 
 ---
 
-## Structured Output Wrapper (When Parsing Required)
+## 12. Creative / Editorial Writing with Verbalized Sampling & Anti-SlopShape (NEW in v4.0)
 
-When the optimized prompt feeds into a pipeline or will be parsed
-programmatically, wrap the certificate in a structured output format.
-Per the LLM Code Smells research (Mahmoudi et al.), omitting structured
-output is the most prevalent integration smell at 40.5% of systems.
+Origin: Grounded in `[VS]` (Zhang et al., 2025, arXiv:2510.01171) and `[SLOPSHAPE]` (Madler, 2026, arXiv:2609.15369; Russell et al., 2026), upgrading V3's Narrative Traces.
+Persona: MINIMAL or FULL domain practitioner persona (alignment and voice task per Hu, Rostami & Thomason, 2026).
 
 ```
-Respond with a JSON object matching this exact schema:
+You are a [specific practitioner role, <=5 words]. The editorial craft protocol
+requires completing the backstage scaffolding block before drafting the final piece.
 
+### PREMISES
+- [P1] Audience & lived context: [who is reading and what concrete friction they face]
+- [P2] Target shift: [what specific realization or emotional shift the piece must earn]
+- [P3] Format & register constraints: [word count, medium, perspective, domain facts]
+
+### BACKSTAGE SCAFFOLD (complete before drafting; keep backstage if final-only requested)
+- [NT0] Verbalized Distribution Sampling: Generate 4 structurally distinct entry angles
+  for this piece and estimate each angle's typicality probability (p = likelihood a
+  default LLM prompt would produce it):
+  1. [Angle 1: prototypical/expected framing] (p = ...)
+  2. [Angle 2: moderate variation] (p = ...)
+  3. [Angle 3: concrete, low-typicality practitioner angle] (p = ...)
+  4. [Angle 4: unexpected structural entry or inversion] (p = ...)
+  Selection: Commit to the strongest angle with p <= 0.20 that satisfies [P1]-[P3].
+- [NT1] Opening Anchor: [the specific artifact, failure, or concrete scene that opens the draft]
+- [NT2] Inductive Trajectory: [how the core insight emerges from evidence rather than being pre-announced]
+- [NT3] Cadence & Texture: [sentence length variation, concrete domain nouns, zero filler transitions]
+
+### STRUCTURAL RARITY CONTRACT (Discourse-Level Anti-SlopShape Rules)
+Shape the final piece so it satisfies all four structural rules:
+1. Delayed Thesis (anti-STR_FLW_006 / PUR_OUT_003): Use a specific, non-spoiler title
+   and open inside the concrete anchor from [NT1] before stating the overarching thesis.
+2. Direct Evidence Progression (anti-STR_FLW_005): Advance the piece through specific
+   examples and mechanisms rather than a formulaic "Legacy Way vs. Modern Way" contrast.
+3. Practitioner Voice (anti-VOC_VOX_001): Write from a grounded viewpoint with asymmetric
+   paragraph lengths rather than a symmetric, institutional "editorial explainer" tone.
+4. Open-Loop / Actionable Close (anti-STR_STG_008 / VOC_PRT_005): End on a sharp concrete
+   implication, diagnostic question, or immediate practitioner experiment rather than a
+   summary paragraph that restates the thesis.
+
+### FINAL DELIVERABLE
+Present the finished piece cleanly, executing the selected [NT0] low-typicality angle
+and adhering to the Structural Rarity Contract.
+```
+
+---
+
+## Structured Output Wrapper (When Programmatic Parsing Is Required)
+
+When the optimized prompt feeds into an API pipeline or downstream parser, pair the certificate with a typed JSON schema (Mahmoudi et al., 2025, arXiv:2512.18020):
+
+```json
 {
   "premises": [
-    {"id": "P1", "content": "..."},
-    {"id": "P2", "content": "..."}
+    {"id": "P1", "content": "..."}
   ],
   "traces": [
-    {"id": "T1", "subject": "...", "steps": ["...", "..."], "confidence": "HIGH|MEDIUM|LOW"},
-    {"id": "T2", "subject": "...", "steps": ["...", "..."], "confidence": "HIGH|MEDIUM|LOW"}
+    {"id": "T1", "subject": "...", "steps": ["..."], "status": "VERIFIED|PARTIAL|UNABLE_TO_TRACE"}
   ],
   "conclusion": {
     "verdict": "...",
-    "supporting_traces": ["T1", "T2"],
-    "gaps": ["..."],
-    "confidence": "HIGH|MEDIUM|LOW"
+    "supporting_traces": ["T1"],
+    "verification_gaps": ["..."]
+  },
+  "remediation": {
+    "action_required": true,
+    "artifact_or_steps": "..."
   }
 }
 ```

@@ -170,21 +170,27 @@ Semi-formal reasoning is a precision tool, not a default setting. Cross-architec
 
 The costs are real: ~2.2x token overhead in Max mode (~1.5x in Lite), proportional latency increase, no gain on already-strong baselines, the Actionability Gap (mitigated by the mandatory remediation block), structural mismatch with creative tasks (mitigated by Narrative Tracing), and the risk of active harm if persona framing is misapplied.
 
-**Decision framework:**
-- High-stakes analytical task with low baseline? **Max Certificate.**
-- Routine analytical task where the model is moderately competent? **Lite Certificate.**
-- Creative or alignment task? **Creative Pivot (Narrative Traces).**
-- Simple lookup, brainstorming, or reasoning-distilled model? **Skip the certificate entirely.**
+**Decision framework (v4.0):**
+- High-stakes analytical task on a standard model? **Mode 1: Max Certificate (~2.2x overhead).**
+- Routine analytical task where the model is moderately competent? **Mode 2: Lite Certificate (~1.5x overhead).**
+- Large Reasoning Model (o3, R1, Extended Thinking) or `AGENTS.md` / `CLAUDE.md` context file? **Mode 3: LRM / Harness Mode (~1.1x to 1.3x overhead; avoids overthinking loops and context bloat per Lee et al., 2026 and Gloaguen et al., 2026).**
+- Creative, editorial, or divergent writing task? **Mode 4: Creative & Divergent v2 (Verbalized Sampling + Narrative Traces + Anti-SlopShape rules per Zhang et al., 2025 and Madler, 2026).**
+- Simple factual lookup or pure stream-of-consciousness generation? **Skip the certificate entirely.**
 
-Use it when traceable reasoning matters. Scale it with Lite/Max. Do not use it for every prompt.
+Use it when traceable reasoning matters. Scale it across the 4 modes. Do not use Max mode for every prompt.
 
 ---
 
 ## References
 
-- Ugare, A., & Chandra, S. (2026). TaxCoT: Taxonomy-Guided Chain-of-Thought for Code Analysis. arXiv 2603.01896.
-- Cao, J., Jiang, J., & Xu, R. (2026). arXiv 2602.09504.
-- Zhang, J., Hu, S., et al. (2026). Context Engineering for AI Agents. arXiv 2510.04618.
-- Geng, S., et al. (2025). arXiv 2502.15851.
-- Mahmoudi, M., et al. (2025). arXiv 2512.18020.
-- Hu, Y., Rostami, M., & Thomason, J. (2026). arXiv 2603.18507.
+- Ugare, S. & Chandra, S. (2026). "Agentic Code Reasoning." arXiv:2603.01896.
+- Cao, S., Jiang, W. & Xu, H. (2026). "Seeing the Goal, Missing the Truth: Human Accountability for AI Bias." arXiv:2602.09504.
+- Zhang, Q., Hu, C. et al. (2026). "Agentic Context Engineering: Evolving Contexts for Self-Improving Language Models." arXiv:2510.04618.
+- Geng, Y., Li, H. et al. (2025). "Control Illusion: The Failure of Instruction Hierarchies in Large Language Models." arXiv:2502.15851.
+- Mahmoudi, B., Chenail-Larcher, Z. et al. (2025). "Specification and Detection of LLM Code Smells." arXiv:2512.18020.
+- Hu, Z., Rostami, M. & Thomason, J. (2026). "Expert Personas Improve LLM Alignment but Damage Accuracy." arXiv:2603.18507.
+- Zhang, J., Yu, S., Chong, D., Sicilia, A., Tomz, M. R., Manning, C. D. & Shi, W. (2025). "Verbalized Sampling: How to Mitigate Mode Collapse and Unlock LLM Diversity." arXiv:2510.01171.
+- Madler, J. (2026). "SlopShape: Identifying AI-Generated Commercial Web Content." arXiv:2609.15369.
+- Gloaguen, T., Mundler, N., Muller, M., Raychev, V. & Vechev, M. (2026). "Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?" arXiv:2602.11988.
+- Lee, Y., Nair, R., Zhang, Q., Lee, K., Khattab, O. & Finn, C. (2026). "Meta-Harness: End-to-End Optimization of Model Harnesses." arXiv:2603.28052 (with Self-Harness, arXiv:2606.09498; Context Language Models, arXiv:2609.37725; DS-STAR, arXiv:2509.21825).
+- Yin, L., Li, Z., Shi, Z., Zhang, H., Seong, H. & Wang, Z. (2026). "@skills: Attention Is All You Have." arXiv:2608.12610.
