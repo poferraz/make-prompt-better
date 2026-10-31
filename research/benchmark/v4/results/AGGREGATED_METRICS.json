@@ -1,0 +1,6764 @@
+{
+  "models": [
+    {
+      "model": "beam:cloud",
+      "slug": "beam-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 19.42,
+      "avg_optimized": 21.0,
+      "avg_delta": 1.58,
+      "avg_word_overhead_ratio": 1.98,
+      "wins": 8,
+      "ties": 1,
+      "losses": 3,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 17.0,
+          "optimized_total": 21.5,
+          "delta_total": 4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 3.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 1.0,
+              "optimized": 5.0,
+              "delta": 4.0
+            }
+          },
+          "word_overhead_ratio": 5.37,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 21.5,
+          "optimized_total": 23.5,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.93,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 18.5,
+          "optimized_total": 23.0,
+          "delta_total": 4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 4.01,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 17.5,
+          "optimized_total": 22.5,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 1.5,
+              "optimized": 5.0,
+              "delta": 3.5
+            }
+          },
+          "word_overhead_ratio": 2.16,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 21.5,
+          "optimized_total": 10.0,
+          "delta_total": -11.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 2.0,
+              "delta": -2.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 1.0,
+              "delta": -3.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 2.0,
+              "delta": -2.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 2.0,
+              "delta": -2.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 3.0,
+              "delta": -0.5
+            }
+          },
+          "word_overhead_ratio": 0.42,
+          "winner": "Baseline",
+          "score_issues": [
+            "written accuracy delta 2.5 differs from optimized minus baseline -2.5",
+            "written completeness delta 3.5 differs from optimized minus baseline -3.5",
+            "written structure delta 2.5 differs from optimized minus baseline -2.5",
+            "written actionability delta 2.5 differs from optimized minus baseline -2.5",
+            "written traceability delta 0.5 differs from optimized minus baseline -0.5",
+            "written total delta 11.5 differs from optimized minus baseline -11.5"
+          ]
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 21.0,
+          "optimized_total": 20.5,
+          "delta_total": -0.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 2.83,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 20.5,
+          "optimized_total": 23.5,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 3.64,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 21.5,
+          "optimized_total": 21.5,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 1.36,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 19.5,
+          "optimized_total": 18.0,
+          "delta_total": -1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 2.0,
+              "delta": -2.5
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 0.66,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 15.5,
+          "optimized_total": 22.0,
+          "delta_total": 6.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 2.5,
+              "optimized": 4.5,
+              "delta": 2.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 3.0,
+              "optimized": 4.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 1.09,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 23.5,
+          "optimized_total": 25.0,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            }
+          },
+          "word_overhead_ratio": 0.14,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 15.5,
+          "optimized_total": 21.0,
+          "delta_total": 5.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 3.0,
+              "optimized": 4.5,
+              "delta": 1.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 3.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 3.0,
+              "optimized": 4.5,
+              "delta": 1.5
+            },
+            "traceability": {
+              "baseline": 1.5,
+              "optimized": 5.0,
+              "delta": 3.5
+            }
+          },
+          "word_overhead_ratio": 1.19,
+          "winner": "Optimized",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "claude-opus",
+      "slug": "claude-opus",
+      "completed_tests": 12,
+      "avg_baseline": 21.0,
+      "avg_optimized": 23.58,
+      "avg_delta": 2.58,
+      "avg_word_overhead_ratio": 1.83,
+      "wins": 10,
+      "ties": 2,
+      "losses": 0,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 24.0,
+          "optimized_total": 24.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.73,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 22.0,
+          "optimized_total": 24.0,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.84,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 23.0,
+          "optimized_total": 24.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 2.03,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 21.0,
+          "optimized_total": 24.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.97,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 20.0,
+          "optimized_total": 22.0,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 3.0,
+              "optimized": 4.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 2.23,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 21.0,
+          "optimized_total": 24.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.96,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 24.0,
+          "optimized_total": 24.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.75,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 21.0,
+          "optimized_total": 24.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.79,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 22.0,
+          "optimized_total": 24.0,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.91,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 19.0,
+          "optimized_total": 21.0,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 3.0,
+              "optimized": 4.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 4.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.97,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 18.0,
+          "optimized_total": 24.0,
+          "delta_total": 6.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.25,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 17.0,
+          "optimized_total": 24.0,
+          "delta_total": 7.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "completeness": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 2.55,
+          "winner": "Optimized",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "deepseek-v4.1-flash:1017-cloud",
+      "slug": "deepseek-v4.1-flash-1017-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 22.0,
+      "avg_optimized": 21.58,
+      "avg_delta": -0.42,
+      "avg_word_overhead_ratio": 5.92,
+      "wins": 7,
+      "ties": 1,
+      "losses": 4,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 23.0,
+          "optimized_total": 24.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 19.26,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 21.0,
+          "optimized_total": 24.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 6.42,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 21.5,
+          "optimized_total": 21.5,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 3.5,
+              "delta": -1.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 18.51,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 22.0,
+          "optimized_total": 16.0,
+          "delta_total": -6.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 2.5,
+              "delta": -2.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 2.5,
+              "delta": -2.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 2.47,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 22.0,
+          "optimized_total": 24.0,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 3.43,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 21.0,
+          "optimized_total": 21.5,
+          "delta_total": 0.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 5.74,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 19.5,
+          "optimized_total": 23.5,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 5.99,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 22.5,
+          "optimized_total": 24.0,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 4.2,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 24.5,
+          "optimized_total": 21.5,
+          "delta_total": -3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            }
+          },
+          "word_overhead_ratio": 1.24,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 19.0,
+          "optimized_total": 23.5,
+          "delta_total": 4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 3.0,
+              "optimized": 4.5,
+              "delta": 1.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 2.24,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 23.5,
+          "optimized_total": 14.5,
+          "delta_total": -9.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 1.5,
+              "delta": -3.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 2.5,
+              "delta": -2.5
+            },
+            "traceability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            }
+          },
+          "word_overhead_ratio": 0.39,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 24.5,
+          "optimized_total": 21.0,
+          "delta_total": -3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            }
+          },
+          "word_overhead_ratio": 1.17,
+          "winner": "Baseline",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "deepseek-v4.1-flash:cloud",
+      "slug": "deepseek-v4.1-flash-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 21.08,
+      "avg_optimized": 21.38,
+      "avg_delta": 0.29,
+      "avg_word_overhead_ratio": 2.91,
+      "wins": 8,
+      "ties": 1,
+      "losses": 3,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 19.5,
+          "optimized_total": 24.5,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 5.49,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 20.0,
+          "optimized_total": 24.5,
+          "delta_total": 4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 2.9,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 23.0,
+          "optimized_total": 6.5,
+          "delta_total": -16.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 1.0,
+              "delta": -4.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 1.0,
+              "delta": -4.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 2.5,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 1.0,
+              "delta": -4.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 1.0,
+              "delta": -3.0
+            }
+          },
+          "word_overhead_ratio": 1.58,
+          "winner": "Baseline",
+          "score_issues": [
+            "written accuracy delta 4 differs from optimized minus baseline -4",
+            "written completeness delta 4 differs from optimized minus baseline -4",
+            "written structure delta 1.5 differs from optimized minus baseline -1.5",
+            "written actionability delta 4 differs from optimized minus baseline -4",
+            "written traceability delta 3 differs from optimized minus baseline -3",
+            "written total delta 16.5 differs from optimized minus baseline -16.5"
+          ]
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 20.0,
+          "optimized_total": 19.0,
+          "delta_total": -1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 3.57,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 22.0,
+          "optimized_total": 22.5,
+          "delta_total": 0.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 3.25,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 21.5,
+          "optimized_total": 22.0,
+          "delta_total": 0.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 6.83,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 19.0,
+          "optimized_total": 25.0,
+          "delta_total": 6.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 3.1,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 24.0,
+          "optimized_total": 24.5,
+          "delta_total": 0.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 3.34,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 21.0,
+          "optimized_total": 22.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 2.67,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 22.5,
+          "optimized_total": 22.5,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 0.95,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 17.5,
+          "optimized_total": 25.0,
+          "delta_total": 7.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "structure": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 0.21,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 23.0,
+          "optimized_total": 18.5,
+          "delta_total": -4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 2.5,
+              "delta": -2.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 2.5,
+              "delta": -2.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 3.5,
+              "delta": -0.5
+            }
+          },
+          "word_overhead_ratio": 1.06,
+          "winner": "Baseline",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "gemini-3.8",
+      "slug": "gemini-3.8",
+      "completed_tests": 12,
+      "avg_baseline": 19.38,
+      "avg_optimized": 24.67,
+      "avg_delta": 5.29,
+      "avg_word_overhead_ratio": 2.04,
+      "wins": 12,
+      "ties": 0,
+      "losses": 0,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 19.5,
+          "optimized_total": 24.5,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 2.1,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 19.0,
+          "optimized_total": 24.5,
+          "delta_total": 5.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 2.14,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 20.0,
+          "optimized_total": 25.0,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 2.52,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 19.0,
+          "optimized_total": 24.5,
+          "delta_total": 5.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 2.38,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 19.5,
+          "optimized_total": 24.5,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 2.32,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 20.0,
+          "optimized_total": 24.5,
+          "delta_total": 4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 2.09,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 20.0,
+          "optimized_total": 25.0,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 2.27,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 19.5,
+          "optimized_total": 24.5,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 2.04,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 21.0,
+          "optimized_total": 24.5,
+          "delta_total": 3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 1.09,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 18.5,
+          "optimized_total": 24.5,
+          "delta_total": 6.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 4.5,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 2.06,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 18.0,
+          "optimized_total": 25.0,
+          "delta_total": 7.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.78,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 18.5,
+          "optimized_total": 25.0,
+          "delta_total": 6.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 2.7,
+          "winner": "Optimized",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "gemma4:31b-cloud",
+      "slug": "gemma4-31b-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 20.62,
+      "avg_optimized": 22.12,
+      "avg_delta": 1.5,
+      "avg_word_overhead_ratio": 0.79,
+      "wins": 8,
+      "ties": 0,
+      "losses": 4,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 22.0,
+          "optimized_total": 13.0,
+          "delta_total": -9.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 1.0,
+              "delta": -4.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 1.0,
+              "delta": -4.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 1.0,
+              "delta": -4.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.91,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 19.0,
+          "optimized_total": 25.0,
+          "delta_total": 6.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.89,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 21.0,
+          "optimized_total": 25.0,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.43,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 20.0,
+          "optimized_total": 17.0,
+          "delta_total": -3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 1.0,
+              "delta": -3.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 1.0,
+              "delta": -3.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.31,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 23.0,
+          "optimized_total": 18.0,
+          "delta_total": -5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 1.0,
+              "delta": -4.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 2.0,
+              "delta": -3.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.47,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 19.0,
+          "optimized_total": 25.0,
+          "delta_total": 6.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 0.88,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 18.5,
+          "optimized_total": 25.0,
+          "delta_total": 6.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 1.1,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 20.0,
+          "optimized_total": 25.0,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.91,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 21.0,
+          "optimized_total": 24.5,
+          "delta_total": 3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.55,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 21.0,
+          "optimized_total": 25.0,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.79,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 19.0,
+          "optimized_total": 24.0,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 0.57,
+          "winner": "Optimized",
+          "score_issues": [
+            "written baseline total 24 differs from the saved total 19"
+          ]
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 24.0,
+          "optimized_total": 19.0,
+          "delta_total": -5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 3.0,
+              "delta": -2.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 3.0,
+              "delta": -2.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 0.66,
+          "winner": "Baseline",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "glm-5.3:cloud",
+      "slug": "glm-5.3-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 21.38,
+      "avg_optimized": 23.67,
+      "avg_delta": 2.29,
+      "avg_word_overhead_ratio": 3.84,
+      "wins": 12,
+      "ties": 0,
+      "losses": 0,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 23.5,
+          "optimized_total": 24.5,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            }
+          },
+          "word_overhead_ratio": 7.07,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 20.5,
+          "optimized_total": 23.5,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 3.42,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 21.5,
+          "optimized_total": 24.0,
+          "delta_total": 2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 6.54,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 21.0,
+          "optimized_total": 22.5,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 3.22,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 21.5,
+          "optimized_total": 22.5,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 4.77,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 18.0,
+          "optimized_total": 23.0,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 5.11,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 20.5,
+          "optimized_total": 22.5,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 3.53,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 21.5,
+          "optimized_total": 24.5,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 6.33,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 22.0,
+          "optimized_total": 24.0,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 2.22,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 21.5,
+          "optimized_total": 24.5,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 2.18,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 21.5,
+          "optimized_total": 24.0,
+          "delta_total": 2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 0.41,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 23.5,
+          "optimized_total": 24.5,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.28,
+          "winner": "Optimized",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "glm-5.3-flash:cloud",
+      "slug": "glm-5.3-flash-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 21.5,
+      "avg_optimized": 23.5,
+      "avg_delta": 2.0,
+      "avg_word_overhead_ratio": 3.5,
+      "wins": 11,
+      "ties": 0,
+      "losses": 1,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 21.5,
+          "optimized_total": 24.5,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 8.73,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 21.0,
+          "optimized_total": 23.0,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 4.36,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 22.0,
+          "optimized_total": 24.0,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 3.93,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 23.0,
+          "optimized_total": 24.5,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 2.35,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 19.0,
+          "optimized_total": 23.5,
+          "delta_total": 4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 5.3,
+          "winner": "Optimized",
+          "score_issues": [
+            "written baseline total 19.5 differs from the saved total 19"
+          ]
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 20.0,
+          "optimized_total": 23.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 5.54,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 22.0,
+          "optimized_total": 24.5,
+          "delta_total": 2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 3.78,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 21.0,
+          "optimized_total": 24.5,
+          "delta_total": 3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 3.64,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 20.0,
+          "optimized_total": 24.0,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.3,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 22.0,
+          "optimized_total": 23.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 2.21,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 23.5,
+          "optimized_total": 19.5,
+          "delta_total": -4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 2.5,
+              "delta": -2.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 3.5,
+              "delta": -1.5
+            },
+            "traceability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            }
+          },
+          "word_overhead_ratio": 0.23,
+          "winner": "Baseline",
+          "score_issues": [
+            "written baseline total 24 differs from the saved total 23.5"
+          ]
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 23.0,
+          "optimized_total": 24.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 0.66,
+          "winner": "Optimized",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "gpt-6.1-terra",
+      "slug": "gpt-6.1-terra",
+      "completed_tests": 12,
+      "avg_baseline": 23.58,
+      "avg_optimized": 23.67,
+      "avg_delta": 0.08,
+      "avg_word_overhead_ratio": 1.35,
+      "wins": 2,
+      "ties": 8,
+      "losses": 2,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 23.0,
+          "optimized_total": 23.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.27,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 24.0,
+          "optimized_total": 24.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.3,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 24.0,
+          "optimized_total": 24.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.22,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 24.0,
+          "optimized_total": 24.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.42,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 23.0,
+          "optimized_total": 23.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 0.99,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 24.0,
+          "optimized_total": 24.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.32,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 24.0,
+          "optimized_total": 24.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.23,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 24.0,
+          "optimized_total": 24.0,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.14,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 24.0,
+          "optimized_total": 25.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 0.8,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 24.0,
+          "optimized_total": 23.0,
+          "delta_total": -1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            }
+          },
+          "word_overhead_ratio": 2.69,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 24.0,
+          "optimized_total": 22.0,
+          "delta_total": -2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 3.0,
+              "delta": -2.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            }
+          },
+          "word_overhead_ratio": 0.56,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 21.0,
+          "optimized_total": 24.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 2.27,
+          "winner": "Optimized",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "gpt-oss:20b-cloud",
+      "slug": "gpt-oss-20b-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 20.08,
+      "avg_optimized": 18.29,
+      "avg_delta": -1.79,
+      "avg_word_overhead_ratio": 0.59,
+      "wins": 6,
+      "ties": 0,
+      "losses": 6,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 20.0,
+          "optimized_total": 24.0,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 0.96,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 20.0,
+          "optimized_total": 17.5,
+          "delta_total": -2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 3.0,
+              "delta": -2.0
+            },
+            "structure": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 2.0,
+              "delta": -3.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 0.56,
+          "winner": "Baseline",
+          "score_issues": [
+            "written baseline total 20.5 differs from the saved total 20",
+            "written accuracy delta 1.5 differs from optimized minus baseline -1.5",
+            "written completeness delta 2 differs from optimized minus baseline -2",
+            "written actionability delta 3 differs from optimized minus baseline -3",
+            "written total delta 3 differs from optimized minus baseline -3"
+          ]
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 20.5,
+          "optimized_total": 23.5,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 1.0,
+              "optimized": 5.0,
+              "delta": 4.0
+            }
+          },
+          "word_overhead_ratio": 1.7,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 19.0,
+          "optimized_total": 14.5,
+          "delta_total": -4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 2.0,
+              "delta": -2.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 2.5,
+              "delta": -2.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 2.0,
+              "delta": -2.5
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 4.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.25,
+          "winner": "Baseline",
+          "score_issues": [
+            "written baseline total 18.5 differs from the saved total 19",
+            "written accuracy delta 2 differs from optimized minus baseline -2",
+            "written completeness delta 2 differs from optimized minus baseline -2",
+            "written actionability delta 2.5 differs from optimized minus baseline -2.5",
+            "written total delta 4 differs from optimized minus baseline -4"
+          ]
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 20.5,
+          "optimized_total": 22.0,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.87,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 18.0,
+          "optimized_total": 21.5,
+          "delta_total": 3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 1.0,
+              "optimized": 5.0,
+              "delta": 4.0
+            }
+          },
+          "word_overhead_ratio": 0.39,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 19.5,
+          "optimized_total": 13.0,
+          "delta_total": -6.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 1.0,
+              "delta": -3.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 2.0,
+              "delta": -2.5
+            },
+            "structure": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 1.0,
+              "delta": -3.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 4.5,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.4,
+          "winner": "Baseline",
+          "score_issues": [
+            "written baseline total 19 differs from the saved total 19.5"
+          ]
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 19.5,
+          "optimized_total": 20.5,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 4.5,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 0.63,
+          "winner": "Optimized",
+          "score_issues": [
+            "written baseline total 19 differs from the saved total 19.5",
+            "written accuracy delta 0.5 differs from optimized minus baseline -0.5",
+            "written completeness delta 1 differs from optimized minus baseline -1",
+            "written structure delta -1 differs from optimized minus baseline 1",
+            "written actionability delta 0.5 differs from optimized minus baseline -0.5",
+            "written traceability delta -2 differs from optimized minus baseline 2",
+            "written total delta -1.5 differs from optimized minus baseline 1.5"
+          ]
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 18.5,
+          "optimized_total": 12.5,
+          "delta_total": -6.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 1.5,
+              "delta": -3.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 1.0,
+              "delta": -3.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 1.0,
+              "delta": -3.5
+            },
+            "traceability": {
+              "baseline": 0.5,
+              "optimized": 5.0,
+              "delta": 4.5
+            }
+          },
+          "word_overhead_ratio": 0.1,
+          "winner": "Baseline",
+          "score_issues": [
+            "traceability baseline score 0.5 is outside the 1-5 rubric",
+            "written optimized total 9.5 differs from the saved total 12.5",
+            "written accuracy delta 3 differs from optimized minus baseline -3",
+            "written completeness delta 3.5 differs from optimized minus baseline -3.5",
+            "written structure delta 0.5 differs from optimized minus baseline -0.5",
+            "written actionability delta 3.5 differs from optimized minus baseline -3.5",
+            "written total delta 9 differs from optimized minus baseline -9"
+          ]
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 16.5,
+          "optimized_total": 21.0,
+          "delta_total": 4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 3.0,
+              "optimized": 4.5,
+              "delta": 1.5
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 3.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 0.33,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 25.0,
+          "optimized_total": 8.0,
+          "delta_total": -17.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 1.0,
+              "delta": -4.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 1.0,
+              "delta": -4.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 2.0,
+              "delta": -3.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 2.0,
+              "delta": -3.0
+            },
+            "traceability": {
+              "baseline": 5.0,
+              "optimized": 2.0,
+              "delta": -3.0
+            }
+          },
+          "word_overhead_ratio": 0.19,
+          "winner": "Baseline",
+          "score_issues": [
+            "written accuracy delta 4 differs from optimized minus baseline -4",
+            "written completeness delta 4 differs from optimized minus baseline -4",
+            "written structure delta 3 differs from optimized minus baseline -3",
+            "written actionability delta 3 differs from optimized minus baseline -3",
+            "written traceability delta 3 differs from optimized minus baseline -3",
+            "written total delta 17 differs from optimized minus baseline -17"
+          ]
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 24.0,
+          "optimized_total": 21.5,
+          "delta_total": -2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            }
+          },
+          "word_overhead_ratio": 0.75,
+          "winner": "Baseline",
+          "score_issues": [
+            "written accuracy delta 0.5 differs from optimized minus baseline -0.5",
+            "written completeness delta 0.5 differs from optimized minus baseline -0.5",
+            "written structure delta 1 differs from optimized minus baseline -1",
+            "written actionability delta 0.5 differs from optimized minus baseline -0.5",
+            "written total delta 2.5 differs from optimized minus baseline -2.5"
+          ]
+        }
+      }
+    },
+    {
+      "model": "kimi-k3:cloud",
+      "slug": "kimi-k3-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 21.17,
+      "avg_optimized": 23.54,
+      "avg_delta": 2.38,
+      "avg_word_overhead_ratio": 3.77,
+      "wins": 10,
+      "ties": 0,
+      "losses": 2,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 20.5,
+          "optimized_total": 24.0,
+          "delta_total": 3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 6.66,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 20.5,
+          "optimized_total": 22.0,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 4.06,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 22.0,
+          "optimized_total": 24.0,
+          "delta_total": 2.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 7.56,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 21.0,
+          "optimized_total": 25.0,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 3.43,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 23.0,
+          "optimized_total": 22.5,
+          "delta_total": -0.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 5.26,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 20.5,
+          "optimized_total": 23.0,
+          "delta_total": 2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 4.14,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 20.0,
+          "optimized_total": 23.5,
+          "delta_total": 3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 4.04,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 20.5,
+          "optimized_total": 24.5,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 3.54,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 21.5,
+          "optimized_total": 23.0,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.5,
+          "winner": "Optimized",
+          "score_issues": [
+            "written optimized total 23.5 differs from the saved total 23"
+          ]
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 21.0,
+          "optimized_total": 25.0,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 2.87,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 20.5,
+          "optimized_total": 24.0,
+          "delta_total": 3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.19,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 23.0,
+          "optimized_total": 22.0,
+          "delta_total": -1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.04,
+          "winner": "Baseline",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "meta-muse-wonder-1.0-max",
+      "slug": "meta-muse-wonder-1.0-max",
+      "completed_tests": 12,
+      "avg_baseline": 21.42,
+      "avg_optimized": 24.83,
+      "avg_delta": 3.42,
+      "avg_word_overhead_ratio": 1.61,
+      "wins": 12,
+      "ties": 0,
+      "losses": 0,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 21.0,
+          "optimized_total": 25.0,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.43,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 20.0,
+          "optimized_total": 25.0,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.52,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 22.0,
+          "optimized_total": 25.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.84,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 21.0,
+          "optimized_total": 25.0,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.77,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 21.0,
+          "optimized_total": 24.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.82,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 24.0,
+          "optimized_total": 25.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.63,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 24.0,
+          "optimized_total": 25.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.84,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 24.0,
+          "optimized_total": 25.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.49,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 24.0,
+          "optimized_total": 25.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 1.0,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 18.0,
+          "optimized_total": 25.0,
+          "delta_total": 7.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 2.26,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 17.0,
+          "optimized_total": 24.0,
+          "delta_total": 7.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 0.61,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 21.0,
+          "optimized_total": 25.0,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 2.07,
+          "winner": "Optimized",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "minimax-m3.1-flash:cloud",
+      "slug": "minimax-m3.1-flash-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 21.0,
+      "avg_optimized": 22.12,
+      "avg_delta": 1.12,
+      "avg_word_overhead_ratio": 11.93,
+      "wins": 10,
+      "ties": 0,
+      "losses": 2,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 23.0,
+          "optimized_total": 24.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 33.23,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 23.0,
+          "optimized_total": 23.5,
+          "delta_total": 0.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 3.5,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 11.74,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 22.0,
+          "optimized_total": 22.5,
+          "delta_total": 0.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 3.5,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 34.64,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 19.0,
+          "optimized_total": 22.5,
+          "delta_total": 3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 12.03,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 19.0,
+          "optimized_total": 21.5,
+          "delta_total": 2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 3.0,
+              "optimized": 3.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 3.5,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 6.93,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 20.0,
+          "optimized_total": 21.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 4.5,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 14.14,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 19.5,
+          "optimized_total": 23.5,
+          "delta_total": 4.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 14.44,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 23.0,
+          "optimized_total": 24.0,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 6.06,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 18.0,
+          "optimized_total": 23.5,
+          "delta_total": 5.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 1.5,
+              "optimized": 5.0,
+              "delta": 3.5
+            }
+          },
+          "word_overhead_ratio": 6.26,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 18.5,
+          "optimized_total": 23.5,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 1.57,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 24.5,
+          "optimized_total": 22.0,
+          "delta_total": -2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 3.0,
+              "delta": -2.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            }
+          },
+          "word_overhead_ratio": 0.33,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 22.5,
+          "optimized_total": 14.0,
+          "delta_total": -8.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 2.0,
+              "delta": -2.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 1.5,
+              "delta": -3.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 3.5,
+              "delta": 0.0
+            }
+          },
+          "word_overhead_ratio": 1.8,
+          "winner": "Baseline",
+          "score_issues": [
+            "written accuracy delta 2.5 differs from optimized minus baseline -2.5",
+            "written completeness delta 1.5 differs from optimized minus baseline -1.5",
+            "written structure delta 1 differs from optimized minus baseline -1",
+            "written actionability delta 3.5 differs from optimized minus baseline -3.5"
+          ]
+        }
+      }
+    },
+    {
+      "model": "mistral-large-4:cloud",
+      "slug": "mistral-large-4-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 21.0,
+      "avg_optimized": 22.88,
+      "avg_delta": 1.88,
+      "avg_word_overhead_ratio": 3.17,
+      "wins": 9,
+      "ties": 1,
+      "losses": 2,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 21.0,
+          "optimized_total": 24.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 6.49,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 17.0,
+          "optimized_total": 25.0,
+          "delta_total": 8.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 3.91,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 22.5,
+          "optimized_total": 22.5,
+          "delta_total": 0.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 3.5,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 3.7,
+          "winner": "Tie",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 20.5,
+          "optimized_total": 20.0,
+          "delta_total": -0.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 2.38,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 18.0,
+          "optimized_total": 22.5,
+          "delta_total": 4.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 3.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 5.54,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 21.0,
+          "optimized_total": 24.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 5.71,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 21.0,
+          "optimized_total": 23.5,
+          "delta_total": 2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 3.1,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 22.5,
+          "optimized_total": 24.0,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 2.04,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 22.0,
+          "optimized_total": 23.5,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 3.5,
+              "optimized": 5.0,
+              "delta": 1.5
+            }
+          },
+          "word_overhead_ratio": 0.81,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 22.0,
+          "optimized_total": 23.5,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 3.5,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 3.26,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 20.0,
+          "optimized_total": 25.0,
+          "delta_total": 5.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            }
+          },
+          "word_overhead_ratio": 0.26,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 24.5,
+          "optimized_total": 17.0,
+          "delta_total": -7.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 2.5,
+              "delta": -2.5
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "structure": {
+              "baseline": 5.0,
+              "optimized": 4.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 5.0,
+              "optimized": 3.5,
+              "delta": -1.5
+            },
+            "traceability": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            }
+          },
+          "word_overhead_ratio": 0.79,
+          "winner": "Baseline",
+          "score_issues": []
+        }
+      }
+    },
+    {
+      "model": "muse-spark-open:cloud",
+      "slug": "muse-spark-open-cloud",
+      "completed_tests": 12,
+      "avg_baseline": 19.25,
+      "avg_optimized": 20.08,
+      "avg_delta": 0.83,
+      "avg_word_overhead_ratio": 1.98,
+      "wins": 9,
+      "ties": 0,
+      "losses": 3,
+      "tests": {
+        "1": {
+          "id": 1,
+          "baseline_total": 19.0,
+          "optimized_total": 22.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 3.14,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "2": {
+          "id": 2,
+          "baseline_total": 20.0,
+          "optimized_total": 23.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 2.19,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "3": {
+          "id": 3,
+          "baseline_total": 19.5,
+          "optimized_total": 20.5,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 3.0,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 2.67,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "4": {
+          "id": 4,
+          "baseline_total": 20.0,
+          "optimized_total": 23.0,
+          "delta_total": 3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 5.0,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 1.99,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "5": {
+          "id": 5,
+          "baseline_total": 18.0,
+          "optimized_total": 12.5,
+          "delta_total": -5.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 2.5,
+              "delta": -1.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 1.5,
+              "delta": -2.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 2.0,
+              "delta": -2.5
+            },
+            "actionability": {
+              "baseline": 3.5,
+              "optimized": 2.0,
+              "delta": -1.5
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 4.5,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 2.19,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "6": {
+          "id": 6,
+          "baseline_total": 18.0,
+          "optimized_total": 21.5,
+          "delta_total": 3.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "completeness": {
+              "baseline": 3.5,
+              "optimized": 4.5,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 4.5,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 2.94,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "7": {
+          "id": 7,
+          "baseline_total": 20.5,
+          "optimized_total": 21.5,
+          "delta_total": 1.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 5.0,
+              "delta": 1.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "traceability": {
+              "baseline": 3.0,
+              "optimized": 5.0,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 3.66,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "8": {
+          "id": 8,
+          "baseline_total": 19.5,
+          "optimized_total": 21.0,
+          "delta_total": 1.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 2.5,
+              "delta": -2.0
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 1.75,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "9": {
+          "id": 9,
+          "baseline_total": 20.0,
+          "optimized_total": 22.5,
+          "delta_total": 2.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.5,
+              "delta": 0.0
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "actionability": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            }
+          },
+          "word_overhead_ratio": 0.78,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "10": {
+          "id": 10,
+          "baseline_total": 13.5,
+          "optimized_total": 22.0,
+          "delta_total": 8.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 2.5,
+              "optimized": 5.0,
+              "delta": 2.5
+            },
+            "completeness": {
+              "baseline": 4.0,
+              "optimized": 4.5,
+              "delta": 0.5
+            },
+            "structure": {
+              "baseline": 2.5,
+              "optimized": 3.0,
+              "delta": 0.5
+            },
+            "actionability": {
+              "baseline": 2.5,
+              "optimized": 4.5,
+              "delta": 2.0
+            },
+            "traceability": {
+              "baseline": 2.0,
+              "optimized": 5.0,
+              "delta": 3.0
+            }
+          },
+          "word_overhead_ratio": 1.3,
+          "winner": "Optimized",
+          "score_issues": []
+        },
+        "11": {
+          "id": 11,
+          "baseline_total": 23.0,
+          "optimized_total": 14.5,
+          "delta_total": -8.5,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 5.0,
+              "optimized": 5.0,
+              "delta": 0.0
+            },
+            "completeness": {
+              "baseline": 5.0,
+              "optimized": 1.5,
+              "delta": -3.5
+            },
+            "structure": {
+              "baseline": 4.5,
+              "optimized": 2.5,
+              "delta": -2.0
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 3.0,
+              "delta": -1.5
+            },
+            "traceability": {
+              "baseline": 4.0,
+              "optimized": 2.5,
+              "delta": -1.5
+            }
+          },
+          "word_overhead_ratio": 0.15,
+          "winner": "Baseline",
+          "score_issues": []
+        },
+        "12": {
+          "id": 12,
+          "baseline_total": 20.0,
+          "optimized_total": 17.0,
+          "delta_total": -3.0,
+          "dimensions": {
+            "accuracy": {
+              "baseline": 4.5,
+              "optimized": 2.5,
+              "delta": -2.0
+            },
+            "completeness": {
+              "baseline": 4.5,
+              "optimized": 4.0,
+              "delta": -0.5
+            },
+            "structure": {
+              "baseline": 4.0,
+              "optimized": 2.5,
+              "delta": -1.5
+            },
+            "actionability": {
+              "baseline": 4.5,
+              "optimized": 3.5,
+              "delta": -1.0
+            },
+            "traceability": {
+              "baseline": 2.5,
+              "optimized": 4.5,
+              "delta": 2.0
+            }
+          },
+          "word_overhead_ratio": 1.02,
+          "winner": "Baseline",
+          "score_issues": []
+        }
+      }
+    }
+  ]
+}

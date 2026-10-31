@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="assets/hero-banner.svg" width="100%" alt="make-prompt-better v4.0: Research-Grounded Prompt, Context, and Harness Engineering"/>
+  <img src="assets/hero-banner.svg" width="100%" alt="make-prompt-better v4.1.0: Research-Grounded Prompt, Context, and Harness Engineering"/>
 </p>
 
 <p align="center">
   <a href="https://github.com/poferraz/make-prompt-better/actions/workflows/validate-skill.yml"><img src="https://img.shields.io/github/actions/workflow/status/poferraz/make-prompt-better/validate-skill.yml?branch=main&style=flat-square&label=skill%20validation&color=34D399" alt="CI Status"/></a>
-  <a href="https://github.com/poferraz/make-prompt-better/releases/tag/v4.0.0"><img src="https://img.shields.io/badge/release-v4.0.0-38BDF8?style=flat-square" alt="Release v4.0.0"/></a>
+  <a href="https://github.com/poferraz/make-prompt-better/releases/tag/v4.1.0"><img src="https://img.shields.io/badge/release-v4.1.0-38BDF8?style=flat-square" alt="Release v4.1.0"/></a>
   <a href="https://agentskills.io/specification"><img src="https://img.shields.io/badge/standard-agentskills.io-818CF8?style=flat-square" alt="Agent Skills Standard"/></a>
   <a href="#the-11-research-papers"><img src="https://img.shields.io/badge/arXiv%20papers-11%20synthesized-C084FC?style=flat-square" alt="11 ArXiv Papers"/></a>
-  <a href="#cross-architecture-benchmark-results"><img src="https://img.shields.io/badge/benchmark-%2B25.9%25%20quality%20(96.3%25%20win%20rate)-34D399?style=flat-square" alt="Benchmark +25.9%"/></a>
+  <a href="#cross-architecture-benchmark-results"><img src="https://img.shields.io/badge/benchmark-14%20models%20(94.1%25%20frontier%20win%20rate)-34D399?style=flat-square" alt="Benchmark 14 Models"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-64748B?style=flat-square" alt="MIT License"/></a>
 </p>
 
@@ -52,6 +52,7 @@ cd make-prompt-better
 
 `./install.sh` automatically installs and syncs the skill into:
 - `~/.agents/skills/make-prompt-better` (Universal cross-runtime directory recognized by **Antigravity**, **Gemini CLI**, **OpenAI Codex CLI**, **GitHub Copilot CLI**, and **OpenCode**)
+- `~/.gemini/skills/make-prompt-better`, `~/.gemini/config/skills/make-prompt-better`, and `~/.gemini/antigravity/skills/make-prompt-better` (**Gemini CLI** and **Google Antigravity**)
 - `~/.claude/skills/make-prompt-better` (**Claude Code**)
 - `~/.qwen/skills/make-prompt-better` (**Qwen Code**)
 
@@ -97,10 +98,10 @@ Not every prompt needs the same scaffold. `make-prompt-better` classifies your t
 
 | Mode | Best For | Token Overhead | Core Structure |
 |---|---|---|---|
-| **1. Max Certificate** | High-stakes analytical tasks (security audits, legal, clinical, financial due diligence), low baseline competence | **~2.2x** | Exhaustive `[P1..Pn]` Premises + multi-step `[T1..Tn]` Evidence Traces + Formal Conclusion + Remediation + Traceability Self-Check |
-| **2. Lite Certificate** | Routine analytical tasks (everyday code review, basic document analysis, technical comparisons) | **~1.5x** | Up to 3 `[P]` Premises + single-line causal arrow traces (`[T1] Input -> Step -> Finding`) + 1 to 2 sentence Verdict + Remediation |
-| **3. LRM / Harness Mode** *(New in v4.0)* | Reasoning models (`o3`, `DeepSeek-R1`, `Claude Extended Thinking`, `Gemini Thinking`) OR `AGENTS.md` / `CLAUDE.md` files | **~1.1x to 1.3x** | **For LRMs:** `[P]` Premises + `[V]` Verification Gates (no forced visible CoT narration). **For `AGENTS.md`:** Minimal Viable Context pruning + `Context-as-a-File` scratchpad rule |
-| **4. Creative & Divergent v2** *(New in v4.0)* | Technical essays, copywriting, blog posts, storytelling, product positioning, ideation | **~1.6x** | Backstage `[NT0]` Verbalized Distribution Sampling (`p <= 0.20`) + `[NT1..3]` Narrative Traces + 4-part Anti-SlopShape Structural Rarity Contract |
+| **1. Max Certificate** | Frontier reasoning architectures or mission-critical human review (security audits, legal, clinical, financial due diligence), low baseline competence | **~2.2x** | Exhaustive `[P1..Pn]` Premises + multi-step `[T1..Tn]` Evidence Traces + Formal Conclusion + Remediation + Traceability Self-Check |
+| **2. Lite Certificate** | Default for flash-tier or sub-30B parameter models, plus routine analytical tasks (everyday code review, basic document analysis, comparisons) | **~1.5x** | Up to 3 `[P]` Premises + single-line causal arrow traces (`[T1] Input -> Step -> Finding`) + 1 to 2 sentence Verdict + Remediation |
+| **3. LRM / Harness Mode** *(Upgraded in v4.1.0)* | Reasoning models (`o3`, `DeepSeek-R1`, `Claude Extended Thinking`, `Gemini Thinking`), async concurrency coding, OR `AGENTS.md` / `CLAUDE.md` files | **~1.1x to 1.3x** | **For LRMs & concurrency:** Complete Executable Implementation First + Post-Hoc Verification Gate (`[V1] -> [V2]`, `<25%` overhead). **For `AGENTS.md`:** Context Architecture Contract preamble + Minimal Viable Context pruning |
+| **4. Creative & Divergent v2** *(Validated in v4.0)* | Technical essays, copywriting, blog posts, storytelling, product positioning, ideation | **~1.6x** | Backstage `[NT0]` Verbalized Distribution Sampling (`p <= 0.20`) + `[NT1..3]` Narrative Traces + 4-part Anti-SlopShape Structural Rarity Contract |
 
 ---
 
@@ -285,11 +286,15 @@ Evaluated across four frontier model families (`N = 40` tests, 5 scoring dimensi
 | **Kimi** | 17.2 / 25 | **24.0 / 25** | +6.5 | **+37.8%** | ~2.7x | 100% |
 | **Cross-Model Average** | **19.4 / 25** | **24.4 / 25** | **+4.9** | **+25.9%** | **~2.2x** | **96.3%** |
 
-### Key Takeaways from the Benchmark
+### Key Takeaways from the Benchmark Suites (v1.0 & v4.0 14-Model Suite)
 
-1. **Traceability (+1.9 / 5.0) and Structure (+1.4 / 5.0) drive the leap:** Every model improved on traceability in 100% of tests, with **zero orphan claims** across all 40 runs.
-2. **Weak-baseline recovery is massive:** Models with lower starting scores (Kimi at 17.2/25) gained **+37.8%**, nearly matching the highest-baseline models after optimization (24.0 vs. 24.6).
-3. **Why v3 and v4 added Remediation, LRM, and Creative modes:** Early benchmark runs exposed the *Actionability Gap* (+0.4 on Actionability when models stopped at the verdict) and *Creative Mismatch* (+1.0 on Creative Briefs when forced into analytical traces). Those empirical findings directly drove the mandatory `REMEDIATION / NEXT ACTION` block and **Mode 4 (Verbalized Sampling + Anti-SlopShape)**.
+1. **Multi-Architecture Validation (14 Models, 146 Test Pairs):** Across the expanded v4.0 benchmark spanning Google Antigravity (`gemini-3.8`), Anthropic Claude (`claude-opus`), Meta Muse (`meta-muse-wonder-1.0-max`), and 11 Ollama Cloud architectures (`research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md`), `make-prompt-better` achieved a **74.0% overall win rate (108W-8T-30L)** and a **94.1% frontier win rate (32W-2T-0L)**, led by **Gemini 3.8 (+5.29 delta / +27.3%, 12W-0T-0L)** and **Meta Muse Wonder 1.0 Max (+3.42 delta / +16.0%, 12W-0T-0L at 1.61x overhead)**.
+2. **Traceability (+1.66 / 5.0 across 146 runs; +1.9 / 5.0 in v1.0) drives the leap:** Every model improved on traceability, linking conclusions directly to `[P]` and `[T]`/`[V]` identifiers.
+3. **Mode 4 Creative Breakthrough (+4.41 / 25 delta, 100% win rate):** Introducing Verbalized Sampling (`[NT0]`) + Anti-SlopShape (`[SC0]`) turned Test 10 (Creative Brief) from the lowest-scoring task in v1.0 (+1.0) into the highest-gaining task across the 14-model v4.0 benchmark (**+4.41 net delta, 10W-1T-0L**).
+4. **Empirical Refinements in v4.1.0:** The 14-model benchmark exposed three specific bottlenecks on compact/open-weights models that directly shaped v4.1.0:
+   - **Code-First Verification in Template 12 (`[HARNESS]`):** Placing verification tables before code caused token starvation on compact models (-1.85 delta on Test 12); v4.1.0 generates the complete executable implementation first, followed by a post-hoc `[V1] -> [V2]` gate capped at `<25%` overhead.
+   - **Context Architecture Preamble in Template 11 (`[CONTEXT-FILES]`):** Standardized HTML comment header explaining intentional omission of discoverable folder trees and PEP8 boilerplate per Gloaguen et al. (2026).
+   - **Model-Aware Mode Routing & Self-Contained Data Binding:** Defaults flash/sub-30B models to Mode 2 (Lite Certificate) to prevent word bloat (e.g., 11.9x on MiniMax) and requires embedding all input artifacts verbatim inside `[P]` premises.
 
 ---
 
@@ -326,9 +331,9 @@ Ready-to-use templates live in [`make-prompt-better/references/domain-templates.
 7. **Medical / Clinical Reasoning** (Evidence-ranked differential separating probability from acuity)
 8. **Legal Analysis** (Rule-application-counterargument traces and contract symmetry analysis)
 9. **Financial Due Diligence** (Statement reconciliation, unit economics arithmetic, and diligence gap lists)
-10. **Blank Template (Custom Domain)** (General-purpose analytical certificate scaffold)
-11. **Agentic System Prompt / `AGENTS.md` / `CLAUDE.md` Context File** *(New in v4.0)* (Minimal Viable Context operating contract for coding agents)
-12. **Creative / Editorial Writing with Verbalized Sampling & Anti-SlopShape** *(New in v4.0)* (Backstage distribution sampling + discourse-level Structural Rarity Contract)
+10. **Creative / Editorial Writing with Verbalized Sampling & Anti-SlopShape** *(Validated in v4.0: +4.41 delta)* (Backstage distribution sampling + discourse-level Structural Rarity Contract)
+11. **Agentic System Prompt / `AGENTS.md` / `CLAUDE.md` Context File** *(Upgraded in v4.1.0)* (Context Architecture Contract header + Minimal Viable Context operating contract for coding agents)
+12. **LRM & Algorithmic Implementation Verification Harness** *(Upgraded in v4.1.0)* (Code-first executable implementation + post-hoc `[V1] -> [V2]` verification gate with `<25%` overhead ceiling, plus Custom Domain Fallback and JSON Wrapper)
 
 ---
 

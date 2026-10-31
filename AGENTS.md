@@ -1,9 +1,10 @@
+<!-- Context Architecture Contract: Generic directory trees and standard language style guides are omitted per Gloaguen et al. (2026) to protect agent context window. -->
 # make-prompt-better Agent Operating Contract
 
 This file follows **Template 11 (`[CONTEXT-FILES]`, Gloaguen et al., 2026, arXiv:2602.11988)** from `make-prompt-better/references/domain-templates.md`.
 
 ## 1. Non-Inferable Validation & Sync Commands
-- Sync skill across local coding agents (`~/.agents`, `~/.claude`, `~/.qwen`): `./install.sh`
+- Sync skill across local coding agents (`~/.agents`, `~/.claude`, `~/.qwen`, `~/.gemini`): `./install.sh`
 - Run CI validation check locally (verifies `<500` line limit, universal YAML frontmatter, 12 templates, and zero em/en dashes):
   `python3 -c 'import re; [ None for p in ["make-prompt-better/SKILL.md","make-prompt-better/references/domain-templates.md","make-prompt-better/references/research-principles.md","make-prompt-better/references/examples.md","docs/methodology.md","docs/tradeoffs.md","docs/when-to-use.md","docs/task-classification.md","README.md","CLAUDE.md","AGENTS.md"] if (_:=open(p).read()) and ( _ for _ in [1] if not re.search(r"[\u2014\u2013]", _) or (_ for _ in ()).throw(AssertionError(p))) ]; print("VALIDATED OK")'`
 

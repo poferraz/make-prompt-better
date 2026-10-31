@@ -2,7 +2,7 @@
 
 ## Repository Purpose
 
-This repository is a research-grounded prompt, context, and harness optimization skill (`v4.0`). It synthesizes eleven peer-reviewed papers into an actionable methodology called semi-formal reasoning. The repo serves as both a universal installable agent skill (`agentskills.io` standard for Claude Code, Antigravity, Gemini CLI, OpenAI Codex CLI, Qwen Code, Copilot CLI, Cursor, Windsurf, and AdaL) and a standalone reference.
+This repository is a research-grounded prompt, context, and harness optimization skill (`v4.1.0`). It synthesizes eleven peer-reviewed papers into an actionable methodology called semi-formal reasoning. The repo serves as both a universal installable agent skill (`agentskills.io` standard for Claude Code, Antigravity, Gemini CLI, OpenAI Codex CLI, Qwen Code, Copilot CLI, Cursor, Windsurf, and AdaL) and a standalone reference.
 
 ## File Organization
 

@@ -1,9 +1,9 @@
 ---
 name: make-prompt-better
-description: "Use when optimizing, hardening, or rewriting any prompt, system instruction, AGENTS.md or CLAUDE.md context file, or agent workflow to improve accuracy, auditability, structured output compliance, or creative diversity across any LLM or coding agent."
+description: "Use when optimizing, hardening, or rewriting any prompt, system instruction, AGENTS.md or CLAUDE.md context file, or agent workflow (v4.1.0) to improve accuracy, auditability, structured output compliance, or creative diversity across any LLM or coding agent."
 ---
 
-# Semi-Formal Prompt Optimizer (v4.0)
+# Semi-Formal Prompt Optimizer (v4.1.0)
 
 ## Overview
 
@@ -41,14 +41,15 @@ Each principle in this workflow traces to an empirical finding. For full summari
 
 Follow these steps in order whenever a user asks to optimize, harden, or review a prompt or context file.
 
-### Step 1: Classify the Task Type (`[PRISM]`)
+### Step 1: Classify the Task Type & Target Model Tier (`[PRISM]`, `[HARNESS]`)
 
-Determine the primary cognitive demand of the prompt:
+Determine the primary cognitive demand of the prompt and the capacity tier of the target model:
 - **Accuracy-dependent** (code verification, bug hunting, math, fact extraction, legal/medical/financial analysis, compliance): **Omit persona**.
 - **Mixed** (technical reports, architecture reviews, data analysis with executive presentation): **Minimal persona** (5 words or fewer, such as `"You are a systems analyst."`).
 - **Alignment-dependent** (formatting, tone translation, style guides): **Full persona**.
 - **Creative / Divergent** (copywriting, essays, storytelling, product messaging, ideation): **Minimal or Full persona**, routed to **Mode 4 (Creative & Divergent v2)**.
 - **Persistent Context / Agent Harness** (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, system prompts, multi-turn agent loops): **Omit persona**, routed to **Mode 3 (LRM / Harness Mode)**.
+- **Model-Aware Mode Routing**: Default to **Mode 2 (Lite Certificate)** for flash-tier or sub-30B parameter models to prevent token bloat and output starvation (Ugare & Chandra, 2026; Lee et al., 2026), reserving **Mode 1 (Max Certificate)** for frontier reasoning architectures or mission-critical human review.
 
 ### Step 1b: Select Certificate Mode (4 Modes)
 
@@ -56,9 +57,9 @@ Choose the certificate mode that matches the task stakes, model family, and exec
 
 | Mode | When to Use | Overhead | Structure Summary |
 |---|---|---|---|
-| **1. Max Certificate** | High-stakes analytical tasks (security, medical, legal, financial), low baseline competence, full auditability | ~2.2x | Exhaustive `[P]` Premises + multi-step `[T]` Evidence Traces + Formal Conclusion + Remediation + Self-Check |
-| **2. Lite Certificate** | Routine analytical tasks (standard code reviews, basic comparisons, everyday debugging) | ~1.5x | Max 3 `[P]` Premises + single-line causal arrows (`[T1] Input -> Step -> Finding`) + 1-2 sentence conclusion + Remediation |
-| **3. LRM / Harness Mode** | Reasoning models (o3, DeepSeek-R1, Claude Extended Thinking, Gemini Thinking) OR `AGENTS.md` / `CLAUDE.md` / agent system prompts | ~1.1x to 1.3x | For LRMs: `[P]` Premises + `[V]` Verification Gates + Conclusion citing `[P]`/`[V]` + Remediation (no forced step-by-step output narration). For `AGENTS.md`: Minimal Viable Context pruning (`[CONTEXT-FILES]`, `[HARNESS]`) |
+| **1. Max Certificate** | Frontier reasoning architectures or mission-critical human review (security, medical, legal, financial), low baseline competence, full auditability | ~2.2x | Exhaustive `[P]` Premises + multi-step `[T]` Evidence Traces + Formal Conclusion + Remediation + Self-Check |
+| **2. Lite Certificate** | Default for flash-tier or sub-30B parameter models, and routine analytical tasks (standard code reviews, basic comparisons, everyday debugging) | ~1.5x | Max 3 `[P]` Premises + single-line causal arrows (`[T1] Input -> Step -> Finding`) + 1-2 sentence conclusion + Remediation |
+| **3. LRM / Harness Mode** | Reasoning models (o3, DeepSeek-R1, Claude Extended Thinking, Gemini Thinking), algorithmic concurrency coding, OR `AGENTS.md` / `CLAUDE.md` / agent system prompts | ~1.1x to 1.3x | For LRMs & concurrency coding: Compact `[P]` Premises + Complete Executable Implementation First + Post-Hoc Verification Gate (`[V1] Concurrency & State Invariants -> [V2] Executable Self-Test Harness`, `<25%` verification overhead). For `AGENTS.md`: Minimal Viable Context pruning (`[CONTEXT-FILES]`, `[HARNESS]`) |
 | **4. Creative & Divergent v2** | Copywriting, essays, blog posts, storytelling, brand messaging, open-ended ideation | ~1.6x | Backstage `[NT0]` Verbalized Sampling distribution + `[NT1]`-`[NT3]` Narrative Traces + `[SLOPSHAPE]` structural rarity contract + clean final prose |
 
 ### Step 2: Diagnose the Original Prompt
@@ -104,32 +105,31 @@ The task is incomplete until this section contains one of the following:
 - The explicit statement: "No remediation required: [reason grounded in T-identifiers]"
 ```
 
-#### Mode 3 Pattern A: Large Reasoning Model (LRM) Verification Certificate
+#### Mode 3 Pattern A: Large Reasoning Model (LRM) & Algorithmic Verification Certificate (Template 12)
 
-Use when the target model already performs native extended thinking (o3, R1, Claude Extended Thinking, Gemini Thinking) so you do not pollute its internal search tree with redundant visible CoT instructions (`[PRISM]`, `[HARNESS]`):
+Use when the target model performs native extended thinking or implements complex concurrency/state algorithms so pre-code verification tables do not starve output token budgets on compact models (`[PRISM]`, `[HARNESS]`):
 
 ```markdown
-The verification protocol for [TASK] requires grounding all outputs in declared premises and post-condition checks. Perform path exploration in your internal reasoning, and emit only the verified certificate below.
+The verification protocol for [TASK] requires declaring compact premises, generating the complete executable implementation first, and verifying it through a post-hoc gate. Restrict non-code verification preamble and post-hoc commentary overhead to <25% of the total response length.
 
-### PREMISES
-- [P1] Source inputs and active constraints: [exact scope]
-- [P2] Target invariants (complexity, interfaces, edge cases): [exact criteria]
+### PREMISES (Compact: <25% total response overhead)
+- [P1] Source inputs and interface contract: [exact signatures, types, and embedded input artifacts]
+- [P2] Target invariants (concurrency safety, complexity, edge cases): [exact criteria]
 
-### VERIFICATION GATES
-For each target invariant in [P2], record the verification outcome:
-- [V1] Invariant [name]: [SATISFIED / VIOLATED / UNTESTABLE] -> Evidence: [exact line, counterexample, or boundary check from P1]
-- [V2] Invariant [name]: [SATISFIED / VIOLATED / UNTESTABLE] -> Evidence: [exact line, counterexample, or boundary check from P1]
+### 1. COMPLETE EXECUTABLE IMPLEMENTATION (Generated First)
+Provide the complete, copy-pasteable implementation satisfying [P1] and [P2] before emitting any verification tables or test prose.
 
-### FORMAL CONCLUSION & DELIVERABLE
-- Disposition: [summary grounded in V1, V2]
-- Deliverable: [the complete, copy-pasteable code, proof, or artifact satisfying all V-gates]
+### 2. POST-HOC VERIFICATION GATE ([V1] Concurrency & State Invariants -> [V2] Executable Self-Test Harness)
+- [V1] Concurrency & State Invariants: Check each invariant in [P2] (`[SATISFIED / VIOLATED] -> [exact line/mechanism in implementation]`).
+- [V2] Executable Self-Test Harness: Provide a runnable test block (`assert` / `asyncio.run`) exercising normal paths, boundaries, and concurrent contention from [P2].
 ```
 
-#### Mode 3 Pattern B: Persistent Agent Context (`AGENTS.md` / `CLAUDE.md` / System Prompt)
+#### Mode 3 Pattern B: Persistent Agent Context (`AGENTS.md` / `CLAUDE.md` / System Prompt, Template 11)
 
 Use when optimizing repository context files or coding-agent harnesses (`[CONTEXT-FILES]`, `[HARNESS]`):
 
 ```markdown
+<!-- Context Architecture Contract: Generic directory trees and standard language style guides are omitted per Gloaguen et al. (2026) to protect agent context window. -->
 # [Project Name] Agent Operating Contract
 
 ## 1. Environment & Execution Commands (Non-Inferable Only)
@@ -182,12 +182,15 @@ Construct the final piece to satisfy these four discourse rules:
 Present the finished piece cleanly, embodying the selected [NT0] angle and the Structural Rarity Contract.
 ```
 
-### Step 4: Apply Positive Recipe Guards & Self-Check (`[SKILLS-SDO]`, `[META]`)
+### Step 4: Apply Positive Recipe Guards, Data Binding & Self-Check (`[SKILLS-SDO]`, `[META]`, `[ACE]`)
+
+Enforce **Self-Contained Data Binding**: The rewritten prompt must embed all input code, tables, numbers, and case facts directly inside the prompt premises; never leave empty placeholders like `[insert code here]` or refer to external context (Ugare & Chandra, 2026; Zhang, Hu et al., 2026).
 
 Replace negative "Do NOT" lists with **observable-predicate conditionals** and append the mandatory **Traceability Self-Check** to every analytical prompt:
 
 ```markdown
 VERIFICATION & TRACEABILITY CONTRACT:
+- Data-binding predicate: Embed all input code, tables, numbers, and case facts verbatim inside [P1]-[Pn] so the prompt is 100% self-contained without placeholders.
 - Grounding rule: Base every step in [T] traces on explicit implementation details, data points, or text in [P1]-[Pn] rather than symbol names or titles.
 - Missing-evidence predicate: When a path cannot be verified from [P1]-[Pn], record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Verification Gaps.
 - Counterexample predicate: When disconfirming evidence or edge-case failures appear in [P1]-[Pn], record them as a dedicated `[T]` trace even if the overall verdict is positive.
@@ -200,12 +203,12 @@ Verify that every claim in your Formal Conclusion cites at least one `[T]` or `[
 ### Step 5: Present the Optimized Result
 
 Deliver:
-1. **Task Classification & Mode Selection**: State the task type (`[PRISM]`), target persona rule, and chosen Certificate Mode (Max, Lite, LRM/Harness, or Creative v2) with expected token tradeoff.
-2. **The Optimized Prompt**: In a clean, copy-pasteable code block.
+1. **Task Classification & Mode Selection**: State the task type (`[PRISM]`), target persona rule, model-aware routing choice (defaulting to Mode 2 Lite for flash-tier or sub-30B models, Mode 1 Max for frontier reasoning architectures or mission-critical review), and expected token tradeoff.
+2. **The Optimized Prompt**: In a clean, copy-pasteable code block. Hard invariant: The rewritten prompt must embed all input code, tables, numbers, and case facts directly inside the prompt premises; never leave empty placeholders like `[insert code here]` or refer to external context (Ugare & Chandra, 2026; Zhang, Hu et al., 2026).
 3. **Research Rationale**: A concise bullet list mapping each change to its paper citation (`[META]`, `[GOAL-BLIND]`, `[ACE]`, `[HIERARCHY]`, `[CODE-SMELLS]`, `[PRISM]`, `[VS]`, `[SLOPSHAPE]`, `[CONTEXT-FILES]`, `[HARNESS]`, `[SKILLS-SDO]`).
 
 ## Reference Materials
 
-- `references/domain-templates.md`: 12 ready-to-use templates (Code Review, Document Analysis, Research Synthesis, Compliance, Decision-Making, Comparative Analysis, Medical Reasoning, Legal Analysis, Financial Due Diligence, Blank Custom, Agentic System Prompt / `AGENTS.md`, and Creative / Editorial Writing).
+- `references/domain-templates.md`: 12 ready-to-use templates (Code Review, Document Analysis, Research Synthesis, Compliance, Decision-Making, Comparative Analysis, Medical Reasoning, Legal Analysis, Financial Due Diligence, Creative / Editorial Writing, Agentic System Prompt / `AGENTS.md`, and LRM & Algorithmic Implementation Verification Harness, plus Custom Domain Fallback and JSON Wrapper).
 - `references/research-principles.md`: Quick-reference index of all 11 research sources and their actionable constraints.
 - `references/examples.md`: 9 annotated before/after prompt transformations across analytical, agentic, and creative domains.

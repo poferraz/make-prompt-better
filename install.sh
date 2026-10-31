@@ -8,6 +8,9 @@ TARGETS=(
   "${HOME}/.agents/skills/make-prompt-better"
   "${HOME}/.claude/skills/make-prompt-better"
   "${HOME}/.qwen/skills/make-prompt-better"
+  "${HOME}/.gemini/skills/make-prompt-better"
+  "${HOME}/.gemini/config/skills/make-prompt-better"
+  "${HOME}/.gemini/antigravity/skills/make-prompt-better"
 )
 
 for target in "${TARGETS[@]}"; do
@@ -15,7 +18,7 @@ for target in "${TARGETS[@]}"; do
   mkdir -p "${parent_dir}"
   rm -rf "${target}"
   cp -R "${SKILL_SRC}" "${target}"
-  echo "Installed make-prompt-better v4.0 -> ${target}"
+  echo "Installed make-prompt-better v4.1.0 -> ${target}"
 done
 
-echo "Done. Universal skill synced across ~/.agents/skills, ~/.claude/skills, and ~/.qwen/skills."
+echo "Done. Universal skill synced across ~/.agents, ~/.claude, ~/.qwen, and ~/.gemini skill directories."

@@ -1,7 +1,8 @@
 # Domain-Specific Certificate Templates
 
-Reference library for the `make-prompt-better` skill (v4.0). Each template adapts semi-formal reasoning to a specific domain and incorporates:
+Reference library for the `make-prompt-better` skill (v4.1.0). Each template adapts semi-formal reasoning to a specific domain and incorporates:
 - **Itemized identifiers** `[P1]`, `[T1]`, `[V1]` for verifiable cross-referencing (Zhang, Hu et al., 2026)
+- **Self-contained data binding** embedding all input code, tables, numbers, and case facts directly inside `[P]` premises (Ugare & Chandra, 2026; Zhang, Hu et al., 2026)
 - **Authority-framed preambles** using expertise or consensus language (Geng et al., 2025)
 - **Goal-blind conclusion formats** that omit downstream evaluation criteria (Cao, Jiang & Xu, 2026)
 - **Persona calibration** per task type (Hu, Rostami & Thomason, 2026)
@@ -390,7 +391,125 @@ cites a specific [T] calculation trace.
 
 ---
 
-## 10. Blank Template (Custom Domain)
+## 10. Creative / Editorial Writing with Verbalized Sampling & Anti-SlopShape (Mode 4)
+
+Origin: Grounded in `[VS]` (Zhang et al., 2025, arXiv:2510.01171) and `[SLOPSHAPE]` (Madler, 2026, arXiv:2609.15369; Russell et al., 2026), upgrading V3's Narrative Traces.
+Persona: MINIMAL or FULL domain practitioner persona (alignment and voice task per Hu, Rostami & Thomason, 2026).
+
+```
+You are a [specific practitioner role, <=5 words]. The editorial craft protocol
+requires completing the backstage scaffolding block before drafting the final piece.
+
+### PREMISES
+- [P1] Audience & lived context: [who is reading and what concrete friction they face]
+- [P2] Target shift: [what specific realization or emotional shift the piece must earn]
+- [P3] Format & register constraints: [word count, medium, perspective, domain facts]
+
+### BACKSTAGE SCAFFOLD (complete before drafting; keep backstage if final-only requested)
+- [NT0] Verbalized Distribution Sampling: Generate 4 structurally distinct entry angles
+  for this piece and estimate each angle's typicality probability (p = likelihood a
+  default LLM prompt would produce it):
+  1. [Angle 1: prototypical/expected framing] (p = ...)
+  2. [Angle 2: moderate variation] (p = ...)
+  3. [Angle 3: concrete, low-typicality practitioner angle] (p = ...)
+  4. [Angle 4: unexpected structural entry or inversion] (p = ...)
+  Selection: Commit to the strongest angle with p <= 0.20 that satisfies [P1]-[P3].
+- [NT1] Opening Anchor: [the specific artifact, failure, or concrete scene that opens the draft]
+- [NT2] Inductive Trajectory: [how the core insight emerges from evidence rather than being pre-announced]
+- [NT3] Cadence & Texture: [sentence length variation, concrete domain nouns, zero filler transitions]
+
+### STRUCTURAL RARITY CONTRACT ([SC0] Discourse-Level Anti-SlopShape Rules)
+Shape the final piece so it satisfies all four structural rules:
+1. Delayed Thesis (anti-STR_FLW_006 / PUR_OUT_003): Use a specific, non-spoiler title
+   and open inside the concrete anchor from [NT1] before stating the overarching thesis.
+2. Direct Evidence Progression (anti-STR_FLW_005): Advance the piece through specific
+   examples and mechanisms rather than a formulaic "Legacy Way vs. Modern Way" contrast.
+3. Practitioner Voice (anti-VOC_VOX_001): Write from a grounded viewpoint with asymmetric
+   paragraph lengths rather than a symmetric, institutional "editorial explainer" tone.
+4. Open-Loop / Actionable Close (anti-STR_STG_008 / VOC_PRT_005): End on a sharp concrete
+   implication, diagnostic question, or immediate practitioner experiment rather than a
+   summary paragraph that restates the thesis.
+
+### FINAL DELIVERABLE
+Present the finished piece cleanly, executing the selected [NT0] low-typicality angle
+and adhering to the Structural Rarity Contract.
+```
+
+---
+
+## 11. Agentic System Prompt / `AGENTS.md` / `CLAUDE.md` Context File (Mode 3 `[CONTEXT-FILES]`)
+
+Origin: Grounded in `[CONTEXT-FILES]` (Gloaguen et al., 2026, arXiv:2602.11988) and `[HARNESS]` (Lee et al., 2026, arXiv:2603.28052; Shao et al., 2026, arXiv:2609.37725; Nam et al., 2025, arXiv:2509.21825).
+Persona: OMIT (coding agents and reasoning models perform best with direct operational contracts per Hu, Rostami & Thomason, 2026).
+When to use: Optimizing `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, or multi-turn agent harness prompts.
+
+```
+<!-- Context Architecture Contract: Generic directory trees and standard language style guides are omitted per Gloaguen et al. (2026) to protect agent context window. -->
+# [Repository / System Name] Agent Operating Contract
+
+### 1. Non-Inferable Environment & Tooling Commands
+(Include only exact commands that cannot be guessed from standard defaults; omit
+directory trees and file inventories per Gloaguen et al., 2026.)
+- Environment / Dependency Sync: `[exact command, e.g., uv sync --all-extras]`
+- Single-File Test Execution: `[exact command, e.g., uv run pytest <path> -q]`
+- Typecheck & Linter Gate: `[exact command, e.g., uv run ruff check . && uv run mypy src]`
+
+### 2. Hard Architectural & Boundary Invariants
+- [I1] Module boundary: [state non-obvious dependency direction or forbidden imports]
+- [I2] Schema / Contract rule: [state required validation or serialization boundary]
+- [I3] Security / State rule: [state protected files, credentials, or migration rules]
+
+### 3. Multi-Step Execution & Context-as-a-File Protocol
+- Plan Sufficiency Gate: When a task modifies 3+ files or alters a public interface,
+  write a brief Premise & Verification checklist to a scratchpad file before editing
+  source files.
+- Context Hygiene: Prefer targeted symbol/grep searches over reading entire directories.
+  Store intermediate findings and test logs in the scratchpad file so active context
+  stays compact.
+
+### 4. Mandatory Verification Gate (Before Claiming Completion)
+1. Execute the Single-File Test and Linter commands from Section 1 on all touched modules.
+2. Confirm exit code 0 and cite the exact command output in your final response.
+3. If any check fails or cannot run in the current sandbox, report `VERIFICATION BLOCKED: [command + error]` rather than claiming success.
+```
+
+---
+
+## 12. LRM & Algorithmic Implementation Verification Harness (Mode 3 `[HARNESS]`)
+
+Origin: Grounded in `[HARNESS]` (Lee et al., 2026, arXiv:2603.28052; Zhang et al., 2026, arXiv:2606.09498; Shao et al., 2026, arXiv:2609.37725; Nam et al., 2025, arXiv:2509.21825) and `[PRISM]` (Hu, Rostami & Thomason, 2026, arXiv:2603.18507).
+Persona: OMIT (reasoning models and algorithmic implementation tasks perform best without roleplay framing per Hu, Rostami & Thomason, 2026).
+When to use: Algorithmic implementation, async concurrency, state-machine coding, or Large Reasoning Model (LRM) tasks. Generates the complete executable implementation first to prevent verification preamble token starvation on compact models.
+
+```
+The verification protocol for [TASK] requires declaring compact premises,
+generating the complete executable implementation first, and verifying it
+through a post-hoc gate. Restrict non-code verification preamble and post-hoc
+commentary overhead to <25% of the total response length so full output budget
+is preserved for executable code.
+
+### PREMISES (Compact: keep total non-code overhead <25% of response)
+- [P1] Interface & inputs: [exact class/function signatures, types, and embedded input data]
+- [P2] Target invariants: [concurrency safety, atomicity, bounds, and timeout/cancellation rules]
+
+### 1. COMPLETE EXECUTABLE IMPLEMENTATION (Generated First)
+Provide the complete, production-ready, copy-pasteable implementation satisfying
+[P1] and [P2] first, before emitting any verification tables or test prose.
+
+### 2. POST-HOC VERIFICATION GATE ([V1] Concurrency & State Invariants -> [V2] Executable Self-Test Harness)
+After the implementation above, complete this compact two-step verification gate:
+- [V1] Concurrency & State Invariants:
+  Verify each invariant in [P2] in a compact checklist (`[SATISFIED / VIOLATED] -> [exact method/line in implementation]`).
+- [V2] Executable Self-Test Harness:
+  Provide a runnable self-test block (`asyncio.run` / `pytest` assertions) that deterministically exercises normal operation, edge boundaries, and concurrent contention from [P2].
+
+TRACEABILITY SELF-CHECK: Confirm every invariant in [P2] is mapped in [V1] and
+tested in [V2], and verify that non-code verification overhead stays <25% of the response.
+```
+
+---
+
+## Custom Domain Blank Template (Fallback)
 
 Persona: Classify task first per PRISM (`OMIT` for accuracy, `MINIMAL`<=5 words for mixed, `FULL` for alignment).
 
@@ -425,89 +544,6 @@ concrete execution sequence addressing the conclusion.
 
 TRACEABILITY SELF-CHECK: Verify that every claim in the Formal Conclusion cites
 at least one [T] identifier.
-```
-
----
-
-## 11. Agentic System Prompt / `AGENTS.md` / `CLAUDE.md` Context File (NEW in v4.0)
-
-Origin: Grounded in `[CONTEXT-FILES]` (Gloaguen et al., 2026, arXiv:2602.11988) and `[HARNESS]` (Lee et al., 2026, arXiv:2603.28052; Shao et al., 2026, arXiv:2609.37725; Nam et al., 2025, arXiv:2509.21825).
-Persona: OMIT (coding agents and reasoning models perform best with direct operational contracts).
-When to use: Optimizing `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, or multi-turn agent harness prompts.
-
-```
-# [Repository / System Name] Agent Operating Contract
-
-### 1. Non-Inferable Environment & Tooling Commands
-(Include only exact commands that cannot be guessed from standard defaults; omit
-directory trees and file inventories per Gloaguen et al., 2026.)
-- Environment / Dependency Sync: `[exact command, e.g., uv sync --all-extras]`
-- Single-File Test Execution: `[exact command, e.g., uv run pytest <path> -q]`
-- Typecheck & Linter Gate: `[exact command, e.g., uv run ruff check . && uv run mypy src]`
-
-### 2. Hard Architectural & Boundary Invariants
-- [I1] Module boundary: [state non-obvious dependency direction or forbidden imports]
-- [I2] Schema / Contract rule: [state required validation or serialization boundary]
-- [I3] Security / State rule: [state protected files, credentials, or migration rules]
-
-### 3. Multi-Step Execution & Context-as-a-File Protocol
-- Plan Sufficiency Gate: When a task modifies 3+ files or alters a public interface,
-  write a brief Premise & Verification checklist to a scratchpad file before editing
-  source files.
-- Context Hygiene: Prefer targeted symbol/grep searches over reading entire directories.
-  Store intermediate findings and test logs in the scratchpad file so active context
-  stays compact.
-
-### 4. Mandatory Verification Gate (Before Claiming Completion)
-1. Execute the Single-File Test and Linter commands from Section 1 on all touched modules.
-2. Confirm exit code 0 and cite the exact command output in your final response.
-3. If any check fails or cannot run in the current sandbox, report `VERIFICATION BLOCKED: [command + error]` rather than claiming success.
-```
-
----
-
-## 12. Creative / Editorial Writing with Verbalized Sampling & Anti-SlopShape (NEW in v4.0)
-
-Origin: Grounded in `[VS]` (Zhang et al., 2025, arXiv:2510.01171) and `[SLOPSHAPE]` (Madler, 2026, arXiv:2609.15369; Russell et al., 2026), upgrading V3's Narrative Traces.
-Persona: MINIMAL or FULL domain practitioner persona (alignment and voice task per Hu, Rostami & Thomason, 2026).
-
-```
-You are a [specific practitioner role, <=5 words]. The editorial craft protocol
-requires completing the backstage scaffolding block before drafting the final piece.
-
-### PREMISES
-- [P1] Audience & lived context: [who is reading and what concrete friction they face]
-- [P2] Target shift: [what specific realization or emotional shift the piece must earn]
-- [P3] Format & register constraints: [word count, medium, perspective, domain facts]
-
-### BACKSTAGE SCAFFOLD (complete before drafting; keep backstage if final-only requested)
-- [NT0] Verbalized Distribution Sampling: Generate 4 structurally distinct entry angles
-  for this piece and estimate each angle's typicality probability (p = likelihood a
-  default LLM prompt would produce it):
-  1. [Angle 1: prototypical/expected framing] (p = ...)
-  2. [Angle 2: moderate variation] (p = ...)
-  3. [Angle 3: concrete, low-typicality practitioner angle] (p = ...)
-  4. [Angle 4: unexpected structural entry or inversion] (p = ...)
-  Selection: Commit to the strongest angle with p <= 0.20 that satisfies [P1]-[P3].
-- [NT1] Opening Anchor: [the specific artifact, failure, or concrete scene that opens the draft]
-- [NT2] Inductive Trajectory: [how the core insight emerges from evidence rather than being pre-announced]
-- [NT3] Cadence & Texture: [sentence length variation, concrete domain nouns, zero filler transitions]
-
-### STRUCTURAL RARITY CONTRACT (Discourse-Level Anti-SlopShape Rules)
-Shape the final piece so it satisfies all four structural rules:
-1. Delayed Thesis (anti-STR_FLW_006 / PUR_OUT_003): Use a specific, non-spoiler title
-   and open inside the concrete anchor from [NT1] before stating the overarching thesis.
-2. Direct Evidence Progression (anti-STR_FLW_005): Advance the piece through specific
-   examples and mechanisms rather than a formulaic "Legacy Way vs. Modern Way" contrast.
-3. Practitioner Voice (anti-VOC_VOX_001): Write from a grounded viewpoint with asymmetric
-   paragraph lengths rather than a symmetric, institutional "editorial explainer" tone.
-4. Open-Loop / Actionable Close (anti-STR_STG_008 / VOC_PRT_005): End on a sharp concrete
-   implication, diagnostic question, or immediate practitioner experiment rather than a
-   summary paragraph that restates the thesis.
-
-### FINAL DELIVERABLE
-Present the finished piece cleanly, executing the selected [NT0] low-typicality angle
-and adhering to the Structural Rarity Contract.
 ```
 
 ---
