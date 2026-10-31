@@ -1,6 +1,6 @@
 # Domain-Specific Certificate Templates
 
-Reference library for the `make-prompt-better` skill (v4.1.0). Each template adapts semi-formal reasoning to a specific domain and incorporates:
+Reference library for the `make-prompt-better` skill (v4.2.0). Each template adapts semi-formal reasoning to a specific domain and incorporates:
 - **Itemized identifiers** `[P1]`, `[T1]`, `[V1]` for verifiable cross-referencing (Zhang, Hu et al., 2026)
 - **Self-contained data binding** embedding all input code, tables, numbers, and case facts directly inside `[P]` premises (Ugare & Chandra, 2026; Zhang, Hu et al., 2026)
 - **Authority-framed preambles** using expertise or consensus language (Geng et al., 2025)

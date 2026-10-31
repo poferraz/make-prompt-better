@@ -197,5 +197,45 @@ class BenchmarkValidityTests(unittest.TestCase):
             self.assertEqual(runner.main(), 1)
 
 
+class BlindEvaluationProtocolTests(unittest.TestCase):
+    def test_unblind_parsed_scores_inverts_when_a_is_optimized(self):
+        raw_ab = {
+            "baseline_total": 22,   # Column A score (actually Optimized)
+            "optimized_total": 16,  # Column B score (actually Baseline)
+            "delta_total": -6,
+            "winner": "Baseline",
+            "dimensions": {
+                "Accuracy": {"baseline": 5, "optimized": 3, "delta": -2},
+            },
+        }
+        mapping = {"A": "optimized", "B": "baseline"}
+        unblinded = runner.unblind_parsed_scores(raw_ab, mapping)
+        self.assertEqual(unblinded["baseline_total"], 16)
+        self.assertEqual(unblinded["optimized_total"], 22)
+        self.assertEqual(unblinded["delta_total"], 6)
+        self.assertEqual(unblinded["winner"], "Optimized")
+        self.assertEqual(unblinded["dimensions"]["Accuracy"]["baseline"], 3)
+        self.assertEqual(unblinded["dimensions"]["Accuracy"]["optimized"], 5)
+
+    def test_blind_eval_instruction_omits_optimized_prompt_and_labels(self):
+        tc = {"id": 1, "domain": "Finance", "task_type": "Audit", "raw_prompt": "Calculate IRR."}
+        prompt = runner.build_blind_eval_instruction(
+            tc, "[P1] Premise\nIRR is 12%", "IRR is 12%", strip_markers=True
+        )
+        self.assertNotIn("OPTIMIZED PROMPT", prompt)
+        self.assertNotIn("=== BASELINE RESPONSE ===", prompt)
+        self.assertIn("=== CANDIDATE RESPONSE A", prompt)
+        self.assertNotIn("[P1]", prompt)
+
+    def test_merge_position_swapped_scores_averages_and_flags_consistency(self):
+        p1 = {"baseline_total": 15, "optimized_total": 21, "delta_total": 6, "winner": "Optimized", "dimensions": {}}
+        p2 = {"baseline_total": 17, "optimized_total": 23, "delta_total": 6, "winner": "Optimized", "dimensions": {}}
+        merged = runner.merge_position_swapped_scores(p1, p2)
+        self.assertEqual(merged["baseline_total"], 16.0)
+        self.assertEqual(merged["optimized_total"], 22.0)
+        self.assertEqual(merged["delta_total"], 6.0)
+        self.assertTrue(merged["position_swap_consistent"])
+
+
 if __name__ == "__main__":
     unittest.main()

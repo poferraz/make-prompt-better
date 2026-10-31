@@ -1,107 +1,150 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 490" width="100%" height="100%">
   <defs>
-    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#050811"/>
-      <stop offset="100%" stop-color="#0F172A"/>
-    </linearGradient>
-    <linearGradient id="barCyan" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#0284C7"/>
-      <stop offset="100%" stop-color="#38BDF8"/>
-    </linearGradient>
-    <linearGradient id="barGreen" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#059669"/>
-      <stop offset="100%" stop-color="#34D399"/>
-    </linearGradient>
-    <linearGradient id="barViolet" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#7C3AED"/>
-      <stop offset="100%" stop-color="#C084FC"/>
-    </linearGradient>
-    <pattern id="isoGrid3" width="48" height="28" patternUnits="userSpaceOnUse">
-      <path d="M 24 0 L 48 14 L 24 28 L 0 14 Z" fill="none" stroke="#1E293B" stroke-width="0.7"/>
+    <pattern id="swissGrid4" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#16161A" stroke-width="1" />
     </pattern>
   </defs>
 
-  <rect width="1200" height="440" rx="20" fill="url(#bg3)" stroke="#1E293B" stroke-width="1.5"/>
-  <rect width="1200" height="440" rx="20" fill="url(#isoGrid3)" opacity="0.5"/>
+  <rect width="1200" height="490" fill="#0B0B0D" />
+  <rect x="1" y="1" width="1198" height="488" fill="url(#swissGrid4)" stroke="#2A2A30" stroke-width="1.5" />
 
-  <!-- LEFT PANEL: 14-MODEL BENCHMARK LEADERBOARD -->
-  <text x="48" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21" font-weight="900" fill="#F8FAFC">14-Model Benchmark Leaderboard (Score / 25)</text>
-  <text x="48" y="70" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#38BDF8">146 CONTROLLED PAIRS • OCT 30, 2026</text>
+  <!-- Top Header Bar -->
+  <rect x="1" y="1" width="1198" height="46" fill="#111115" />
+  <line x1="1" y1="47" x2="1199" y2="47" stroke="#2A2A30" stroke-width="1.5" />
+  <rect x="24" y="18" width="12" height="12" fill="#00D67F" />
+  <text x="46" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">FIG. 04 // EMPIRICAL BENCHMARK SUITE (146 PAIRS ACROSS 14 ARCHITECTURES)</text>
+  <text x="820" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#9A9891">5 RUBRIC DIMENSIONS // MAX SCORE: 25.0</text>
 
-  <!-- Row 1: Meta Muse Wonder 1.0 Max -->
-  <text x="48" y="114" font-family="-apple-system, sans-serif" font-size="14" font-weight="800" fill="#F8FAFC">Muse Wonder 1.0</text>
-  <rect x="186" y="96" width="274" height="12" rx="4" fill="#334155"/>
-  <rect x="186" y="112" width="318" height="16" rx="4" fill="url(#barGreen)">
-    <animate attributeName="width" values="274;318;318" dur="2.6s" repeatCount="indefinite"/>
-  </rect>
-  <text x="514" y="125" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#34D399">24.83 (+16.0%)</text>
+  <!-- Vertical Split (x = 740) -->
+  <line x1="740" y1="47" x2="740" y2="444" stroke="#2A2A30" stroke-width="1.5" />
 
-  <!-- Row 2: Gemini 3.8 -->
-  <text x="48" y="170" font-family="-apple-system, sans-serif" font-size="14" font-weight="800" fill="#F8FAFC">Gemini 3.8</text>
-  <rect x="186" y="152" width="248" height="12" rx="4" fill="#334155"/>
-  <rect x="186" y="168" width="316" height="16" rx="4" fill="url(#barCyan)">
-    <animate attributeName="width" values="248;316;316" dur="2.6s" repeatCount="indefinite"/>
-  </rect>
-  <text x="512" y="181" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#38BDF8">24.67 (+27.3%)</text>
+  <!-- LEFT COLUMN: Model Leaderboard (x: 24 -> 720) -->
+  <g transform="translate(24, 68)">
+    <text x="0" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#9A9891" letter-spacing="0.06em">MODEL ARCHITECTURE</text>
+    <text x="230" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#9A9891" letter-spacing="0.06em">BASELINE -&gt; COMPILED (/25)</text>
+    <text x="580" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#9A9891" letter-spacing="0.06em">NET LIFT</text>
+    <line x1="0" y1="22" x2="692" y2="22" stroke="#2A2A30" stroke-width="1" />
 
-  <!-- Row 3: GLM-5.3 Cloud -->
-  <text x="48" y="226" font-family="-apple-system, sans-serif" font-size="14" font-weight="800" fill="#F8FAFC">GLM-5.3 Cloud</text>
-  <rect x="186" y="208" width="273" height="12" rx="4" fill="#334155"/>
-  <rect x="186" y="224" width="303" height="16" rx="4" fill="url(#barCyan)">
-    <animate attributeName="width" values="273;303;303" dur="2.6s" repeatCount="indefinite"/>
-  </rect>
-  <text x="499" y="237" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#38BDF8">23.67 (+10.7%)</text>
+    <!-- Row 1: gemini-3.8 -->
+    <g transform="translate(0, 36)">
+      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6">gemini-3.8</text>
+      <rect x="230" y="3" width="232" height="16" fill="#26262E" />
+      <rect x="462" y="3" width="64" height="16" fill="#00D67F" />
+      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">24.67</text>
+      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+5.29 (+27.3%)</text>
+    </g>
 
-  <!-- Row 4: Claude Opus -->
-  <text x="48" y="282" font-family="-apple-system, sans-serif" font-size="14" font-weight="800" fill="#F8FAFC">Claude Opus</text>
-  <rect x="186" y="264" width="269" height="12" rx="4" fill="#334155"/>
-  <rect x="186" y="280" width="302" height="16" rx="4" fill="url(#barCyan)">
-    <animate attributeName="width" values="269;302;302" dur="2.6s" repeatCount="indefinite"/>
-  </rect>
-  <text x="498" y="293" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#38BDF8">23.58 (+12.3%)</text>
+    <!-- Row 2: meta-muse-wonder-1.0-max -->
+    <g transform="translate(0, 72)">
+      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6">muse-wonder-1.0-max</text>
+      <rect x="230" y="3" width="257" height="16" fill="#26262E" />
+      <rect x="487" y="3" width="41" height="16" fill="#00D67F" />
+      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">24.83</text>
+      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+3.42 (+16.0%)</text>
+    </g>
 
-  <!-- Row 5: Kimi K3 Cloud -->
-  <text x="48" y="338" font-family="-apple-system, sans-serif" font-size="14" font-weight="800" fill="#F8FAFC">Kimi K3 Cloud</text>
-  <rect x="186" y="320" width="271" height="12" rx="4" fill="#334155"/>
-  <rect x="186" y="336" width="301" height="16" rx="4" fill="url(#barViolet)">
-    <animate attributeName="width" values="271;301;301" dur="2.6s" repeatCount="indefinite"/>
-  </rect>
-  <text x="497" y="349" font-family="ui-monospace, monospace" font-size="13" font-weight="800" fill="#C084FC">23.54 (+11.2%)</text>
+    <!-- Row 3: claude-opus -->
+    <g transform="translate(0, 108)">
+      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6">claude-opus</text>
+      <rect x="230" y="3" width="252" height="16" fill="#26262E" />
+      <rect x="482" y="3" width="31" height="16" fill="#00D67F" />
+      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.58</text>
+      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+2.58 (+12.3%)</text>
+    </g>
 
-  <!-- Legend -->
-  <rect x="186" y="382" width="14" height="14" rx="3" fill="#334155"/>
-  <text x="208" y="394" font-family="ui-monospace, monospace" font-size="12" fill="#94A3B8">Baseline</text>
-  <rect x="300" y="382" width="14" height="14" rx="3" fill="#38BDF8"/>
-  <text x="322" y="394" font-family="ui-monospace, monospace" font-size="12" fill="#F8FAFC">Certificate Optimized</text>
+    <!-- Row 4: kimi-k3:cloud -->
+    <g transform="translate(0, 144)">
+      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">kimi-k3:cloud</text>
+      <rect x="230" y="3" width="254" height="16" fill="#26262E" />
+      <rect x="484" y="3" width="28" height="16" fill="#00D67F" />
+      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.54</text>
+      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+2.38 (+11.2%)</text>
+    </g>
 
-  <!-- Divider -->
-  <line x1="650" y1="40" x2="650" y2="400" stroke="#1E293B" stroke-width="2"/>
+    <!-- Row 5: glm-5.3:cloud -->
+    <g transform="translate(0, 180)">
+      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">glm-5.3:cloud</text>
+      <rect x="230" y="3" width="256" height="16" fill="#26262E" />
+      <rect x="486" y="3" width="27" height="16" fill="#00D67F" />
+      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.67</text>
+      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+2.29 (+10.7%)</text>
+    </g>
 
-  <!-- RIGHT PANEL: TOP DOMAIN BREAKTHROUGHS (3D FLOATING TILES) -->
-  <text x="686" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="21" font-weight="900" fill="#F8FAFC">Top Domain Gains (/25 Delta)</text>
-  <text x="686" y="70" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#C084FC">ACROSS ALL 14 ARCHITECTURES</text>
+    <!-- Row 6: glm-5.3-flash:cloud -->
+    <g transform="translate(0, 216)">
+      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">glm-5.3-flash</text>
+      <rect x="230" y="3" width="258" height="16" fill="#26262E" />
+      <rect x="488" y="3" width="24" height="16" fill="#00D67F" />
+      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.50</text>
+      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+2.00 (+9.3%)</text>
+    </g>
 
-  <!-- Domain Tile 1: Creative Brief -->
-  <rect x="686" y="96" width="466" height="66" rx="12" fill="#131C31" stroke="#C084FC" stroke-width="1.6"/>
-  <text x="708" y="126" font-family="-apple-system, sans-serif" font-size="16" font-weight="800" fill="#F8FAFC">T10 • Creative Brief (Mode 4)</text>
-  <text x="708" y="146" font-family="ui-monospace, monospace" font-size="12" fill="#94A3B8">18.82 → 23.23 • 10W-1T-0L (100% Win)</text>
-  <text x="1130" y="138" text-anchor="end" font-family="-apple-system, sans-serif" font-size="30" font-weight="900" fill="#C084FC">+4.41</text>
+    <!-- Row 7: mistral-large-4:cloud -->
+    <g transform="translate(0, 252)">
+      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">mistral-large-4</text>
+      <rect x="230" y="3" width="252" height="16" fill="#26262E" />
+      <rect x="482" y="3" width="22" height="16" fill="#00D67F" />
+      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">22.88</text>
+      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+1.88 (+8.9%)</text>
+    </g>
 
-  <!-- Domain Tile 2: Financial Analysis -->
-  <rect x="686" y="176" width="466" height="66" rx="12" fill="#131C31" stroke="#34D399" stroke-width="1.6"/>
-  <text x="708" y="206" font-family="-apple-system, sans-serif" font-size="16" font-weight="800" fill="#F8FAFC">T2 • Financial Due Diligence</text>
-  <text x="708" y="226" font-family="ui-monospace, monospace" font-size="12" fill="#94A3B8">20.32 → 23.43 • 13W-0T-1L (92.9% Win)</text>
-  <text x="1130" y="218" text-anchor="end" font-family="-apple-system, sans-serif" font-size="30" font-weight="900" fill="#34D399">+3.11</text>
+    <!-- Row 8: gemma4:31b-cloud -->
+    <g transform="translate(0, 288)">
+      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">gemma4:31b-cloud</text>
+      <rect x="230" y="3" width="247" height="16" fill="#26262E" />
+      <rect x="477" y="3" width="18" height="16" fill="#00D67F" />
+      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">22.12</text>
+      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+1.50 (+7.3%)</text>
+    </g>
 
-  <!-- Domain Tile 3: NIST & Business -->
-  <rect x="686" y="256" width="466" height="66" rx="12" fill="#131C31" stroke="#38BDF8" stroke-width="1.6"/>
-  <text x="708" y="286" font-family="-apple-system, sans-serif" font-size="16" font-weight="800" fill="#F8FAFC">T6 &amp; T7 • Business &amp; NIST Audit</text>
-  <text x="708" y="306" font-family="ui-monospace, monospace" font-size="12" fill="#94A3B8">21W-1T-2L Combined • Clause &amp; Criteria Traces</text>
-  <text x="1130" y="298" text-anchor="end" font-family="-apple-system, sans-serif" font-size="30" font-weight="900" fill="#38BDF8">+2.42</text>
+    <!-- Row 9: gpt-oss:20b-cloud (Honest Tradeoff Row) -->
+    <g transform="translate(0, 324)">
+      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#9A9891">gpt-oss:20b (Compact)</text>
+      <rect x="230" y="3" width="220" height="16" fill="#26262E" />
+      <rect x="428" y="3" width="22" height="16" fill="#FF3B00" />
+      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">18.29</text>
+      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#FF3B00">-1.79 (Use Lite)</text>
+    </g>
+  </g>
 
-  <!-- Domain Tile 4: Code Review -->
-  <rect x="686" y="336" width="466" height="66" rx="12" fill="#131C31" stroke="#818CF8" stroke-width="1.6"/>
-  <text x="708" y="366" font-family="-apple-system, sans-serif" font-size="16" font-weight="800" fill="#F8FAFC">T1 • Code Review &amp; Bug Trace</text>
-  <text x="708" y="386" font-family="ui-monospace, monospace" font-size="12" fill="#94A3B8">21.04 → 23.11 • 12W-1T-1L (92.3% Win)</text>
-  <text x="1130" y="378" text-anchor="end" font-family="-apple-system, sans-serif" font-size="30" font-weight="900" fill="#818CF8">+2.07</text>
+  <!-- RIGHT COLUMN: Domain Lift & Aggregate Summary (x: 741 -> 1199) -->
+  <g transform="translate(764, 68)">
+    <text x="0" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">HIGHEST-LIFT TASK DOMAINS</text>
+    <line x1="0" y1="22" x2="410" y2="22" stroke="#2A2A30" stroke-width="1" />
+
+    <!-- Domain 1 -->
+    <rect x="0" y="34" width="410" height="52" fill="#121216" stroke="#2A2A30" stroke-width="1" />
+    <text x="16" y="56" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">Creative &amp; Anti-SlopShape (Mode 4)</text>
+    <text x="16" y="76" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">100% Win Rate  |  2.1x Diversity</text>
+    <text x="316" y="66" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00D67F">+4.41 /25</text>
+
+    <!-- Domain 2 -->
+    <rect x="0" y="96" width="410" height="52" fill="#121216" stroke="#2A2A30" stroke-width="1" />
+    <text x="16" y="118" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">Financial Due Diligence (Template 9)</text>
+    <text x="16" y="138" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">92.9% Win Rate  |  Formula Traces</text>
+    <text x="316" y="128" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00D67F">+3.11 /25</text>
+
+    <!-- Domain 3 -->
+    <rect x="0" y="158" width="410" height="52" fill="#121216" stroke="#2A2A30" stroke-width="1" />
+    <text x="16" y="180" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">NIST &amp; Architecture Audits (Tmpl 4-5)</text>
+    <text x="16" y="200" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">91.7% Win Rate  |  Self-Contained</text>
+    <text x="316" y="190" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00D67F">+2.42 /25</text>
+
+    <!-- Domain 4 -->
+    <rect x="0" y="220" width="410" height="52" fill="#121216" stroke="#2A2A30" stroke-width="1" />
+    <text x="16" y="242" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">PR Bug-Hunt Code Review (Template 1)</text>
+    <text x="16" y="262" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">92.3% Win Rate  |  Body Call Traces</text>
+    <text x="316" y="252" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00D67F">+2.07 /25</text>
+
+    <!-- Stark Archival Paper Callout Box -->
+    <rect x="0" y="286" width="410" height="72" fill="#F3F0E6" />
+    <text x="18" y="310" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#5A5955" letter-spacing="0.06em">OVERALL RECORD (146 CONTROLLED PAIRS)</text>
+    <text x="18" y="342" font-family="Inter, -apple-system, sans-serif" font-size="22" font-weight="900" fill="#0B0B0D">108 Wins  /  8 Ties  /  30 Losses</text>
+  </g>
+
+  <!-- Bottom Bar -->
+  <rect x="1" y="444" width="1198" height="45" fill="#111115" />
+  <line x1="1" y1="444" x2="1199" y2="444" stroke="#2A2A30" stroke-width="1.5" />
+  <text x="24" y="471" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#00D67F" letter-spacing="0.06em">v4.2 STATISTICAL ENGINE //</text>
+  <text x="236" y="471" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">Blinded A/B Judge (--judge-model)  |  2-Pass Position Swap (--swap-positions)  |  10,000-Resample Bootstrap 95% CI</text>
 </svg>

@@ -1,5 +1,5 @@
 <!-- Context Architecture Contract: Generic directory trees and standard language style guides are omitted per Gloaguen et al. (2026) to protect agent context window. -->
-# make-prompt-better Agent Operating Contract
+# make-prompt-better Agent Operating Contract (v4.2.0)
 
 This file follows **Template 11 (`[CONTEXT-FILES]`, Gloaguen et al., 2026, arXiv:2602.11988)** from `make-prompt-better/references/domain-templates.md`.
 

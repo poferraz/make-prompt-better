@@ -1,148 +1,133 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="100%" height="100%">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#050811"/>
-      <stop offset="50%" stop-color="#0B1120"/>
-      <stop offset="100%" stop-color="#0F172A"/>
-    </linearGradient>
-    <linearGradient id="prismTop" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#818CF8" stop-opacity="0.25"/>
-    </linearGradient>
-    <linearGradient id="prismLeft" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#0284C7" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="#1E1B4B" stop-opacity="0.75"/>
-    </linearGradient>
-    <linearGradient id="prismRight" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#311042" stop-opacity="0.75"/>
-    </linearGradient>
-    <linearGradient id="cardSurface" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.92"/>
-      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.96"/>
-    </linearGradient>
-    <linearGradient id="beamIn" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F43F5E" stop-opacity="0.2"/>
-      <stop offset="100%" stop-color="#FB923C" stop-opacity="0.9"/>
-    </linearGradient>
-    <linearGradient id="beamOut" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.95"/>
-      <stop offset="100%" stop-color="#34D399" stop-opacity="0.3"/>
-    </linearGradient>
-    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
-    <pattern id="isoGrid" width="48" height="28" patternUnits="userSpaceOnUse">
-      <path d="M 24 0 L 48 14 L 24 28 L 0 14 Z" fill="none" stroke="#1E293B" stroke-width="0.8"/>
+    <pattern id="swissGrid1" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#17171B" stroke-width="1" />
     </pattern>
   </defs>
 
-  <!-- Background + Isometric Floor Grid -->
-  <rect width="1200" height="460" rx="20" fill="url(#bg)" stroke="#1E293B" stroke-width="1.5"/>
-  <rect width="1200" height="460" rx="20" fill="url(#isoGrid)" opacity="0.65"/>
+  <!-- Outer Architectural Frame -->
+  <rect width="1200" height="480" fill="#0B0B0D" />
+  <rect x="1" y="1" width="1198" height="478" fill="url(#swissGrid1)" stroke="#2A2A30" stroke-width="1.5" />
 
-  <!-- Ambient 3D Spotlights -->
-  <circle cx="880" cy="220" r="230" fill="#38BDF8" opacity="0.09">
-    <animate attributeName="r" values="210;245;210" dur="6s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="240" cy="120" r="180" fill="#818CF8" opacity="0.07"/>
+  <!-- Top Specification Telemetry Bar (y: 1 -> 41) -->
+  <rect x="1" y="1" width="1198" height="40" fill="#111115" />
+  <line x1="1" y1="41" x2="1199" y2="41" stroke="#2A2A30" stroke-width="1.5" />
+  <rect x="24" y="14" width="12" height="12" fill="#FF3B00" />
+  <text x="46" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">FIG. 01 // POFERRAZ / MAKE-PROMPT-BETTER</text>
+  <line x1="380" y1="1" x2="380" y2="41" stroke="#2A2A30" stroke-width="1" />
+  <text x="400" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#9A9891" letter-spacing="0.06em">STD: AGENTSKILLS.IO</text>
+  <line x1="590" y1="1" x2="590" y2="41" stroke="#2A2A30" stroke-width="1" />
+  <text x="610" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#9A9891" letter-spacing="0.06em">CORPUS: 11 ARXIV PAPERS (2025-2026)</text>
+  <line x1="980" y1="1" x2="980" y2="41" stroke="#2A2A30" stroke-width="1" />
+  <text x="1004" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#00D67F" letter-spacing="0.06em">RELEASE: v4.2.0</text>
 
-  <!-- LEFT COLUMN: Brand & 4 Big Data Tiles -->
-  <rect x="52" y="40" width="296" height="30" rx="15" fill="#0F172A" stroke="#38BDF8" stroke-width="1.2"/>
-  <circle cx="72" cy="55" r="4.5" fill="#34D399">
-    <animate attributeName="opacity" values="1;0.25;1" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  <text x="86" y="59" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" font-weight="700" fill="#E2E8F0" letter-spacing="0.8">v4.1.0 • OCT 30, 2026</text>
+  <!-- Main Vertical Split Hairline (x = 672) -->
+  <line x1="672" y1="41" x2="672" y2="436" stroke="#2A2A30" stroke-width="1.5" />
 
-  <text x="52" y="124" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="54" font-weight="900" fill="#F8FAFC" letter-spacing="-1.5">make-prompt-better</text>
-  <text x="52" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="19.5" font-weight="500" fill="#94A3B8">
-    11-Paper AI Prompt, <tspan fill="#38BDF8" font-family="ui-monospace, monospace">AGENTS.md</tspan> &amp; <tspan fill="#F8FAFC" font-weight="700">Reasoning Certificate Compiler</tspan>
-  </text>
-
-  <!-- 4 Clean Data-Only KPI Tiles (2x2 Grid) -->
-  <rect x="52" y="194" width="240" height="98" rx="14" fill="url(#cardSurface)" stroke="#38BDF8" stroke-width="1.3" stroke-opacity="0.7"/>
-  <text x="72" y="246" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="900" fill="#38BDF8">94.1%</text>
-  <text x="72" y="272" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700" fill="#94A3B8">FRONTIER WIN RATE</text>
-
-  <rect x="308" y="194" width="240" height="98" rx="14" fill="url(#cardSurface)" stroke="#34D399" stroke-width="1.3" stroke-opacity="0.7"/>
-  <text x="328" y="246" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="900" fill="#34D399">+27.3%</text>
-  <text x="328" y="272" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700" fill="#94A3B8">GEMINI 3.8 LIFT</text>
-
-  <rect x="52" y="306" width="240" height="98" rx="14" fill="url(#cardSurface)" stroke="#C084FC" stroke-width="1.3" stroke-opacity="0.7"/>
-  <text x="72" y="358" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="900" fill="#C084FC">+4.41</text>
-  <text x="72" y="384" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700" fill="#94A3B8">CREATIVE v2 GAIN (/25)</text>
-
-  <rect x="308" y="306" width="240" height="98" rx="14" fill="url(#cardSurface)" stroke="#818CF8" stroke-width="1.3" stroke-opacity="0.7"/>
-  <text x="328" y="358" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="900" fill="#818CF8">14 LLMs</text>
-  <text x="328" y="384" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700" fill="#94A3B8">146 TEST PAIRS</text>
-
-  <!-- RIGHT COLUMN: 3D ISOMETRIC MOTION COMPILER -->
-  <path d="M 660 105 L 850 205" stroke="url(#beamIn)" stroke-width="4" stroke-dasharray="8 6" fill="none"/>
-  <path d="M 890 225 L 1075 322" stroke="url(#beamOut)" stroke-width="5" fill="none" filter="url(#glow)"/>
-
-  <!-- Animated Particles along Input Rail -->
-  <circle r="5.5" fill="#FB923C" filter="url(#glow)">
-    <animateMotion dur="2s" repeatCount="indefinite" path="M 660 105 L 850 205"/>
-  </circle>
-  <circle r="4.5" fill="#F43F5E">
-    <animateMotion dur="2s" begin="1s" repeatCount="indefinite" path="M 660 105 L 850 205"/>
-  </circle>
-
-  <!-- Animated Particles along Output Rail -->
-  <circle r="6" fill="#34D399" filter="url(#glow)">
-    <animateMotion dur="1.6s" repeatCount="indefinite" path="M 890 225 L 1075 322"/>
-  </circle>
-  <circle r="5" fill="#38BDF8" filter="url(#glow)">
-    <animateMotion dur="1.6s" begin="0.8s" repeatCount="indefinite" path="M 890 225 L 1075 322"/>
-  </circle>
-
-  <!-- 3D Floating Input Card -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.6s" repeatCount="indefinite"/>
-    <polygon points="605,95 745,50 795,115 655,160" fill="#020617" opacity="0.6"/>
-    <polygon points="600,85 740,40 790,105 650,150" fill="#1E293B" stroke="#F43F5E" stroke-width="1.8"/>
-    <circle cx="635" cy="86" r="4" fill="#F43F5E"/>
-    <text x="646" y="90" font-family="ui-monospace, monospace" font-size="11" font-weight="800" fill="#FDA4AF">RAW PROMPT</text>
-    <line x1="635" y1="106" x2="735" y2="76" stroke="#64748B" stroke-width="3" stroke-linecap="round"/>
-    <line x1="645" y1="120" x2="715" y2="98" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+  <!-- Crosshair Registration Marks -->
+  <g stroke="#5A5955" stroke-width="1">
+    <line x1="666" y1="41" x2="678" y2="41" />
+    <line x1="672" y1="35" x2="672" y2="47" />
+    <line x1="666" y1="254" x2="678" y2="254" />
+    <line x1="672" y1="248" x2="672" y2="260" />
   </g>
 
-  <!-- CENTER: 3D Isometric Glass Compiler Cube -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-12; 0,0" dur="4s" repeatCount="indefinite"/>
-    <ellipse cx="875" cy="245" rx="94" ry="45" fill="none" stroke="#38BDF8" stroke-width="1.6" stroke-dasharray="10 6" opacity="0.6">
-      <animate attributeName="stroke-dashoffset" values="0;32" dur="2s" repeatCount="indefinite"/>
-    </ellipse>
+  <!-- ================= LEFT EDITORIAL COLUMN (x: 1 -> 672) ================= -->
+  <g transform="translate(36, 74)">
+    <text x="0" y="0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#FF3B00" letter-spacing="0.1em">01 // MODEL-AWARE PROMPT &amp; CONTEXT COMPILER</text>
 
-    <polygon points="875,118 965,164 875,210 785,164" fill="url(#prismTop)" stroke="#38BDF8" stroke-width="2"/>
-    <polygon points="785,164 875,210 875,308 785,262" fill="url(#prismLeft)" stroke="#38BDF8" stroke-width="1.6"/>
-    <polygon points="965,164 875,210 875,308 965,262" fill="url(#prismRight)" stroke="#818CF8" stroke-width="1.6"/>
+    <!-- Editorial Display Headline -->
+    <text x="0" y="46" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="44" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">Prompting is not folklore.</text>
+    <text x="0" y="94" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="44" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">It is <tspan fill="#FF3B00">compilation.</tspan></text>
 
-    <circle cx="875" cy="210" r="16" fill="#38BDF8" filter="url(#glow)">
-      <animate attributeName="r" values="13;21;13" dur="2s" repeatCount="indefinite"/>
-    </circle>
-
-    <text x="875" y="168" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#F8FAFC">11 PAPERS</text>
-    <text x="830" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#7DD3FC">[P1]•[T1]</text>
-    <text x="920" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#C4B5FD">[V1]•[NT0]</text>
+    <!-- Editorial Subhead -->
+    <text x="0" y="130" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="400" fill="#A8A69E">Strip attention-degrading roleplay, goal bias, and /init directory trees.</text>
+    <text x="0" y="152" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="400" fill="#A8A69E">Compile tasks and CLAUDE.md files into verifiable execution certificates.</text>
   </g>
 
-  <!-- BOTTOM-RIGHT: 3D Stacked Verified Certificate Output -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-9; 0,0" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
-    <polygon points="965,352 1125,298 1175,368 1015,422" fill="#064E3B" opacity="0.55" stroke="#10B981" stroke-width="1"/>
-    <polygon points="965,338 1125,284 1175,354 1015,408" fill="#065F46" opacity="0.75" stroke="#34D399" stroke-width="1.2"/>
-    <polygon points="965,324 1125,270 1175,340 1015,394" fill="#0F172A" stroke="#34D399" stroke-width="2.2"/>
+  <!-- Left Mid: Exposed 3-Column Swiss Spec Table (y: 254 -> 368) -->
+  <line x1="1" y1="254" x2="672" y2="254" stroke="#2A2A30" stroke-width="1.5" />
+  <line x1="1" y1="368" x2="672" y2="368" stroke="#2A2A30" stroke-width="1.5" />
 
-    <circle cx="1002" cy="322" r="5" fill="#34D399"/>
-    <text x="1014" y="326" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#34D399">CERTIFICATE</text>
-    <text x="1016" y="348" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#F8FAFC">[P1] → [T1] → [V1]</text>
-    <text x="1028" y="368" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#38BDF8">+1.66 TRACEABILITY</text>
+  <!-- Cell 1: High-Contrast Archival Paper Callout (x=1..224) -->
+  <rect x="2" y="255" width="222" height="112" fill="#F3F0E6" />
+  <text x="24" y="278" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#5A5955" letter-spacing="0.08em">FRONTIER WIN RATE</text>
+  <text x="24" y="322" font-family="Inter, -apple-system, sans-serif" font-size="38" font-weight="900" fill="#0B0B0D" letter-spacing="-0.03em">94.1%</text>
+  <text x="24" y="350" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00">+27.3% lift on Gemini 3.8</text>
+
+  <line x1="224" y1="254" x2="224" y2="368" stroke="#2A2A30" stroke-width="1.5" />
+
+  <!-- Cell 2: Anti-SlopShape Gain (x=224..448) -->
+  <rect x="225" y="255" width="222" height="112" fill="#0F0F13" />
+  <text x="244" y="278" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#9A9891" letter-spacing="0.08em">ANTI-SLOPSHAPE GAIN</text>
+  <text x="244" y="322" font-family="Inter, -apple-system, sans-serif" font-size="36" font-weight="800" fill="#F3F0E6" letter-spacing="-0.02em">+4.41<tspan font-size="19" fill="#6E6D68"> /25</tspan></text>
+  <text x="244" y="350" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#00D67F">100% win rate (2.1x div)</text>
+
+  <line x1="448" y1="254" x2="448" y2="368" stroke="#2A2A30" stroke-width="1.5" />
+
+  <!-- Cell 3: Context Compaction (x=448..672) -->
+  <rect x="449" y="255" width="222" height="112" fill="#0F0F13" />
+  <text x="468" y="278" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#9A9891" letter-spacing="0.08em">CLAUDE.MD COMPACTION</text>
+  <text x="468" y="322" font-family="Inter, -apple-system, sans-serif" font-size="36" font-weight="800" fill="#F3F0E6" letter-spacing="-0.02em">-20%<tspan font-size="19" fill="#6E6D68"> COST</tspan></text>
+  <text x="468" y="350" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">+7.0/25 Frontier task lift</text>
+
+  <!-- Left Bottom CLI Execution Strip (y: 368 -> 436) -->
+  <rect x="2" y="369" width="669" height="66" fill="#0B0B0D" />
+  <text x="24" y="392" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68" letter-spacing="0.08em">INSTALL &amp; COMPILE COMMAND</text>
+  <text x="24" y="418" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="700" fill="#FF3B00">$</text>
+  <text x="42" y="418" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="600" fill="#F3F0E6">./install.sh --symlink  &amp;&amp;  /make-prompt-better &lt;task-or-CLAUDE.md&gt;</text>
+
+  <!-- ================= RIGHT COMPILER DIFF INSPECTOR (x: 672 -> 1199) ================= -->
+  <g transform="translate(673, 42)">
+    <rect x="0" y="0" width="525" height="34" fill="#141419" />
+    <line x1="0" y1="34" x2="525" y2="34" stroke="#2A2A30" stroke-width="1" />
+    <text x="20" y="22" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#F3F0E6" letter-spacing="0.06em">COMPILER TRACE // DIFF INSPECTOR</text>
+    <text x="356" y="22" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#9A9891">146 PAIRS / 14 LLMS</text>
+
+    <!-- PASS 1: Stripped Folk Anti-Patterns -->
+    <g transform="translate(20, 48)">
+      <text x="0" y="13" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">PASS 01 // STRIP FOLK PROMPTING HABITS (INPUT)</text>
+
+      <rect x="0" y="22" width="486" height="30" fill="#1F1110" stroke="#4D1F1A" stroke-width="1" />
+      <text x="12" y="42" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#FF6B4A">- "You are a world-class 10x expert..."</text>
+      <text x="342" y="42" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00">[PRISM: -5.3pp MMLU]</text>
+
+      <rect x="0" y="57" width="486" height="30" fill="#1F1110" stroke="#4D1F1A" stroke-width="1" />
+      <text x="12" y="77" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#FF6B4A">- "Need this for tomorrow's client demo"</text>
+      <text x="342" y="77" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00">[GOAL-BLIND: Biased]</text>
+
+      <rect x="0" y="92" width="486" height="30" fill="#1F1110" stroke="#4D1F1A" stroke-width="1" />
+      <text x="12" y="112" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#FF6B4A">- "Do not hallucinate or make any bugs"</text>
+      <text x="342" y="112" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00">[SKILLS-SDO: Drops]</text>
+    </g>
+
+    <line x1="0" y1="184" x2="525" y2="184" stroke="#2A2A30" stroke-width="1" />
+
+    <!-- PASS 2: Compiled Execution Certificate -->
+    <g transform="translate(20, 198)">
+      <text x="0" y="13" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F" letter-spacing="0.06em">PASS 02 // EMIT VERIFIED CERTIFICATE (OUTPUT)</text>
+
+      <rect x="0" y="22" width="486" height="30" fill="#0C1F17" stroke="#164E38" stroke-width="1" />
+      <text x="12" y="42" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#6EE7B7">+ [P1..Pn] Self-contained data &amp; type bounds</text>
+      <text x="366" y="42" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F">[ACE: +10.6%]</text>
+
+      <rect x="0" y="57" width="486" height="30" fill="#0C1F17" stroke="#164E38" stroke-width="1" />
+      <text x="12" y="77" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#6EE7B7">+ [T1..Tn] Body-level call &amp; state trace</text>
+      <text x="366" y="77" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F">[META: 93% Acc]</text>
+
+      <rect x="0" y="92" width="486" height="30" fill="#0C1F17" stroke="#164E38" stroke-width="1" />
+      <text x="12" y="112" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#6EE7B7">+ [V1..V2] Post-hoc runnable self-test gate</text>
+      <text x="366" y="112" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F">[HARNESS: &lt;25%]</text>
+
+      <rect x="0" y="127" width="486" height="30" fill="#0C1F17" stroke="#164E38" stroke-width="1" />
+      <text x="12" y="147" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#6EE7B7">+ [NT0/SC0] Low-p angle (p&lt;=.20) + rarity</text>
+      <text x="366" y="147" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F">[VS: 2.1x Div]</text>
+    </g>
   </g>
 
-  <!-- Bottom Compatibility Bar -->
-  <text x="52" y="436" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" font-weight="600" fill="#64748B">
-    WORKS IN: <tspan fill="#E2E8F0">Claude Code</tspan> • <tspan fill="#E2E8F0">Antigravity</tspan> • <tspan fill="#E2E8F0">Gemini CLI</tspan> • <tspan fill="#E2E8F0">Codex CLI</tspan> • <tspan fill="#E2E8F0">Cursor</tspan> • <tspan fill="#E2E8F0">Windsurf</tspan> • <tspan fill="#E2E8F0">Qwen</tspan>
-  </text>
+  <!-- Bottom Full-Width Runtime Compatibility Index Bar (y: 436 -> 479) -->
+  <rect x="1" y="436" width="1198" height="43" fill="#111115" />
+  <line x1="1" y1="436" x2="1199" y2="436" stroke="#2A2A30" stroke-width="1.5" />
+  <text x="24" y="462" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">RUNTIMES //</text>
+  <text x="136" y="462" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#F3F0E6" letter-spacing="0.04em">[01] CLAUDE CODE    [02] GEMINI CLI    [03] ANTIGRAVITY    [04] CURSOR &amp; WINDSURF    [05] OPENAI CODEX    [06] QWEN CODE</text>
 </svg>

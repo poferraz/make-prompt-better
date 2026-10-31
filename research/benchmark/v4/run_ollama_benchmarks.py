@@ -29,6 +29,23 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+try:
+    from research.benchmark.v4.blind_stats_engine import (
+        build_blind_eval_instruction,
+        deterministic_ab_assignment,
+        merge_position_swapped_scores,
+        strip_certificate_scaffolding,
+        unblind_parsed_scores,
+    )
+except ImportError:
+    from blind_stats_engine import (
+        build_blind_eval_instruction,
+        deterministic_ab_assignment,
+        merge_position_swapped_scores,
+        strip_certificate_scaffolding,
+        unblind_parsed_scores,
+    )
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_ROOT = REPO_ROOT / "research" / "benchmark" / "v4" / "results"
 
@@ -252,12 +269,18 @@ def call_ollama_chat(
     timeout: int = 600,
     max_retries: int = 5,
     initial_delay: float = 3.0,
+    seed: int = 42,
+    options: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     url = f"{host.rstrip('/')}/api/chat"
+    payload_options: dict[str, Any] = {"seed": seed}
+    if options:
+        payload_options.update(options)
     payload = {
         "model": model,
         "messages": messages,
         "stream": True,
+        "options": payload_options,
     }
     data = json.dumps(payload).encode("utf-8")
     delay = initial_delay
@@ -428,11 +451,18 @@ def render_markdown_report(model: str, metrics: dict[str, Any], final_report_md:
 def run_model_benchmark(
     model: str,
     skill_bundle: str,
-    test_ids: list[int],
-    host: str,
-    resume: bool,
-    timeout: int,
+    test_ids: list[int] | None = None,
+    host: str = "http://localhost:11434",
+    resume: bool = True,
+    timeout: int = 600,
+    judge_model: str | None = None,
+    blind_eval: bool = True,
+    swap_positions: bool = False,
+    strip_cert_markers: bool = False,
+    seed: int = 42,
 ) -> bool:
+    if test_ids is None:
+        test_ids = [tc["id"] for tc in TEST_CASES]
     slug = slugify_model(model)
     out_dir = RESULTS_ROOT / slug
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -449,6 +479,8 @@ def run_model_benchmark(
             "tests": {},
             "summary": {},
         }
+    metrics["judge_model"] = judge_model or model
+    metrics["self_judged"] = ((judge_model or model) == model)
 
     print(f"\n============================================================")
     print(f"Running v4.0 Benchmark for Model: {model} -> {out_dir.relative_to(REPO_ROOT)}")
@@ -530,34 +562,77 @@ def run_model_benchmark(
             )
 
             # Step D: Evaluate Baseline vs. Optimized
-            print(f"    -> Step D: Scoring Baseline vs. Optimized on 5 dimensions...")
-            eval_instruction = (
-                "You are an independent, rigorous evaluator scoring two responses (Baseline vs. Optimized) to the same task.\n\n"
-                f"ORIGINAL TASK ({tc['domain']} - {tc['task_type']}):\n{tc['raw_prompt']}\n\n"
-                f"TARGET v4.0 MODE TESTED: {tc['target_mode']}\n\n"
-                f"=== BASELINE RESPONSE ({base_res['words']} words) ===\n{base_res['content']}\n\n"
-                f"=== OPTIMIZED PROMPT ===\n{opt_prompt_res['content']}\n\n"
-                f"=== OPTIMIZED RESPONSE ({opt_exec_res['words']} words) ===\n{opt_exec_res['content']}\n\n"
-                "Score BOTH responses honestly on a 1-5 scale (integers or .5 increments) across Accuracy, Completeness, Structure, Actionability, and Traceability.\n"
-                "If both are equal, score them equal. If certificate structure added unhelpful bloat, penalize Structure.\n\n"
-                "Return this exact markdown table followed by a 2-3 sentence explanation of what specifically improved, stayed the same, or got worse:\n\n"
-                "| Dimension     | Baseline | Optimized | Delta |\n"
-                "|---------------|----------|-----------|-------|\n"
-                "| Accuracy      | X        | Y         | +Z    |\n"
-                "| Completeness  | X        | Y         | +Z    |\n"
-                "| Structure     | X        | Y         | +Z    |\n"
-                "| Actionability | X        | Y         | +Z    |\n"
-                "| Traceability  | X        | Y         | +Z    |\n"
-                "| TOTAL         | XX/25    | YY/25     | +ZZ   |\n"
-            )
-            eval_res = call_ollama_chat(
-                model=model,
-                messages=[{"role": "user", "content": eval_instruction}],
-                host=host,
-                timeout=timeout,
+            effective_judge = judge_model or model
+            print(
+                f"    -> Step D: Scoring Baseline vs. Optimized on 5 dimensions "
+                f"(judge={effective_judge}, blind={blind_eval}, swap={swap_positions})..."
             )
 
-            parsed = parse_scores(eval_res["content"])
+            if blind_eval:
+                mapping_p1 = deterministic_ab_assignment(seed, model, tc["id"])
+                resp_a_p1 = base_res["content"] if mapping_p1["A"] == "baseline" else opt_exec_res["content"]
+                resp_b_p1 = opt_exec_res["content"] if mapping_p1["B"] == "optimized" else base_res["content"]
+
+                eval_instruction_p1 = build_blind_eval_instruction(
+                    tc, resp_a_p1, resp_b_p1, strip_markers=strip_cert_markers
+                )
+                eval_res = call_ollama_chat(
+                    model=effective_judge,
+                    messages=[{"role": "user", "content": eval_instruction_p1}],
+                    host=host,
+                    timeout=timeout,
+                )
+                parsed_p1 = unblind_parsed_scores(parse_scores(eval_res["content"]), mapping_p1)
+
+                if swap_positions:
+                    mapping_p2 = {"A": mapping_p1["B"], "B": mapping_p1["A"]}
+                    eval_instruction_p2 = build_blind_eval_instruction(
+                        tc, resp_b_p1, resp_a_p1, strip_markers=strip_cert_markers
+                    )
+                    eval_res_p2 = call_ollama_chat(
+                        model=effective_judge,
+                        messages=[{"role": "user", "content": eval_instruction_p2}],
+                        host=host,
+                        timeout=timeout,
+                    )
+                    parsed_p2 = unblind_parsed_scores(parse_scores(eval_res_p2["content"]), mapping_p2)
+                    parsed = merge_position_swapped_scores(parsed_p1, parsed_p2)
+                else:
+                    parsed = parsed_p1
+            else:
+                eval_instruction = (
+                    "You are an independent, rigorous evaluator scoring two responses (Baseline vs. Optimized) to the same task.\n\n"
+                    f"ORIGINAL TASK ({tc['domain']} - {tc['task_type']}):\n{tc['raw_prompt']}\n\n"
+                    f"TARGET v4.0 MODE TESTED: {tc['target_mode']}\n\n"
+                    f"=== BASELINE RESPONSE ({base_res['words']} words) ===\n{base_res['content']}\n\n"
+                    f"=== OPTIMIZED PROMPT ===\n{opt_prompt_res['content']}\n\n"
+                    f"=== OPTIMIZED RESPONSE ({opt_exec_res['words']} words) ===\n{opt_exec_res['content']}\n\n"
+                    "Score BOTH responses honestly on a 1-5 scale (integers or .5 increments) across Accuracy, Completeness, Structure, Actionability, and Traceability.\n"
+                    "If both are equal, score them equal. If certificate structure added unhelpful bloat, penalize Structure.\n\n"
+                    "Return this exact markdown table followed by a 2-3 sentence explanation of what specifically improved, stayed the same, or got worse:\n\n"
+                    "| Dimension     | Baseline | Optimized | Delta |\n"
+                    "|---------------|----------|-----------|-------|\n"
+                    "| Accuracy      | X        | Y         | +Z    |\n"
+                    "| Completeness  | X        | Y         | +Z    |\n"
+                    "| Structure     | X        | Y         | +Z    |\n"
+                    "| Actionability | X        | Y         | +Z    |\n"
+                    "| Traceability  | X        | Y         | +Z    |\n"
+                    "| TOTAL         | XX/25    | YY/25     | +ZZ   |\n"
+                )
+                eval_res = call_ollama_chat(
+                    model=effective_judge,
+                    messages=[{"role": "user", "content": eval_instruction}],
+                    host=host,
+                    timeout=timeout,
+                )
+                parsed = parse_scores(eval_res["content"])
+
+            b_tokens = max(base_res.get("eval_count", 0) or base_res["words"], 1)
+            o_tokens = max(opt_exec_res.get("eval_count", 0) or opt_exec_res["words"], 1)
+            extra_tokens = max(o_tokens - b_tokens, 0)
+            lift_per_1k_tokens = (
+                round((parsed["delta_total"] / extra_tokens) * 1000, 2) if extra_tokens > 0 else parsed["delta_total"]
+            )
             b_words = max(base_res["words"], 1)
             o_words = opt_exec_res["words"]
             ratio = round(o_words / b_words, 2)
@@ -568,6 +643,9 @@ def run_model_benchmark(
                 "task_type": tc["task_type"],
                 "target_mode": tc["target_mode"],
                 "raw_prompt": tc["raw_prompt"],
+                "judge_model": effective_judge,
+                "self_judged": (effective_judge == model),
+                "lift_per_1k_tokens": lift_per_1k_tokens,
                 "baseline": base_res,
                 "optimized_prompt": opt_prompt_res,
                 "executed_optimized_prompt": opt_prompt_to_send,
@@ -654,15 +732,21 @@ def run_model_benchmark(
 
     final_report_md = f"### Summary Table\n\n{summary_table_md}\n\n### Analysis Sections\n\n{final_content}"
 
+    avg_lift_per_1k = round(
+        sum(t.get("lift_per_1k_tokens", 0.0) for t in completed) / len(completed), 2
+    )
     metrics["summary"] = {
         "completed_tests": len(completed),
         "avg_baseline": avg_b,
         "avg_optimized": avg_o,
         "avg_delta": avg_d,
         "avg_word_overhead_ratio": avg_ratio,
+        "avg_lift_per_1k_tokens": avg_lift_per_1k,
         "wins": wins,
         "ties": ties,
         "losses": losses,
+        "judge_model": judge_model or model,
+        "self_judged": ((judge_model or model) == model),
     }
     metrics["final_report_md"] = final_report_md
     metrics_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
@@ -711,6 +795,33 @@ def main() -> int:
         help="Per-request HTTP timeout in seconds (default: 600).",
     )
     parser.add_argument(
+        "--judge-model",
+        type=str,
+        default=None,
+        help="Independent model to act as evaluator in Step D (prevents self-preference bias).",
+    )
+    parser.add_argument(
+        "--unblinded",
+        action="store_true",
+        help="Disable blinded A/B response anonymization and revert to legacy labeled headers.",
+    )
+    parser.add_argument(
+        "--swap-positions",
+        action="store_true",
+        help="Run two evaluation passes with swapped (A, B) and (B, A) order to cancel position bias.",
+    )
+    parser.add_argument(
+        "--strip-cert-markers",
+        action="store_true",
+        help="Strip [P1], [T1], [V1], and certificate mode tags before judging.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Deterministic seed for generation and blind A/B assignment (default: 42).",
+    )
+    parser.add_argument(
         "--list-models",
         action="store_true",
         help="List discovered Ollama Cloud models and exit.",
@@ -752,6 +863,11 @@ def main() -> int:
                 host=args.host,
                 resume=not args.no_resume,
                 timeout=args.timeout,
+                judge_model=args.judge_model,
+                blind_eval=not args.unblinded,
+                swap_positions=args.swap_positions,
+                strip_cert_markers=args.strip_cert_markers,
+                seed=args.seed,
             )
             if not complete:
                 failures.append((model, "requested tests or final report are incomplete"))

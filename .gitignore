@@ -4,6 +4,14 @@ research/*.pdf
 # Build spec (internal, not part of the published repo)
 repo-build-prompt.md
 
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
 # OS files
 .DS_Store
 Thumbs.db

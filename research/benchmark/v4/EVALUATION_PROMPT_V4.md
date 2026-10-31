@@ -192,7 +192,9 @@ Answer the optimized prompt. Follow the certificate or harness structure it spec
 
 Label this: `### OPTIMIZED RESPONSE`
 
-### Step D: Self-Evaluate Both Responses
+### Step D: Double-Blind Evaluation (Candidate Response A vs. Candidate Response B)
+
+To eliminate self-preference, framing, and recency bias, evaluate Candidate Response A against Candidate Response B without labels indicating which response was generated from the raw prompt and which was generated with `make-prompt-better`. The evaluator must never see `=== OPTIMIZED PROMPT ===` in the evaluation context.
 
 Score BOTH responses on these 5 dimensions using a 1-5 scale:
 
@@ -204,19 +206,21 @@ Score BOTH responses on these 5 dimensions using a 1-5 scale:
 | **Actionability** | Provides concrete next steps, runnable code, or usable conclusions | Vague generalities | Specific, immediately usable |
 | **Traceability** | Claims/decisions are supported by cited premises, math, or tests | Unsupported assertions | Every conclusion traceable |
 
-For each response, produce:
+For each response pair, produce:
 ```
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      |          |           |       |
-| Completeness  |          |           |       |
-| Structure     |          |           |       |
-| Actionability |          |           |       |
-| Traceability  |          |           |       |
-| TOTAL         |    /25   |     /25   |       |
+| Dimension | Candidate A (1-5) | Candidate B (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | X | Y | +/-Z | ... |
+| Completeness | X | Y | +/-Z | ... |
+| Structure | X | Y | +/-Z | ... |
+| Actionability | X | Y | +/-Z | ... |
+| Traceability | X | Y | +/-Z | ... |
+| **TOTAL (/25)** | **XX** | **YY** | **+/-ZZ** | **Winner: Candidate A / Candidate B / Tie** |
 ```
 
-Also record the approximate **Word Count** (`Baseline Words: X | Optimized Words: Y | Overhead Ratio: Y/X`) and write 2-3 sentences explaining what specifically improved, what stayed the same, and what (if anything) got worse.
+When unblinded: map Candidate Response A and B back to Baseline and Optimized totals, and record whether results remain consistent when candidate positions (A, B) are swapped.
+
+Also record the approximate **Word Count** (`Baseline Words: X | Optimized Words: Y | Overhead Ratio: Y/X`), token counts, and write 2-3 sentences explaining what specifically improved, what stayed the same, and what (if anything) got worse.
 
 Label this: `### EVALUATION: TEST N`
 

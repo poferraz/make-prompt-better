@@ -1,4 +1,4 @@
-name: Validate Skill & Documentation Integrity
+name: Validate Skill, Links & Unit Tests
 
 on:
   push:
@@ -13,33 +13,62 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Validate SKILL.md, Templates, and CLAUDE.md Constraints
+      - name: Validate install.sh Syntax and Dry-Run
+        run: |
+          bash -n install.sh
+          ./install.sh --dry-run
+
+      - name: Validate Context Linter Self-Test and Repo Context Files
+        run: |
+          python3 lint_context.py --self-test
+          python3 lint_context.py CLAUDE.md AGENTS.md
+
+      - name: Validate SKILL.md, Templates, Links, and Documentation Invariants
         run: |
           python3 - << 'EOF'
-          import re, sys
+          from pathlib import Path
+          import re
+          import sys
 
           # 1. Progressive disclosure check (<500 lines)
-          skill_path = "make-prompt-better/SKILL.md"
-          with open(skill_path, encoding="utf-8") as f:
-              skill_lines = f.read().splitlines()
+          skill_path = Path("make-prompt-better/SKILL.md")
+          skill_text = skill_path.read_text(encoding="utf-8")
+          skill_lines = skill_text.splitlines()
           assert len(skill_lines) < 500, f"SKILL.md is {len(skill_lines)} lines (must be < 500)"
           print(f"[PASS] SKILL.md line count: {len(skill_lines)} / 500")
 
           # 2. Universal agentskills.io YAML frontmatter check
-          skill_text = "\n".join(skill_lines)
-          m = re.match(r"^---\nname:\s*([a-z0-9-]+)\ndescription:\s*\"(Use when [^\"]+)\"\n---\n", skill_text)
-          assert m, "SKILL.md frontmatter must have clean name and single-line quoted 'Use when...' description"
-          assert len(m.group(0)) <= 1024, "Frontmatter exceeds 1024 characters"
-          print(f"[PASS] Universal frontmatter valid ({len(m.group(0))} chars)")
+          fm_match = re.match(r"^---\r?\n(.*?)\r?\n---", skill_text, re.S)
+          assert fm_match, "SKILL.md must begin with a valid YAML frontmatter block delimited by ---"
+          fm_block = fm_match.group(0)
+          fm_body = fm_match.group(1)
+          assert len(fm_block) <= 1024, f"Frontmatter is {len(fm_block)} chars (must be <= 1024)"
+
+          fields = {}
+          for line in fm_body.splitlines():
+              line = line.strip()
+              if not line or line.startswith("#"):
+                  continue
+              assert ":" in line, f"Invalid frontmatter line: {line}"
+              k, v = line.split(":", 1)
+              fields[k.strip()] = v.strip().strip('"').strip("'")
+
+          assert re.fullmatch(r"[a-z0-9-]+", fields.get("name", "")), (
+              f"Invalid skill name: {fields.get('name')!r}"
+          )
+          assert fields.get("description", "").startswith("Use when "), (
+              "Frontmatter description must start with 'Use when '"
+          )
+          print(f"[PASS] Universal frontmatter valid ({len(fm_block)} chars)")
 
           # 3. Domain templates check (12 templates)
-          with open("make-prompt-better/references/domain-templates.md", encoding="utf-8") as f:
-              tmpl_text = f.read()
+          tmpl_path = Path("make-prompt-better/references/domain-templates.md")
+          tmpl_text = tmpl_path.read_text(encoding="utf-8")
           headings = re.findall(r"^## \d+\. .+$", tmpl_text, re.M)
           assert len(headings) == 12, f"Expected 12 domain templates, found {len(headings)}"
           print(f"[PASS] Found all {len(headings)} domain templates")
@@ -58,10 +87,34 @@ jobs:
               "CLAUDE.md",
               "AGENTS.md",
           ]
-          for path in target_files:
-              with open(path, encoding="utf-8") as f:
-                  txt = f.read()
+          for rel_path in target_files:
+              txt = Path(rel_path).read_text(encoding="utf-8")
               bad = re.findall(r"[\u2014\u2013]", txt)
-              assert not bad, f"Found {len(bad)} em/en dash(es) in {path}"
+              assert not bad, f"Found {len(bad)} em/en dash(es) in {rel_path}"
           print("[PASS] Zero em/en dashes across all core files")
+
+          # 5. Relative local link integrity check (prevent 404 internal links)
+          link_pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+          for rel_path in target_files:
+              src_file = Path(rel_path)
+              txt = src_file.read_text(encoding="utf-8")
+              # Strip fenced code blocks before scanning links
+              txt_no_code = re.sub(r"```.*?```", "", txt, flags=re.S)
+              for raw_target in link_pattern.findall(txt_no_code):
+                  target = raw_target.strip().split()[0]
+                  if target.startswith(("http://", "https://", "mailto:", "#")):
+                      continue
+                  file_part = target.split("#", 1)[0]
+                  if not file_part:
+                      continue
+                  resolved = (src_file.parent / file_part).resolve()
+                  repo_Wait = (Path.cwd() / file_part).resolve()
+                  assert resolved.exists() or repo_Wait.exists(), (
+                      f"Broken relative link in {rel_path}: {raw_target!r} -> file not found"
+                  )
+          print("[PASS] All relative links in core documentation resolve cleanly")
           EOF
+
+      - name: Run Benchmark & Aggregation Unit Tests
+        run: |
+          python3 -m unittest discover -s research/benchmark/v4 -p "test_*.py" -v

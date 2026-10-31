@@ -1,9 +1,9 @@
 ---
 name: make-prompt-better
-description: "Use when optimizing, hardening, or rewriting any prompt, system instruction, AGENTS.md or CLAUDE.md context file, or agent workflow (v4.1.0) to improve accuracy, auditability, structured output compliance, or creative diversity across any LLM or coding agent."
+description: "Use when optimizing, hardening, or rewriting any prompt, system instruction, AGENTS.md or CLAUDE.md context file, or agent workflow (v4.2.0) to improve accuracy, auditability, structured output compliance, or creative diversity across any LLM or coding agent."
 ---
 
-# Semi-Formal Prompt Optimizer (v4.1.0)
+# Semi-Formal Prompt Optimizer (v4.2.0)
 
 ## Overview
 

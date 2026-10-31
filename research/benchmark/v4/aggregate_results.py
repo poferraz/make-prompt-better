@@ -11,6 +11,11 @@ import re
 from pathlib import Path
 from typing import Any
 
+try:
+    from research.benchmark.v4.blind_stats_engine import compute_stratified_benchmark_summary
+except ImportError:
+    from blind_stats_engine import compute_stratified_benchmark_summary
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_ROOT = REPO_ROOT / "research" / "benchmark" / "v4" / "results"
 
@@ -90,6 +95,8 @@ def parse_markdown_eval_file(md_path: Path, slug: str) -> dict[str, Any]:
             "delta_total": delta_tot,
             "dimensions": dim_scores,
             "word_overhead_ratio": ratio,
+            "baseline_tokens": 100,
+            "optimized_tokens": int(100 * (ratio or 1.0)),
             "winner": "Optimized" if delta_tot > 0 else ("Baseline" if delta_tot < 0 else "Tie"),
             "score_issues": score_quality_issues(dim_scores, b_tot, o_tot, block),
         }
@@ -139,6 +146,16 @@ def collect_all_models() -> list[dict[str, Any]]:
             per_test: dict[str, Any] = {}
             for tid, t in data.get("tests", {}).items():
                 p = t.get("evaluation", {}).get("parsed", {})
+                b_tok = (
+                    t.get("baseline", {}).get("eval_count")
+                    or t.get("baseline", {}).get("words")
+                    or 100
+                )
+                o_tok = (
+                    t.get("optimized_response", {}).get("eval_count")
+                    or t.get("optimized_response", {}).get("words")
+                    or 100
+                )
                 per_test[tid] = {
                     "id": int(tid),
                     "baseline_total": p.get("baseline_total", 0.0),
@@ -146,6 +163,9 @@ def collect_all_models() -> list[dict[str, Any]]:
                     "delta_total": p.get("delta_total", 0.0),
                     "dimensions": p.get("dimensions", {}),
                     "word_overhead_ratio": t.get("word_overhead_ratio"),
+                    "baseline_tokens": b_tok,
+                    "optimized_tokens": o_tok,
+                    "position_swap_consistent": p.get("position_swap_consistent"),
                     "winner": p.get("winner", "Tie"),
                     "score_issues": score_quality_issues(
                         p.get("dimensions", {}), p.get("baseline_total", 0.0),
@@ -197,7 +217,26 @@ def main() -> int:
     out_json = RESULTS_ROOT / "AGGREGATED_METRICS.json"
     out_md = RESULTS_ROOT / "AGGREGATED_METRICS.md"
 
-    out_json.write_text(json.dumps({"models": records}, indent=2), encoding="utf-8")
+    all_pairs: list[dict[str, Any]] = []
+    for r in records:
+        for t in r["tests"].values():
+            p_dict: dict[str, Any] = {
+                "model": r["model"],
+                "baseline_total": t["baseline_total"],
+                "optimized_total": t["optimized_total"],
+                "baseline_tokens": t.get("baseline_tokens", 100),
+                "optimized_tokens": t.get("optimized_tokens", 100),
+            }
+            if t.get("position_swap_consistent") is not None:
+                p_dict["position_swap_consistent"] = t["position_swap_consistent"]
+            all_pairs.append(p_dict)
+
+    stratified_summary = compute_stratified_benchmark_summary(all_pairs)
+
+    out_json.write_text(
+        json.dumps({"models": records, "stratified_summary": stratified_summary}, indent=2),
+        encoding="utf-8",
+    )
 
     lines = [
         "# Aggregated v4.0 Cross-Architecture Benchmark Data",
@@ -254,7 +293,26 @@ def main() -> int:
         "The leaderboard retains the saved scores, including any flagged entries.",
         "",
         *(flags or ["- No score-range or total inconsistencies were found in parsed evaluations."]),
+        "",
+        "## 4. Stratified Statistical Significance (Bootstrap 95% CIs & Permutation Tests)",
+        "",
+        f"- **Total Evaluated Pairs**: `{stratified_summary.get('total_pairs', 0)}`",
+        f"- **Baseline Mean**: `{stratified_summary.get('baseline_mean', 0.0)}/25`",
+        f"- **Optimized Mean**: `{stratified_summary.get('optimized_mean', 0.0)}/25`",
+        f"- **Mean Delta (95% CI)**: `{stratified_summary.get('mean_delta', 0.0):+g}` (95% CI: `[{stratified_summary.get('delta_95_ci', [0, 0])[0]:+g}, {stratified_summary.get('delta_95_ci', [0, 0])[1]:+g}]`)",
+        f"- **Paired Sign-Flip Permutation p-value**: `p = {stratified_summary.get('paired_sign_flip_p_value', 1.0):.4e}`",
+        f"- **Relative Lift**: `{stratified_summary.get('relative_lift_pct', 0.0):+g}%`",
+        f"- **Win Rate**: `{stratified_summary.get('win_rate_pct', 0.0)}%` ({stratified_summary.get('record', {}).get('wins', 0)}W - {stratified_summary.get('record', {}).get('ties', 0)}T - {stratified_summary.get('record', {}).get('losses', 0)}L)",
+        f"- **Mean Lift per 1k Extra Tokens**: `{stratified_summary.get('mean_lift_per_1k_extra_tokens', 0.0):+g}` points",
+        "",
+        "### Parameter-Tier Stratification",
+        "",
+        "| Parameter Tier | Pairs | Mean Delta (/25) | 95% Bootstrap CI | Win Rate (%) |",
+        "| :--- | :---: | :---: | :---: | :---: |",
     ])
+    for tier, data in stratified_summary.get("by_tier", {}).items():
+        ci_str = f"[{data['ci_95'][0]:+g}, {data['ci_95'][1]:+g}]"
+        lines.append(f"| {tier} | {data['pairs']} | {data['mean_delta']:+g} | {ci_str} | {data['win_rate_pct']}% |")
 
     out_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"Aggregated {len(records)} model(s) -> {out_md.relative_to(REPO_ROOT)} and {out_json.relative_to(REPO_ROOT)}")

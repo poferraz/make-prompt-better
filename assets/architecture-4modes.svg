@@ -1,104 +1,141 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 490" width="100%" height="100%">
   <defs>
-    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#050811"/>
-      <stop offset="100%" stop-color="#0F172A"/>
-    </linearGradient>
-    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#0B1120" stop-opacity="0.96"/>
-    </linearGradient>
-    <pattern id="isoGrid2" width="48" height="28" patternUnits="userSpaceOnUse">
-      <path d="M 24 0 L 48 14 L 24 28 L 0 14 Z" fill="none" stroke="#1E293B" stroke-width="0.7"/>
+    <pattern id="swissGrid3" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#16161A" stroke-width="1" />
     </pattern>
   </defs>
 
-  <rect width="1200" height="420" rx="20" fill="url(#bg2)" stroke="#1E293B" stroke-width="1.5"/>
-  <rect width="1200" height="420" rx="20" fill="url(#isoGrid2)" opacity="0.55"/>
+  <rect width="1200" height="490" fill="#0B0B0D" />
+  <rect x="1" y="1" width="1198" height="488" fill="url(#swissGrid3)" stroke="#2A2A30" stroke-width="1.5" />
 
-  <text x="48" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="900" fill="#F8FAFC">4 Model-Aware Certificate Modes (v4.1.0)</text>
-  <text x="1152" y="46" text-anchor="end" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#34D399">AUTO-ROUTED BY MODEL TIER &amp; TASK</text>
+  <!-- Top Specification Header Bar (y: 1 -> 47) -->
+  <rect x="1" y="1" width="1198" height="46" fill="#111115" />
+  <line x1="1" y1="47" x2="1199" y2="47" stroke="#2A2A30" stroke-width="1.5" />
+  <rect x="24" y="18" width="12" height="12" fill="#FF3B00" />
+  <text x="46" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">FIG. 03 // MODEL-AWARE COMPILATION MATRIX (4 CERTIFICATE MODES)</text>
+  <text x="770" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="500" fill="#9A9891" letter-spacing="0.05em">ROUTING: BY MODEL CAPACITY &amp; TASK CLASS</text>
 
-  <!-- 4 ISOMETRIC 3D FLOATING MODE CARDS -->
-  <!-- CARD 1: MODE 1 MAX -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.8s" repeatCount="indefinite"/>
-    <rect x="54" y="92" width="260" height="260" rx="16" fill="#020617"/>
-    <rect x="46" y="82" width="260" height="260" rx="16" fill="url(#cardGrad)" stroke="#38BDF8" stroke-width="2"/>
-    <rect x="68" y="104" width="110" height="26" rx="13" fill="#0C4A6E" stroke="#38BDF8" stroke-width="1"/>
-    <text x="123" y="121" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#7DD3FC">~2.2x TOKENS</text>
+  <!-- 3 Vertical Column Divider Hairlines (x=300, 600, 900) -->
+  <line x1="300" y1="47" x2="300" y2="444" stroke="#2A2A30" stroke-width="1.5" />
+  <line x1="600" y1="47" x2="600" y2="444" stroke="#2A2A30" stroke-width="1.5" />
+  <line x1="900" y1="47" x2="900" y2="444" stroke="#2A2A30" stroke-width="1.5" />
 
-    <text x="68" y="164" font-family="-apple-system, sans-serif" font-size="24" font-weight="900" fill="#F8FAFC">1. Max Mode</text>
-    <text x="68" y="190" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#38BDF8">FRONTIER &amp; CRITICAL</text>
+  <!-- Horizontal Band Hairlines Across All 4 Columns -->
+  <line x1="1" y1="152" x2="1199" y2="152" stroke="#2A2A30" stroke-width="1" />
+  <line x1="1" y1="280" x2="1199" y2="280" stroke="#2A2A30" stroke-width="1" />
+  <line x1="1" y1="392" x2="1199" y2="392" stroke="#2A2A30" stroke-width="1" />
 
-    <rect x="68" y="214" width="216" height="58" rx="10" fill="#090D16" stroke="#1E293B" stroke-width="1.2"/>
-    <text x="176" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="800" fill="#F8FAFC">[P1] → [T1] → [C1]</text>
-    <text x="176" y="259" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#38BDF8">+ Mandatory Patch</text>
+  <!-- COLUMN 01: MAX CERTIFICATE -->
+  <g transform="translate(1, 47)">
+    <rect x="0" y="0" width="298" height="4" fill="#F3F0E6" />
+    <text x="22" y="38" font-family="Inter, -apple-system, sans-serif" font-size="30" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">01</text>
+    <rect x="172" y="16" width="106" height="22" fill="#1C1C22" stroke="#3A3A42" stroke-width="1" />
+    <text x="225" y="31" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#F3F0E6">~2.2x TOKENS</text>
+    <text x="22" y="70" font-family="Inter, -apple-system, sans-serif" font-size="19" font-weight="800" fill="#F3F0E6">Max Certificate</text>
+    <text x="22" y="90" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#9A9891">[REASONING-CERT] // Tmpl 1-9</text>
 
-    <text x="68" y="308" font-family="-apple-system, sans-serif" font-size="28" font-weight="900" fill="#38BDF8">+3.11</text>
-    <text x="155" y="306" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#94A3B8">FINANCE / CODE</text>
+    <rect x="22" y="118" width="254" height="102" fill="#121216" stroke="#2A2A30" stroke-width="1" />
+    <rect x="22" y="118" width="4" height="102" fill="#F3F0E6" />
+    <text x="36" y="140" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#9A9891">COMPILER AST PIPELINE</text>
+    <text x="36" y="162" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#F3F0E6">1. [P1..Pn] Data Binding</text>
+    <text x="36" y="182" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#F3F0E6">2. [T1..Tn] Body Call Trace</text>
+    <text x="36" y="202" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#00D67F">3. [VERDICT] + Copy Patch</text>
+
+    <text x="22" y="254" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68">TARGET TIER</text>
+    <text x="22" y="274" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#E6E2D8">Frontier LLMs (Opus, Gemini 3.8)</text>
+    <text x="22" y="302" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68">PRIMARY DOMAINS</text>
+    <text x="22" y="320" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#A8A69E">PR Review, Finance, Legal, NIST</text>
+    <text x="22" y="338" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600" fill="#9A9891">Zero orphan claims gate</text>
+
+    <rect x="0" y="346" width="298" height="50" fill="#111115" />
+    <text x="22" y="366" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#9A9891">PROVEN BENCHMARK LIFT</text>
+    <text x="22" y="385" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00D67F">+3.11 Finance / +2.42 Audit</text>
   </g>
 
-  <!-- CARD 2: MODE 2 LITE -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
-    <rect x="336" y="92" width="260" height="260" rx="16" fill="#020617"/>
-    <rect x="328" y="82" width="260" height="260" rx="16" fill="url(#cardGrad)" stroke="#34D399" stroke-width="2"/>
-    <rect x="350" y="104" width="110" height="26" rx="13" fill="#064E3B" stroke="#34D399" stroke-width="1"/>
-    <text x="405" y="121" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#6EE7B7">~1.5x TOKENS</text>
+  <!-- COLUMN 02: LITE CERTIFICATE -->
+  <g transform="translate(301, 47)">
+    <rect x="0" y="0" width="298" height="4" fill="#00D67F" />
+    <text x="22" y="38" font-family="Inter, -apple-system, sans-serif" font-size="30" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">02</text>
+    <rect x="172" y="16" width="106" height="22" fill="#0C241B" stroke="#164E38" stroke-width="1" />
+    <text x="225" y="31" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F">~1.5x TOKENS</text>
+    <text x="22" y="70" font-family="Inter, -apple-system, sans-serif" font-size="19" font-weight="800" fill="#F3F0E6">Lite Certificate</text>
+    <text x="22" y="90" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#00D67F">[REASONING-LITE] // Fast Default</text>
 
-    <text x="350" y="164" font-family="-apple-system, sans-serif" font-size="24" font-weight="900" fill="#F8FAFC">2. Lite Mode</text>
-    <text x="350" y="190" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#34D399">FLASH / &lt;30B DEFAULT</text>
+    <rect x="22" y="118" width="254" height="102" fill="#121216" stroke="#2A2A30" stroke-width="1" />
+    <rect x="22" y="118" width="4" height="102" fill="#00D67F" />
+    <text x="36" y="140" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#9A9891">COMPILER AST PIPELINE</text>
+    <text x="36" y="162" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#F3F0E6">1. [P1..P3] Max 3 Premises</text>
+    <text x="36" y="182" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#F3F0E6">2. [T1] In -&gt; Op -&gt; State</text>
+    <text x="36" y="202" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#00D67F">3. [VERDICT] 2-Sentence Fix</text>
 
-    <rect x="350" y="214" width="216" height="58" rx="10" fill="#090D16" stroke="#1E293B" stroke-width="1.2"/>
-    <text x="458" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="800" fill="#F8FAFC">In → Step → Fix</text>
-    <text x="458" y="259" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#34D399">Max 3 [P] Premises</text>
+    <text x="22" y="254" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68">TARGET TIER</text>
+    <text x="22" y="274" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#E6E2D8">Flash &amp; &lt;30B Models Default</text>
+    <text x="22" y="302" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68">PRIMARY DOMAINS</text>
+    <text x="22" y="320" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#A8A69E">Daily Code Debugging &amp; Triage</text>
+    <text x="22" y="338" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600" fill="#9A9891">Prevents token starvation</text>
 
-    <text x="350" y="308" font-family="-apple-system, sans-serif" font-size="28" font-weight="900" fill="#34D399">0 Bloat</text>
-    <text x="462" y="306" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#94A3B8">FAST DAILY TASKS</text>
+    <rect x="0" y="346" width="298" height="50" fill="#111115" />
+    <text x="22" y="366" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#9A9891">PROVEN BENCHMARK LIFT</text>
+    <text x="22" y="385" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00D67F">+2.00 on GLM-5.3-Flash (91% W)</text>
   </g>
 
-  <!-- CARD 3: MODE 3 HARNESS -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.8s" begin="0.8s" repeatCount="indefinite"/>
-    <rect x="618" y="92" width="260" height="260" rx="16" fill="#020617"/>
-    <rect x="610" y="82" width="260" height="260" rx="16" fill="url(#cardGrad)" stroke="#818CF8" stroke-width="2"/>
-    <rect x="632" y="104" width="110" height="26" rx="13" fill="#1E1B4B" stroke="#818CF8" stroke-width="1"/>
-    <text x="687" y="121" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#C7D2FE">~1.2x TOKENS</text>
+  <!-- COLUMN 03: LRM & HARNESS MODE -->
+  <g transform="translate(601, 47)">
+    <rect x="0" y="0" width="298" height="4" fill="#FF3B00" />
+    <text x="22" y="38" font-family="Inter, -apple-system, sans-serif" font-size="30" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">03</text>
+    <rect x="160" y="16" width="118" height="22" fill="#26100C" stroke="#5C2116" stroke-width="1" />
+    <text x="219" y="31" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF6B4A">~1.1-1.3x TOKENS</text>
+    <text x="22" y="70" font-family="Inter, -apple-system, sans-serif" font-size="19" font-weight="800" fill="#F3F0E6">LRM &amp; Harness</text>
+    <text x="22" y="90" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#FF6B4A">[HARNESS / CONTEXT] // Tmpl 11-12</text>
 
-    <text x="632" y="164" font-family="-apple-system, sans-serif" font-size="24" font-weight="900" fill="#F8FAFC">3. Harness</text>
-    <text x="632" y="190" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#818CF8">LRMs &amp; AGENTS.md</text>
+    <rect x="22" y="118" width="254" height="102" fill="#121216" stroke="#2A2A30" stroke-width="1" />
+    <rect x="22" y="118" width="4" height="102" fill="#FF3B00" />
+    <text x="36" y="140" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#9A9891">COMPILER AST PIPELINE</text>
+    <text x="36" y="162" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#F3F0E6">1. [P1..P2] &lt;25% Premise Cap</text>
+    <text x="36" y="182" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#F3F0E6">2. [CODE FIRST] Full Output</text>
+    <text x="36" y="202" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#FF6B4A">3. [V1..V2] Post-Hoc Self-Test</text>
 
-    <rect x="632" y="214" width="216" height="58" rx="10" fill="#090D16" stroke="#1E293B" stroke-width="1.2"/>
-    <text x="740" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="800" fill="#F8FAFC">Code → [V1] → [V2]</text>
-    <text x="740" y="259" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#818CF8">&lt;25% Gate Overhead</text>
+    <text x="22" y="254" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68">TARGET TIER</text>
+    <text x="22" y="274" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#E6E2D8">o3, DeepSeek-R1 &amp; CLAUDE.md</text>
+    <text x="22" y="302" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68">PRIMARY DOMAINS</text>
+    <text x="22" y="320" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#A8A69E">Async Concurrency &amp; Context</text>
+    <text x="22" y="338" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600" fill="#9A9891">Strips /init directory trees</text>
 
-    <text x="632" y="308" font-family="-apple-system, sans-serif" font-size="28" font-weight="900" fill="#818CF8">-20%</text>
-    <text x="722" y="306" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#94A3B8">CONTEXT COST</text>
+    <rect x="0" y="346" width="298" height="50" fill="#111115" />
+    <text x="22" y="366" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#9A9891">PROVEN BENCHMARK LIFT</text>
+    <text x="22" y="385" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#FF6B4A">+7.0 Context / -20% Token Cost</text>
   </g>
 
-  <!-- CARD 4: MODE 4 CREATIVE v2 -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.8s" begin="1.2s" repeatCount="indefinite"/>
-    <rect x="900" y="92" width="260" height="260" rx="16" fill="#020617"/>
-    <rect x="892" y="82" width="260" height="260" rx="16" fill="url(#cardGrad)" stroke="#C084FC" stroke-width="2"/>
-    <rect x="914" y="104" width="110" height="26" rx="13" fill="#3B0764" stroke="#C084FC" stroke-width="1"/>
-    <text x="969" y="121" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#E9D5FF">~1.6x TOKENS</text>
+  <!-- COLUMN 04: CREATIVE & DIVERGENT v2 -->
+  <g transform="translate(901, 47)">
+    <rect x="0" y="0" width="298" height="4" fill="#E6E2D8" />
+    <text x="22" y="38" font-family="Inter, -apple-system, sans-serif" font-size="30" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">04</text>
+    <rect x="172" y="16" width="106" height="22" fill="#1C1C22" stroke="#3A3A42" stroke-width="1" />
+    <text x="225" y="31" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#F3F0E6">~1.6x TOKENS</text>
+    <text x="22" y="70" font-family="Inter, -apple-system, sans-serif" font-size="19" font-weight="800" fill="#F3F0E6">Divergent v2</text>
+    <text x="22" y="90" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#9A9891">[DIVERSITY-CERT] // Tmpl 10</text>
 
-    <text x="914" y="164" font-family="-apple-system, sans-serif" font-size="24" font-weight="900" fill="#F8FAFC">4. Creative v2</text>
-    <text x="914" y="190" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#C084FC">WRITING &amp; IDEATION</text>
+    <rect x="22" y="118" width="254" height="102" fill="#121216" stroke="#2A2A30" stroke-width="1" />
+    <rect x="22" y="118" width="4" height="102" fill="#E6E2D8" />
+    <text x="36" y="140" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#9A9891">COMPILER AST PIPELINE</text>
+    <text x="36" y="162" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#F3F0E6">1. [NT0] Sample 4 Angles</text>
+    <text x="36" y="182" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#F3F0E6">2. Commit to p &lt;= 0.20 Tail</text>
+    <text x="36" y="202" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#00D67F">3. [SC0] Rarity Contract</text>
 
-    <rect x="914" y="214" width="216" height="58" rx="10" fill="#090D16" stroke="#1E293B" stroke-width="1.2"/>
-    <text x="1022" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="800" fill="#F8FAFC">[NT0] p &lt;= 0.20</text>
-    <text x="1022" y="259" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#C084FC">+ Anti-SlopShape [SC0]</text>
+    <text x="22" y="254" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68">TARGET TIER</text>
+    <text x="22" y="274" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#E6E2D8">All Tiers ( kills 98.0 F1 Slop )</text>
+    <text x="22" y="302" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68">PRIMARY DOMAINS</text>
+    <text x="22" y="320" font-family="Inter, sans-serif" font-size="13" font-weight="500" fill="#A8A69E">Essays, Launch Copy, Strategy</text>
+    <text x="22" y="338" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600" fill="#9A9891">Delayed thesis &amp; direct proof</text>
 
-    <text x="914" y="308" font-family="-apple-system, sans-serif" font-size="28" font-weight="900" fill="#C084FC">+4.41</text>
-    <text x="1002" y="306" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#94A3B8">100% WIN RATE</text>
+    <rect x="0" y="346" width="298" height="50" fill="#F3F0E6" />
+    <text x="22" y="366" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#5A5955">PROVEN BENCHMARK LIFT</text>
+    <text x="22" y="385" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="800" fill="#0B0B0D">+4.41 / 25 (100% Win, 2.1x Div)</text>
   </g>
 
-  <!-- Bottom Guard Bar -->
-  <rect x="46" y="362" width="1106" height="38" rx="10" fill="#0F172A" stroke="#334155" stroke-width="1.2"/>
-  <text x="600" y="386" text-anchor="middle" font-family="ui-monospace, monospace" font-size="12.5" font-weight="700" fill="#E2E8F0">
-    UNIVERSAL INVARIANTS: <tspan fill="#38BDF8">Goal-Blind</tspan> • <tspan fill="#34D399">Self-Contained Data Binding</tspan> • <tspan fill="#818CF8">Positive Predicates</tspan> • <tspan fill="#C084FC">0 Orphan Claims</tspan>
-  </text>
+  <!-- Bottom Full-Width Universal Invariants Bar (y: 444 -> 489) -->
+  <rect x="1" y="444" width="1198" height="45" fill="#111115" />
+  <line x1="1" y1="444" x2="1199" y2="444" stroke="#2A2A30" stroke-width="1.5" />
+  <text x="24" y="471" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">INVARIANTS //</text>
+  <text x="150" y="471" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6" letter-spacing="0.03em">[01] GOAL-BLIND (arXiv:2602.09504)   [02] PERSONA CALIBRATION (arXiv:2603.18507)   [03] DATA BINDING (arXiv:2510.04618)   [04] POSITIVE RECIPES (arXiv:2608.12610)</text>
 </svg>

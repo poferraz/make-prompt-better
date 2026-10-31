@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.0] - 2026-10-31
+
+### The Compiler, Blind Evaluation & Swiss Editorial Redesign
+
+V4.2.0 completes the repository upgrade to a verified Model-Aware Prompt and Context Compiler. This release introduces a double-blind, position-swapped A/B benchmark evaluation protocol, a zero-dependency non-parametric statistical engine with bootstrap confidence intervals and paired sign-flip permutation tests, an automated `[CONTEXT-CERT]` static analyzer and CLI readiness linter (`lint_context.py`), hardened cross-agent installation tooling (`install.sh`), and the complete Swiss Compiler Blueprint visual redesign.
+
+### Added
+- **Double-Blind A/B Benchmark Evaluation Protocol (`research/benchmark/v4/`)**:
+  - Eliminates self-preference judge bias with `--judge-model` to decouple the evaluator from the model under test.
+  - Eliminates framing and labeling bias via deterministic SHA-256 assignment to `Candidate Response A` and `Candidate Response B`.
+  - Eliminates rubric leakage by removing `=== OPTIMIZED PROMPT ===` scaffolding and template headers from judge prompts.
+  - Eliminates position and recency bias via `--swap-positions` two-pass evaluation reconciling `(A, B)` and `(B, A)` order.
+  - Supports `--strip-cert-markers` to strip `[P1]`, `[T1]`, `[V1]`, and certificate tags before judging substance over formatting.
+  - Added deterministic `--seed` flag (default `42`) passed to Ollama inference payloads.
+- **Non-Parametric Statistical Engine (`research/benchmark/v4/blind_stats_engine.py`)**:
+  - Implements 10,000-resample Bootstrap 95% Confidence Intervals for mean deltas without third-party dependencies.
+  - Implements exact (for n <= 14) and Monte Carlo paired sign-flip permutation p-values.
+  - Computes 3-tier model stratification: Tier 1 (Sub-14B Edge and Flash), Tier 2 (14B-70B Open-Weights), Tier 3 (Frontier and Large Reasoning Models).
+  - Measures token efficiency: token overhead ratio and quality lift per 1,000 extra tokens spent.
+- **Standalone `[CONTEXT-CERT]` Static Analyzer & CLI Linter (`lint_context.py`)**:
+  - 100-point readiness audit for `CLAUDE.md`, `AGENTS.md`, and `SKILL.md` files based on arXiv:2602.11988, arXiv:2603.18507, and arXiv:2608.12610.
+  - Flags directory tree bloat, persona fluff, ungrounded negative constraints, and missing four-pillar coverage.
+  - Built-in `--self-test` suite and `--json` structured output support for CI automation.
+- **Swiss Compiler Blueprint Visual Redesign (`assets/*.svg`)**:
+  - Replaces cyber-neon graphics with four unified editorial figures: `FIG. 01` Hero Banner, `FIG. 02` End-to-End Compilation Pipeline, `FIG. 03` Model-Aware Compilation Matrix, `FIG. 04` Empirical Benchmark Suite.
+  - Color palette: Matte Carbon (`#0B0B0D`), Archival Bone (`#F3F0E6`), Signal Vermilion (`#FF3B00`), Verification Jade (`#00D67F`), with 100% ASCII-safe glyphs.
+- **Hardened Universal Installer (`install.sh`)**:
+  - Added `--symlink` (`-s`) support for real-time `git pull` sync without re-running copies.
+  - Added `--copy` (`-c`), `--all` (`-a`), `--backup` (`-b`), `--dry-run` (`-n`), and `--help` (`-h`).
+  - Added smart agent detection to avoid creating empty directories for unconfigured agents.
+- **CI/CD Regression & Link Auditing (`.github/workflows/validate-skill.yml`)**:
+  - Executes benchmark unit test suites in CI (`python3 -m unittest discover`).
+  - Audits local relative Markdown links across core documentation files to eliminate 404s.
+  - Validates `install.sh` syntax and `--dry-run`.
+  - Runs `lint_context.py --self-test` and dogfoods repo context files.
+
+### Changed
+- **`README.md` Above-the-Fold Architecture**: Added 5-Second Compiler Diff table, 10-Second Universal Install, repaired Shields.io badge URLs, and fixed relative citation links to `make-prompt-better/references/research-principles.md`.
+- **EVALUATION_PROMPT_V4.md**: Updated to blinded `Candidate Response A` vs. `Candidate Response B` protocol.
+- **Relocated Superpowers Design Spec**: Moved `docs/superpowers/specs/2026-10-29-make-prompt-better-v4-design.md` to `docs/architecture-v4.md`.
+- **Removed Deprecated Root Release Notes**: Consolidated `RELEASE_v3.md` and `RELEASE_v4.md` into `CHANGELOG.md`.
+
 ## [4.0.0] - 2026-10-29
 
 ### The Context, Harness & Diversity Update (Universal Cross-Agent Release)
