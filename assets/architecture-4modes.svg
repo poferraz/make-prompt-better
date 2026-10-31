@@ -1,192 +1,163 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="100%" height="100%">
   <defs>
-    <pattern id="isoGridModes" width="28" height="28" patternUnits="userSpaceOnUse">
-      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#141724" stroke-width="1" />
-      <circle cx="28" cy="28" r="0.9" fill="#23283D" />
-    </pattern>
-
-    <linearGradient id="towerGradDark" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#141724" />
-      <stop offset="100%" stop-color="#0B0D14" />
+    <linearGradient id="muxBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#07080C" />
+      <stop offset="55%" stop-color="#0B0D14" />
+      <stop offset="100%" stop-color="#080A10" />
     </linearGradient>
 
-    <filter id="towerShadow" x="-15%" y="-15%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="12" stdDeviation="7" flood-color="#000000" flood-opacity="0.72" />
+    <radialGradient id="prismAura" cx="32%" cy="50%" r="32%">
+      <stop offset="0%" stop-color="#00E58B" stop-opacity="0.14" />
+      <stop offset="55%" stop-color="#38BDF8" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#07080C" stop-opacity="0" />
+    </radialGradient>
+
+    <filter id="prismShadow" x="-25%" y="-25%" width="150%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#000000" flood-opacity="0.65" />
     </filter>
 
-    <filter id="routerGlow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="3" result="b" />
+    <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.5" result="b" />
       <feMerge>
         <feMergeNode in="b" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
+
+    <style>
+      .mode-slot-1 { animation: focusMode1 8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+      .mode-slot-2 { animation: focusMode2 8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+      .mode-slot-3 { animation: focusMode3 8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+      .mode-slot-4 { animation: focusMode4 8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+
+      .beam-1 { animation: fireBeam1 8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+      .beam-2 { animation: fireBeam2 8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+      .beam-3 { animation: fireBeam3 8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+      .beam-4 { animation: fireBeam4 8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+
+      @keyframes focusMode1 {
+        0%, 22% { opacity: 1; transform: translateX(6px); }
+        26%, 96% { opacity: 0.42; transform: translateX(0px); }
+        100% { opacity: 1; transform: translateX(6px); }
+      }
+      @keyframes focusMode2 {
+        0%, 23% { opacity: 0.42; transform: translateX(0px); }
+        27%, 47% { opacity: 1; transform: translateX(6px); }
+        51%, 100% { opacity: 0.42; transform: translateX(0px); }
+      }
+      @keyframes focusMode3 {
+        0%, 48% { opacity: 0.42; transform: translateX(0px); }
+        52%, 72% { opacity: 1; transform: translateX(6px); }
+        76%, 100% { opacity: 0.42; transform: translateX(0px); }
+      }
+      @keyframes focusMode4 {
+        0%, 73% { opacity: 0.42; transform: translateX(0px); }
+        77%, 97% { opacity: 1; transform: translateX(6px); }
+        100% { opacity: 0.42; transform: translateX(0px); }
+      }
+
+      @keyframes fireBeam1 {
+        0%, 22% { stroke: #00E58B; stroke-width: 2.5; stroke-opacity: 1; }
+        26%, 96% { stroke: #23293D; stroke-width: 1.5; stroke-opacity: 0.55; }
+        100% { stroke: #00E58B; stroke-width: 2.5; stroke-opacity: 1; }
+      }
+      @keyframes fireBeam2 {
+        0%, 23% { stroke: #23293D; stroke-width: 1.5; stroke-opacity: 0.55; }
+        27%, 47% { stroke: #00E58B; stroke-width: 2.5; stroke-opacity: 1; }
+        51%, 100% { stroke: #23293D; stroke-width: 1.5; stroke-opacity: 0.55; }
+      }
+      @keyframes fireBeam3 {
+        0%, 48% { stroke: #23293D; stroke-width: 1.5; stroke-opacity: 0.55; }
+        52%, 72% { stroke: #FF5A36; stroke-width: 2.5; stroke-opacity: 1; }
+        76%, 100% { stroke: #23293D; stroke-width: 1.5; stroke-opacity: 0.55; }
+      }
+      @keyframes fireBeam4 {
+        0%, 73% { stroke: #23293D; stroke-width: 1.5; stroke-opacity: 0.55; }
+        77%, 97% { stroke: #38BDF8; stroke-width: 2.5; stroke-opacity: 1; }
+        100% { stroke: #23293D; stroke-width: 1.5; stroke-opacity: 0.55; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .mode-slot-1, .mode-slot-2, .mode-slot-3, .mode-slot-4 {
+          animation: none !important;
+          opacity: 1 !important;
+          transform: none !important;
+        }
+        .beam-1, .beam-2, .beam-3, .beam-4 {
+          animation: none !important;
+          stroke: #00E58B !important;
+          stroke-opacity: 0.75 !important;
+        }
+      }
+    </style>
   </defs>
 
-  <!-- Background & 3D Perspective Floor -->
-  <rect width="1200" height="520" fill="#08090E" />
-  <rect x="1" y="1" width="1198" height="518" fill="url(#isoGridModes)" stroke="#262A3B" stroke-width="1.5" />
+  <!-- Matte Stage -->
+  <rect width="1200" height="380" rx="16" fill="url(#muxBg)" />
+  <rect width="1200" height="380" rx="16" fill="url(#prismAura)" />
+  <rect x="0.75" y="0.75" width="1198.5" height="378.5" rx="15.25" fill="none" stroke="#1E2231" stroke-width="1.5" />
 
-  <!-- Top Specification Header Bar -->
-  <rect x="1" y="1" width="1198" height="46" fill="#0D0F17" />
-  <line x1="1" y1="47" x2="1199" y2="47" stroke="#262A3B" stroke-width="1.5" />
-  <rect x="24" y="18" width="12" height="12" fill="#FF3B00">
-    <animate attributeName="opacity" values="1;0.35;1" dur="1.8s" repeatCount="indefinite" />
-  </rect>
-  <text x="46" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">FIG. 03 // 3D MODEL-AWARE COMPILATION MATRIX (4 CERTIFICATE MODES)</text>
-  <text x="765" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#00E58B" letter-spacing="0.05em">DYNAMIC ROUTING: CAPACITY &amp; TASK CLASS</text>
-
-  <!-- Overhead 3D Dispatcher Bus & Sweeping Router Node -->
-  <line x1="150" y1="62" x2="1050" y2="62" stroke="#23283D" stroke-width="2" stroke-dasharray="6 4" />
-  <circle cx="150" cy="62" r="5" fill="#00E58B" filter="url(#routerGlow)">
-    <animate attributeName="cx" values="150;450;750;1050;150" dur="7.2s" repeatCount="indefinite" />
-  </circle>
-
-  <!-- ================= TOWER 01: MAX CERTIFICATE ================= -->
-  <g transform="translate(22, 82)" filter="url(#towerShadow)">
-    <animateTransform attributeName="transform" type="translate" values="22,82; 22,75; 22,82" dur="4.4s" repeatCount="indefinite" />
-    <!-- 3D Top & Right Extrusion -->
-    <polygon points="0,0 10,-10 276,-10 266,0" fill="#323648" stroke="#F3F0E6" stroke-width="0.6" />
-    <polygon points="266,0 276,-10 276,362 266,372" fill="#080A10" stroke="#262A3B" stroke-width="0.8" />
-    <rect x="0" y="0" width="266" height="372" fill="url(#towerGradDark)" stroke="#30364F" stroke-width="1.2" />
-    <rect x="0" y="0" width="266" height="4" fill="#F3F0E6" />
-
-    <text x="20" y="38" font-family="Inter, -apple-system, sans-serif" font-size="30" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">01</text>
-    <rect x="144" y="16" width="104" height="22" fill="#1C2030" stroke="#3E445E" stroke-width="1" />
-    <text x="196" y="31" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#F3F0E6">~2.2x TOKENS</text>
-    <text x="20" y="68" font-family="Inter, -apple-system, sans-serif" font-size="19" font-weight="800" fill="#F3F0E6">Max Certificate</text>
-    <text x="20" y="88" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600" fill="#9A9891">[REASONING-CERT] // Tmpl 1-9</text>
-
-    <!-- 3D Inner Pipeline Box -->
-    <g transform="translate(18, 106)">
-      <polygon points="0,0 6,-6 236,-6 230,0" fill="#23283B" />
-      <polygon points="230,0 236,-6 236,96 230,102" fill="#090B12" />
-      <rect x="0" y="0" width="230" height="102" fill="#10131E" stroke="#2A3047" stroke-width="1" />
-      <rect x="0" y="0" width="4" height="102" fill="#F3F0E6" />
-      <text x="14" y="22" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#9A9891">COMPILER AST PIPELINE</text>
-      <text x="14" y="44" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">1. [P1..Pn] Data Binding</text>
-      <text x="14" y="64" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">2. [T1..Tn] Body Call Trace</text>
-      <text x="14" y="84" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#00E58B">3. [VERDICT] + Copy Patch</text>
-    </g>
-
-    <text x="20" y="236" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#6E6D68">TARGET TIER</text>
-    <text x="20" y="255" font-family="Inter, sans-serif" font-size="12.5" font-weight="600" fill="#E6E2D8">Frontier LLMs (Opus, Gemini 3.8)</text>
-    <text x="20" y="280" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#6E6D68">PRIMARY DOMAINS</text>
-    <text x="20" y="298" font-family="Inter, sans-serif" font-size="12.5" font-weight="500" fill="#A8A69E">PR Review, Finance, Legal, NIST</text>
-
-    <rect x="0" y="320" width="266" height="52" fill="#0E111A" stroke="#262A3B" stroke-width="1" />
-    <text x="20" y="340" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#9A9891">PROVEN BENCHMARK LIFT</text>
-    <text x="20" y="360" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#00E58B">+3.11 Finance / +2.42 Audit</text>
+  <!-- LEFT: Incoming Task & Model Classifier -->
+  <g transform="translate(64, 152)">
+    <text x="0" y="0" font-family="Inter, -apple-system, sans-serif" font-size="26" font-weight="800" fill="#F5F3EC" letter-spacing="-0.03em">Model-Aware</text>
+    <text x="0" y="32" font-family="Inter, -apple-system, sans-serif" font-size="26" font-weight="800" fill="#F5F3EC" letter-spacing="-0.03em">Router</text>
+    <text x="0" y="60" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#8292A8">Task class + model tier</text>
   </g>
 
-  <!-- ================= TOWER 02: LITE CERTIFICATE ================= -->
-  <g transform="translate(318, 82)" filter="url(#towerShadow)">
-    <animateTransform attributeName="transform" type="translate" values="318,76; 318,83; 318,76" dur="4.8s" repeatCount="indefinite" />
-    <polygon points="0,0 10,-10 276,-10 266,0" fill="#133D2C" stroke="#00E58B" stroke-width="0.6" />
-    <polygon points="266,0 276,-10 276,362 266,372" fill="#06140E" stroke="#185A3F" stroke-width="0.8" />
-    <rect x="0" y="0" width="266" height="372" fill="url(#towerGradDark)" stroke="#1D5C43" stroke-width="1.2" />
-    <rect x="0" y="0" width="266" height="4" fill="#00E58B" />
+  <!-- Incoming Optical Feed Line -->
+  <line x1="256" y1="190" x2="366" y2="190" stroke="#F5F3EC" stroke-width="2.5" />
 
-    <text x="20" y="38" font-family="Inter, -apple-system, sans-serif" font-size="30" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">02</text>
-    <rect x="144" y="16" width="104" height="22" fill="#0C261C" stroke="#185A3F" stroke-width="1" />
-    <text x="196" y="31" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#00E58B">~1.5x TOKENS</text>
-    <text x="20" y="68" font-family="Inter, -apple-system, sans-serif" font-size="19" font-weight="800" fill="#F3F0E6">Lite Certificate</text>
-    <text x="20" y="88" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600" fill="#00E58B">[REASONING-LITE] // Fast Default</text>
+  <!-- 1-to-4 Optical Multiplexer Curves -->
+  <path class="beam-1" d="M 380 190 C 440 190, 460 72, 528 72" fill="none" />
+  <path class="beam-2" d="M 380 190 C 440 190, 460 150, 528 150" fill="none" />
+  <path class="beam-3" d="M 380 190 C 440 190, 460 228, 528 228" fill="none" />
+  <path class="beam-4" d="M 380 190 C 440 190, 460 306, 528 306" fill="none" />
 
-    <g transform="translate(18, 106)">
-      <polygon points="0,0 6,-6 236,-6 230,0" fill="#133829" />
-      <polygon points="230,0 236,-6 236,96 230,102" fill="#06140E" />
-      <rect x="0" y="0" width="230" height="102" fill="#10131E" stroke="#1B523C" stroke-width="1" />
-      <rect x="0" y="0" width="4" height="102" fill="#00E58B" />
-      <text x="14" y="22" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#9A9891">COMPILER AST PIPELINE</text>
-      <text x="14" y="44" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">1. [P1..P3] Max 3 Premises</text>
-      <text x="14" y="64" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">2. [T1] In -&gt; Op -&gt; State</text>
-      <text x="14" y="84" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#00E58B">3. [VERDICT] 2-Sentence Fix</text>
-    </g>
-
-    <text x="20" y="236" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#6E6D68">TARGET TIER</text>
-    <text x="20" y="255" font-family="Inter, sans-serif" font-size="12.5" font-weight="600" fill="#E6E2D8">Flash &amp; &lt;30B Models Default</text>
-    <text x="20" y="280" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#6E6D68">PRIMARY DOMAINS</text>
-    <text x="20" y="298" font-family="Inter, sans-serif" font-size="12.5" font-weight="500" fill="#A8A69E">Daily Code Debugging &amp; Triage</text>
-
-    <rect x="0" y="320" width="266" height="52" fill="#0E111A" stroke="#1D5C43" stroke-width="1" />
-    <text x="20" y="340" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#9A9891">PROVEN BENCHMARK LIFT</text>
-    <text x="20" y="360" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#00E58B">+2.00 on GLM-5.3-Flash (91% W)</text>
+  <!-- Central Optical Prism Node (x = 374, y = 190) -->
+  <g transform="translate(374, 190)" filter="url(#prismShadow)">
+    <polygon points="0,-26 24,0 0,26 -24,0" fill="#121624" stroke="#F5F3EC" stroke-width="1.5" />
+    <circle cx="0" cy="0" r="5" fill="#00E58B" filter="url(#nodeGlow)" />
   </g>
 
-  <!-- ================= TOWER 03: LRM & HARNESS MODE ================= -->
-  <g transform="translate(614, 82)" filter="url(#towerShadow)">
-    <animateTransform attributeName="transform" type="translate" values="614,82; 614,74; 614,82" dur="5.2s" repeatCount="indefinite" />
-    <polygon points="0,0 10,-10 276,-10 266,0" fill="#3D1A14" stroke="#FF3B00" stroke-width="0.6" />
-    <polygon points="266,0 276,-10 276,362 266,372" fill="#170806" stroke="#5C2116" stroke-width="0.8" />
-    <rect x="0" y="0" width="266" height="372" fill="url(#towerGradDark)" stroke="#5C2116" stroke-width="1.2" />
-    <rect x="0" y="0" width="266" height="4" fill="#FF3B00" />
+  <!-- ================= RIGHT: 4 CLEAN MODE TRACKS (Outer group holds position; inner group holds CSS animation) ================= -->
 
-    <text x="20" y="38" font-family="Inter, -apple-system, sans-serif" font-size="30" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">03</text>
-    <rect x="134" y="16" width="114" height="22" fill="#26100C" stroke="#5C2116" stroke-width="1" />
-    <text x="191" y="31" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#FF6B4A">~1.1-1.3x TOKENS</text>
-    <text x="20" y="68" font-family="Inter, -apple-system, sans-serif" font-size="19" font-weight="800" fill="#F3F0E6">LRM &amp; Harness</text>
-    <text x="20" y="88" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600" fill="#FF6B4A">[HARNESS / CONTEXT] // Tmpl 11-12</text>
-
-    <g transform="translate(18, 106)">
-      <polygon points="0,0 6,-6 236,-6 230,0" fill="#361612" />
-      <polygon points="230,0 236,-6 236,96 230,102" fill="#140705" />
-      <rect x="0" y="0" width="230" height="102" fill="#10131E" stroke="#4D1E17" stroke-width="1" />
-      <rect x="0" y="0" width="4" height="102" fill="#FF3B00" />
-      <text x="14" y="22" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#9A9891">COMPILER AST PIPELINE</text>
-      <text x="14" y="44" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">1. [P1..P2] &lt;25% Premise Cap</text>
-      <text x="14" y="64" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">2. [CODE FIRST] Full Output</text>
-      <text x="14" y="84" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF6B4A">3. [V1..V2] Post-Hoc Self-Test</text>
+  <!-- Track 1: Max Certificate -->
+  <g transform="translate(544, 44)">
+    <g class="mode-slot-1">
+      <rect x="0" y="0" width="584" height="56" rx="10" fill="#0E121C" stroke="#23293D" stroke-width="1" />
+      <text x="22" y="34" font-family="Inter, -apple-system, sans-serif" font-size="17" font-weight="700" fill="#F5F3EC">Max Certificate</text>
+      <text x="196" y="33" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#949AB1">Frontier LLMs  |  [P1..Pn] -&gt; [T1..Tn]</text>
+      <text x="560" y="33" text-anchor="end" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">~2.2x</text>
     </g>
-
-    <text x="20" y="236" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#6E6D68">TARGET TIER</text>
-    <text x="20" y="255" font-family="Inter, sans-serif" font-size="12.5" font-weight="600" fill="#E6E2D8">o3, DeepSeek-R1 &amp; CLAUDE.md</text>
-    <text x="20" y="280" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#6E6D68">PRIMARY DOMAINS</text>
-    <text x="20" y="298" font-family="Inter, sans-serif" font-size="12.5" font-weight="500" fill="#A8A69E">Async Concurrency &amp; Context</text>
-
-    <rect x="0" y="320" width="266" height="52" fill="#0E111A" stroke="#5C2116" stroke-width="1" />
-    <text x="20" y="340" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#9A9891">PROVEN BENCHMARK LIFT</text>
-    <text x="20" y="360" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#FF6B4A">+7.0 Context / -20% Token Cost</text>
   </g>
 
-  <!-- ================= TOWER 04: CREATIVE & DIVERGENT v2 ================= -->
-  <g transform="translate(910, 82)" filter="url(#towerShadow)">
-    <animateTransform attributeName="transform" type="translate" values="910,75; 910,83; 910,75" dur="4.6s" repeatCount="indefinite" />
-    <polygon points="0,0 10,-10 276,-10 266,0" fill="#46443D" stroke="#F3F0E6" stroke-width="0.6" />
-    <polygon points="266,0 276,-10 276,362 266,372" fill="#12110E" stroke="#3A3A42" stroke-width="0.8" />
-    <rect x="0" y="0" width="266" height="372" fill="url(#towerGradDark)" stroke="#48463E" stroke-width="1.2" />
-    <rect x="0" y="0" width="266" height="4" fill="#F3F0E6" />
-
-    <text x="20" y="38" font-family="Inter, -apple-system, sans-serif" font-size="30" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">04</text>
-    <rect x="144" y="16" width="104" height="22" fill="#1C1C22" stroke="#3A3A42" stroke-width="1" />
-    <text x="196" y="31" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#F3F0E6">~1.6x TOKENS</text>
-    <text x="20" y="68" font-family="Inter, -apple-system, sans-serif" font-size="19" font-weight="800" fill="#F3F0E6">Divergent v2</text>
-    <text x="20" y="88" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="600" fill="#9A9891">[DIVERSITY-CERT] // Tmpl 10</text>
-
-    <g transform="translate(18, 106)">
-      <polygon points="0,0 6,-6 236,-6 230,0" fill="#2B2A26" />
-      <polygon points="230,0 236,-6 236,96 230,102" fill="#0D0D0B" />
-      <rect x="0" y="0" width="230" height="102" fill="#10131E" stroke="#3A3933" stroke-width="1" />
-      <rect x="0" y="0" width="4" height="102" fill="#E6E2D8" />
-      <text x="14" y="22" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#9A9891">COMPILER AST PIPELINE</text>
-      <text x="14" y="44" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">1. [NT0] Sample 4 Angles</text>
-      <text x="14" y="64" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">2. Commit to p &lt;= 0.20 Tail</text>
-      <text x="14" y="84" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#00E58B">3. [SC0] Rarity Contract</text>
+  <!-- Track 2: Lite Certificate -->
+  <g transform="translate(544, 122)">
+    <g class="mode-slot-2">
+      <rect x="0" y="0" width="584" height="56" rx="10" fill="#0E121C" stroke="#23293D" stroke-width="1" />
+      <text x="22" y="34" font-family="Inter, -apple-system, sans-serif" font-size="17" font-weight="700" fill="#F5F3EC">Lite Certificate</text>
+      <text x="196" y="33" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#949AB1">Flash &amp; &lt;30B  |  Max 3 [P] + arrow trace</text>
+      <text x="560" y="33" text-anchor="end" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">~1.5x</text>
     </g>
-
-    <text x="20" y="236" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#6E6D68">TARGET TIER</text>
-    <text x="20" y="255" font-family="Inter, sans-serif" font-size="12.5" font-weight="600" fill="#E6E2D8">All Tiers (Defeats 98.0 F1 Slop)</text>
-    <text x="20" y="280" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#6E6D68">PRIMARY DOMAINS</text>
-    <text x="20" y="298" font-family="Inter, sans-serif" font-size="12.5" font-weight="500" fill="#A8A69E">Essays, Launch Copy, Strategy</text>
-
-    <rect x="0" y="320" width="266" height="52" fill="#F3F0E6" />
-    <text x="20" y="340" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#5A5955">PROVEN BENCHMARK LIFT</text>
-    <text x="20" y="360" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="800" fill="#0B0B0D">+4.41 / 25 (100% Win, 2.1x Div)</text>
   </g>
 
-  <!-- Bottom Full-Width Universal Invariants Bar -->
-  <rect x="1" y="474" width="1198" height="45" fill="#0D0F17" />
-  <line x1="1" y1="474" x2="1199" y2="474" stroke="#262A3B" stroke-width="1.5" />
-  <text x="24" y="501" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">INVARIANTS //</text>
-  <text x="150" y="501" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6" letter-spacing="0.03em">[01] GOAL-BLIND (arXiv:2602.09504)   [02] PERSONA CALIBRATION (arXiv:2603.18507)   [03] DATA BINDING (arXiv:2510.04618)   [04] POSITIVE RECIPES (arXiv:2608.12610)</text>
+  <!-- Track 3: LRM & Harness Mode -->
+  <g transform="translate(544, 200)">
+    <g class="mode-slot-3">
+      <rect x="0" y="0" width="584" height="56" rx="10" fill="#0E121C" stroke="#23293D" stroke-width="1" />
+      <text x="22" y="34" font-family="Inter, -apple-system, sans-serif" font-size="17" font-weight="700" fill="#F5F3EC">LRM &amp; Harness</text>
+      <text x="196" y="33" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#949AB1">o3 / R1 / CLAUDE.md  |  Code-First + [V1..V2]</text>
+      <text x="560" y="33" text-anchor="end" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#FF6B4A">~1.2x</text>
+    </g>
+  </g>
+
+  <!-- Track 4: Divergent v2 -->
+  <g transform="translate(544, 278)">
+    <g class="mode-slot-4">
+      <rect x="0" y="0" width="584" height="56" rx="10" fill="#0E121C" stroke="#23293D" stroke-width="1" />
+      <text x="22" y="34" font-family="Inter, -apple-system, sans-serif" font-size="17" font-weight="700" fill="#F5F3EC">Divergent v2</text>
+      <text x="196" y="33" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#949AB1">Creative &amp; Copy  |  [NT0] p&lt;=0.20 + [SC0]</text>
+      <text x="560" y="33" text-anchor="end" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#38BDF8">~1.6x</text>
+    </g>
+  </g>
 </svg>

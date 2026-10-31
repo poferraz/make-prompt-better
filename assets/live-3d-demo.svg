@@ -1,227 +1,139 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="100%" height="100%">
   <defs>
-    <pattern id="isoGridDemo" width="28" height="28" patternUnits="userSpaceOnUse">
-      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#141724" stroke-width="1" />
-      <circle cx="28" cy="28" r="0.9" fill="#23283D" />
-    </pattern>
-
-    <linearGradient id="chamberDark" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#141724" />
-      <stop offset="100%" stop-color="#0B0D14" />
+    <linearGradient id="pipeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#07080C" />
+      <stop offset="50%" stop-color="#0B0D14" />
+      <stop offset="100%" stop-color="#080A10" />
     </linearGradient>
 
-    <linearGradient id="chamberEmerald" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#0E261D" />
-      <stop offset="100%" stop-color="#07140F" />
+    <linearGradient id="opticalAxis" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF5A36" stop-opacity="0.2" />
+      <stop offset="22%" stop-color="#FF5A36" stop-opacity="0.75" />
+      <stop offset="50%" stop-color="#F5F3EC" stop-opacity="0.85" />
+      <stop offset="82%" stop-color="#00E58B" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#00E58B" stop-opacity="0.2" />
     </linearGradient>
 
-    <filter id="drop3D" x="-15%" y="-15%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="12" stdDeviation="8" flood-color="#000000" flood-opacity="0.7" />
+    <radialGradient id="gateGlow1" cx="22%" cy="52%" r="22%">
+      <stop offset="0%" stop-color="#FF5A36" stop-opacity="0.14" />
+      <stop offset="100%" stop-color="#07080C" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="gateGlow3" cx="78%" cy="52%" r="24%">
+      <stop offset="0%" stop-color="#00E58B" stop-opacity="0.16" />
+      <stop offset="100%" stop-color="#07080C" stop-opacity="0" />
+    </radialGradient>
+
+    <filter id="lensShadow" x="-25%" y="-25%" width="150%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#000000" flood-opacity="0.65" />
     </filter>
 
-    <filter id="packetGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="3" result="b" />
+    <filter id="beamBloom" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="b" />
       <feMerge>
         <feMergeNode in="b" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
 
-    <!-- Motion Paths for 3D Pipeline Data Packets -->
-    <path id="conduitPath1" d="M 374 235 L 430 235" />
-    <path id="conduitPath2" d="M 774 235 L 830 235" />
-    <path id="fullPipelineRail" d="M 60 374 L 1140 374" />
+    <style>
+      .gate-ring-1 {
+        animation: pulseGate1 4.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+      }
+      .gate-ring-2 {
+        animation: pulseGate2 4.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+      }
+      .gate-ring-3 {
+        animation: pulseGate3 4.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+      }
+      .shed-fluff {
+        animation: shedRing 4.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        transform-origin: 260px 168px;
+      }
+      .lock-pass {
+        animation: passLock 4.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        transform-origin: 940px 168px;
+      }
+
+      @keyframes pulseGate1 {
+        0%, 8% { stroke-opacity: 0.35; }
+        18%, 32% { stroke-opacity: 1; }
+        45%, 100% { stroke-opacity: 0.35; }
+      }
+      @keyframes pulseGate2 {
+        0%, 35% { stroke-opacity: 0.35; }
+        48%, 62% { stroke-opacity: 1; }
+        78%, 100% { stroke-opacity: 0.35; }
+      }
+      @keyframes pulseGate3 {
+        0%, 65% { stroke-opacity: 0.35; }
+        78%, 94% { stroke-opacity: 1; }
+        100% { stroke-opacity: 0.35; }
+      }
+      @keyframes shedRing {
+        0%, 14% { opacity: 0; transform: scale(0.8); }
+        22% { opacity: 0.95; transform: scale(1); }
+        38%, 100% { opacity: 0; transform: scale(1.45); }
+      }
+      @keyframes passLock {
+        0%, 70% { opacity: 0; transform: scale(0.85); }
+        82%, 94% { opacity: 1; transform: scale(1.18); }
+        100% { opacity: 0; transform: scale(1.35); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .gate-ring-1, .gate-ring-2, .gate-ring-3, .shed-fluff, .lock-pass {
+          animation: none !important;
+          stroke-opacity: 0.9 !important;
+        }
+      }
+    </style>
   </defs>
 
-  <!-- Background & 3D Isometric Perspective Grid -->
-  <rect width="1200" height="460" fill="#08090E" />
-  <rect x="1" y="1" width="1198" height="458" fill="url(#isoGridDemo)" stroke="#262A3B" stroke-width="1.5" />
+  <!-- Matte Stage -->
+  <rect width="1200" height="340" rx="16" fill="url(#pipeBg)" />
+  <rect width="1200" height="340" rx="16" fill="url(#gateGlow1)" />
+  <rect width="1200" height="340" rx="16" fill="url(#gateGlow3)" />
+  <rect x="0.75" y="0.75" width="1198.5" height="338.5" rx="15.25" fill="none" stroke="#1E2231" stroke-width="1.5" />
 
-  <!-- 3D Perspective Floor Grid Lines -->
-  <g stroke="#1B1F30" stroke-width="1">
-    <line x1="600" y1="80" x2="50" y2="404" />
-    <line x1="600" y1="80" x2="320" y2="404" />
-    <line x1="600" y1="80" x2="600" y2="404" />
-    <line x1="600" y1="80" x2="880" y2="404" />
-    <line x1="600" y1="80" x2="1150" y2="404" />
+  <!-- Continuous Optical Axis Line -->
+  <line x1="96" y1="168" x2="1104" y2="168" stroke="#1D2233" stroke-width="4" stroke-linecap="round" />
+  <line x1="96" y1="168" x2="1104" y2="168" stroke="url(#opticalAxis)" stroke-width="2.5" stroke-linecap="round" />
+
+  <!-- Animated Travelling Token Capsule along the Optical Axis -->
+  <g filter="url(#beamBloom)">
+    <rect x="-26" y="-8" width="52" height="16" rx="8" fill="#F5F3EC">
+      <animateMotion path="M 120 168 L 1080 168" dur="4.8s" repeatCount="indefinite" />
+      <animate attributeName="fill" values="#FF5A36;#FF5A36;#F5F3EC;#00E58B;#00E58B" keyTimes="0;0.24;0.52;0.8;1" dur="4.8s" repeatCount="indefinite" />
+    </rect>
   </g>
 
-  <!-- Top Telemetry Bar -->
-  <rect x="1" y="1" width="1198" height="44" fill="#0D0F17" />
-  <line x1="1" y1="45" x2="1199" y2="45" stroke="#262A3B" stroke-width="1.5" />
-  <rect x="24" y="16" width="12" height="12" fill="#FF3B00">
-    <animate attributeName="opacity" values="1;0.35;1" dur="1.6s" repeatCount="indefinite" />
-  </rect>
-  <text x="46" y="27" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">FIG. 02 // 3D COMPILATION PIPELINE (RAW PROMPT -&gt; AST ROUTER -&gt; VERIFIED CERTIFICATE)</text>
-  <text x="875" y="27" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#00E58B">3D STREAM: ACTIVE (60FPS)</text>
-
-  <!-- ================= STAGE 01: 3D MONOLITH CHAMBER (LEXICAL & BIAS STRIPPER) ================= -->
-  <g transform="translate(28, 72)" filter="url(#drop3D)">
-    <animateTransform attributeName="transform" type="translate" values="28,72; 28,66; 28,72" dur="4.6s" repeatCount="indefinite" />
-
-    <!-- 3D Extruded Chamber Outer Shell -->
-    <polygon points="0,0 12,-12 358,-12 346,0" fill="#28181A" stroke="#FF3B00" stroke-width="0.8" />
-    <polygon points="346,0 358,-12 358,268 346,280" fill="#12090B" stroke="#4D1F1A" stroke-width="0.8" />
-    <rect x="0" y="0" width="346" height="280" fill="url(#chamberDark)" stroke="#382024" stroke-width="1.2" />
-    <rect x="0" y="0" width="346" height="4" fill="#FF3B00" />
-
-    <!-- Levitating 3D Isometric Cube Icon (Stage 01) -->
-    <g transform="translate(306, 36)">
-      <animateTransform attributeName="transform" type="translate" values="306,33; 306,41; 306,33" dur="2.6s" repeatCount="indefinite" />
-      <polygon points="0,-14 14,-7 0,0 -14,-7" fill="#FF6B4A" />
-      <polygon points="-14,-7 0,0 0,14 -14,7" fill="#C82800" />
-      <polygon points="0,0 14,-7 14,7 0,14" fill="#7D1900" />
-    </g>
-
-    <text x="20" y="28" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.08em">STAGE 01 // SANITIZE INPUT</text>
-    <text x="20" y="56" font-family="Inter, -apple-system, sans-serif" font-size="22" font-weight="800" fill="#F3F0E6">Strip Folk Prompting</text>
-    <text x="20" y="78" font-family="Inter, sans-serif" font-size="13" fill="#9A9891">Pre-flight filter removes attention traps:</text>
-
-    <!-- 3D Inner Sub-Cards -->
-    <g transform="translate(18, 94)">
-      <rect x="0" y="0" width="310" height="50" fill="#181014" stroke="#4A2022" stroke-width="1" />
-      <rect x="0" y="0" width="4" height="50" fill="#FF3B00" />
-      <text x="14" y="21" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF6B4A">[-] Persona Flattery (arXiv:2603.18507)</text>
-      <text x="14" y="39" font-family="Inter, sans-serif" font-size="12" fill="#A8A69E">Eliminates -5.3pp MMLU fabrication drop</text>
-
-      <rect x="0" y="58" width="310" height="50" fill="#181014" stroke="#4A2022" stroke-width="1" />
-      <rect x="0" y="58" width="4" height="50" fill="#FF3B00" />
-      <text x="14" y="79" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF6B4A">[-] Goal &amp; Stake Bias (arXiv:2602.09504)</text>
-      <text x="14" y="97" font-family="Inter, sans-serif" font-size="12" fill="#A8A69E">Strips "for client demo" agenda leakage</text>
-
-      <rect x="0" y="116" width="310" height="50" fill="#181014" stroke="#4A2022" stroke-width="1" />
-      <rect x="0" y="116" width="4" height="50" fill="#FF3B00" />
-      <text x="14" y="137" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF6B4A">[-] /init Folder Trees (arXiv:2602.11988)</text>
-      <text x="14" y="155" font-family="Inter, sans-serif" font-size="12" fill="#A8A69E">Saves &gt;20% context tokens in CLAUDE.md</text>
-    </g>
+  <!-- ================= LENS 1: SANITIZE (x = 260) ================= -->
+  <circle class="shed-fluff" cx="260" cy="168" r="56" fill="none" stroke="#FF5A36" stroke-width="1.5" stroke-dasharray="4 4" />
+  <g transform="translate(260, 168)" filter="url(#lensShadow)">
+    <circle cx="0" cy="0" r="46" fill="#0E111A" stroke="#28222B" stroke-width="1.5" />
+    <circle class="gate-ring-1" cx="0" cy="0" r="46" fill="none" stroke="#FF5A36" stroke-width="2" />
+    <text x="0" y="5" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#FF6B4A">[-FLUFF]</text>
   </g>
+  <text x="260" y="256" text-anchor="middle" font-family="Inter, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#F5F3EC" letter-spacing="-0.02em">Sanitize Input</text>
+  <text x="260" y="280" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#8292A8">Strips persona &amp; goal bias</text>
 
-  <!-- 3D Isometric Conduit 1 -> 2 with Animated Streaming Packets -->
-  <g>
-    <polygon points="374,225 430,225 436,219 380,219" fill="#1F2437" />
-    <rect x="374" y="225" width="56" height="20" fill="#0F131F" stroke="#2E3652" stroke-width="1" />
-    <line x1="374" y1="235" x2="430" y2="235" stroke="#FF3B00" stroke-width="2" stroke-dasharray="6 4">
-      <animate attributeName="stroke-dashoffset" from="20" to="0" dur="0.8s" repeatCount="indefinite" />
-    </line>
-    <circle r="5" fill="#FF6B4A" filter="url(#packetGlow)">
-      <animateMotion dur="1.4s" repeatCount="indefinite">
-        <mpath href="#conduitPath1" />
-      </animateMotion>
-    </circle>
+  <!-- ================= LENS 2: BIND & ROUTE (x = 600) ================= -->
+  <g transform="translate(600, 168)" filter="url(#lensShadow)">
+    <circle cx="0" cy="0" r="46" fill="#0E111A" stroke="#262C3F" stroke-width="1.5" />
+    <circle class="gate-ring-2" cx="0" cy="0" r="46" fill="none" stroke="#F5F3EC" stroke-width="2" />
+    <text x="0" y="5" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#F5F3EC">[P1..T1]</text>
   </g>
+  <text x="600" y="256" text-anchor="middle" font-family="Inter, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#F5F3EC" letter-spacing="-0.02em">Bind &amp; Route</text>
+  <text x="600" y="280" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#8292A8">Matches mode to model tier</text>
 
-  <!-- ================= STAGE 02: 3D MONOLITH CHAMBER (CAPACITY-AWARE AST ROUTER) ================= -->
-  <g transform="translate(428, 72)" filter="url(#drop3D)">
-    <animateTransform attributeName="transform" type="translate" values="428,67; 428,74; 428,67" dur="5.0s" repeatCount="indefinite" />
-
-    <!-- 3D Extruded Chamber Outer Shell -->
-    <polygon points="0,0 12,-12 358,-12 346,0" fill="#252A3F" stroke="#F3F0E6" stroke-width="0.8" />
-    <polygon points="346,0 358,-12 358,268 346,280" fill="#090B12" stroke="#262A3B" stroke-width="0.8" />
-    <rect x="0" y="0" width="346" height="280" fill="url(#chamberDark)" stroke="#323854" stroke-width="1.2" />
-    <rect x="0" y="0" width="346" height="4" fill="#F3F0E6" />
-
-    <!-- Levitating 3D Isometric Cube Icon (Stage 02) -->
-    <g transform="translate(306, 36)">
-      <animateTransform attributeName="transform" type="translate" values="306,40; 306,31; 306,40" dur="2.8s" repeatCount="indefinite" />
-      <polygon points="0,-14 14,-7 0,0 -14,-7" fill="#FFFFFF" />
-      <polygon points="-14,-7 0,0 0,14 -14,7" fill="#B8B3A0" />
-      <polygon points="0,0 14,-7 14,7 0,14" fill="#6E6D68" />
-    </g>
-
-    <text x="20" y="28" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">STAGE 02 // ROUTE &amp; BIND</text>
-    <text x="20" y="56" font-family="Inter, -apple-system, sans-serif" font-size="22" font-weight="800" fill="#F3F0E6">Compile AST Certificate</text>
-    <text x="20" y="78" font-family="Inter, sans-serif" font-size="13" fill="#9A9891">Routes by model tier &amp; task complexity:</text>
-
-    <!-- 3D Inner Mode Routing Stack -->
-    <g transform="translate(18, 94)">
-      <rect x="0" y="0" width="310" height="36" fill="#131724" stroke="#2C324C" stroke-width="1" />
-      <rect x="0" y="0" width="4" height="36" fill="#F3F0E6" />
-      <text x="14" y="23" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#F3F0E6">[01] Frontier -&gt; Mode 1 Max Certificate</text>
-
-      <rect x="0" y="42" width="310" height="36" fill="#131724" stroke="#2C324C" stroke-width="1" />
-      <rect x="0" y="42" width="4" height="36" fill="#00E58B" />
-      <text x="14" y="65" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#00E58B">[02] Flash/&lt;30B -&gt; Mode 2 Lite (&lt;=3 Prem)</text>
-
-      <rect x="0" y="84" width="310" height="36" fill="#131724" stroke="#2C324C" stroke-width="1" />
-      <rect x="0" y="84" width="4" height="36" fill="#FF6B4A" />
-      <text x="14" y="107" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF6B4A">[03] LRM/Context -&gt; Mode 3 Code-First</text>
-
-      <rect x="0" y="126" width="310" height="36" fill="#131724" stroke="#2C324C" stroke-width="1" />
-      <rect x="0" y="126" width="4" height="36" fill="#38BDF8" />
-      <text x="14" y="149" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#38BDF8">[04] Writing -&gt; Mode 4 Tail Angle (p&lt;=.2)</text>
-    </g>
+  <!-- ================= LENS 3: VERIFY & EMIT (x = 940) ================= -->
+  <circle class="lock-pass" cx="940" cy="168" r="56" fill="none" stroke="#00E58B" stroke-width="2" />
+  <g transform="translate(940, 168)" filter="url(#lensShadow)">
+    <circle cx="0" cy="0" r="46" fill="#0B1915" stroke="#184A38" stroke-width="1.5" />
+    <circle class="gate-ring-3" cx="0" cy="0" r="46" fill="none" stroke="#00E58B" stroke-width="2.2" />
+    <text x="0" y="5" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#00E58B">[VERIFIED]</text>
   </g>
-
-  <!-- 3D Isometric Conduit 2 -> 3 with Animated Streaming Packets -->
-  <g>
-    <polygon points="774,225 830,225 836,219 780,219" fill="#133829" />
-    <rect x="774" y="225" width="56" height="20" fill="#0A1E16" stroke="#1B5E43" stroke-width="1" />
-    <line x1="774" y1="235" x2="830" y2="235" stroke="#00E58B" stroke-width="2" stroke-dasharray="6 4">
-      <animate attributeName="stroke-dashoffset" from="20" to="0" dur="0.7s" repeatCount="indefinite" />
-    </line>
-    <circle r="5" fill="#00E58B" filter="url(#packetGlow)">
-      <animateMotion dur="1.2s" repeatCount="indefinite">
-        <mpath href="#conduitPath2" />
-      </animateMotion>
-    </circle>
-  </g>
-
-  <!-- ================= STAGE 03: 3D MONOLITH CHAMBER (VERIFIED OUTPUT EMISSION) ================= -->
-  <g transform="translate(828, 72)" filter="url(#drop3D)">
-    <animateTransform attributeName="transform" type="translate" values="828,72; 828,65; 828,72" dur="4.4s" repeatCount="indefinite" />
-
-    <!-- 3D Extruded Chamber Outer Shell -->
-    <polygon points="0,0 12,-12 356,-12 344,0" fill="#154734" stroke="#00E58B" stroke-width="0.8" />
-    <polygon points="344,0 356,-12 356,268 344,280" fill="#05140E" stroke="#185A3F" stroke-width="0.8" />
-    <rect x="0" y="0" width="344" height="280" fill="url(#chamberEmerald)" stroke="#1E6B4C" stroke-width="1.2" />
-    <rect x="0" y="0" width="344" height="4" fill="#00E58B" />
-
-    <!-- Levitating 3D Isometric Cube Icon (Stage 03) -->
-    <g transform="translate(304, 36)">
-      <animateTransform attributeName="transform" type="translate" values="304,33; 304,42; 304,33" dur="2.4s" repeatCount="indefinite" />
-      <polygon points="0,-14 14,-7 0,0 -14,-7" fill="#6EE7B7" />
-      <polygon points="-14,-7 0,0 0,14 -14,7" fill="#00E58B" />
-      <polygon points="0,0 14,-7 14,7 0,14" fill="#047857" />
-    </g>
-
-    <text x="20" y="28" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#00E58B" letter-spacing="0.08em">STAGE 03 // VERIFY &amp; EMIT</text>
-    <text x="20" y="56" font-family="Inter, -apple-system, sans-serif" font-size="22" font-weight="800" fill="#F3F0E6">Auditable Deliverable</text>
-    <text x="20" y="78" font-family="Inter, sans-serif" font-size="13" fill="#A7F3D0">Every conclusion locked to a trace ID:</text>
-
-    <!-- 3D Inner Verified Receipts -->
-    <g transform="translate(18, 94)">
-      <rect x="0" y="0" width="308" height="50" fill="#0A1F17" stroke="#1C6447" stroke-width="1" />
-      <rect x="0" y="0" width="4" height="50" fill="#00E58B" />
-      <text x="14" y="21" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#00E58B">[+] 24.83 / 25 Peak Quality Score</text>
-      <text x="14" y="39" font-family="Inter, sans-serif" font-size="12" fill="#E6E2D8">Verified on Frontier 12-domain suite</text>
-
-      <rect x="0" y="58" width="308" height="50" fill="#0A1F17" stroke="#1C6447" stroke-width="1" />
-      <rect x="0" y="58" width="4" height="50" fill="#00E58B" />
-      <text x="14" y="79" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#00E58B">[+] +1.66 Avg Traceability Lift</text>
-      <text x="14" y="97" font-family="Inter, sans-serif" font-size="12" fill="#E6E2D8">Zero ungrounded or orphan assertions</text>
-
-      <rect x="0" y="116" width="308" height="50" fill="#0A1F17" stroke="#1C6447" stroke-width="1" />
-      <rect x="0" y="116" width="4" height="50" fill="#00E58B" />
-      <text x="14" y="137" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#00E58B">[+] Compact 6-Line CLI Receipt</text>
-      <text x="14" y="155" font-family="Inter, sans-serif" font-size="12" fill="#E6E2D8">80-column ergonomic + copy-paste patch</text>
-    </g>
-  </g>
-
-  <!-- Full-Width 3D Optical Fiber Telemetry Bus (y = 374) -->
-  <line x1="40" y1="374" x2="1160" y2="374" stroke="#23283D" stroke-width="3" />
-  <circle r="4" fill="#00E58B" filter="url(#packetGlow)">
-    <animateMotion dur="4.5s" repeatCount="indefinite">
-      <mpath href="#fullPipelineRail" />
-    </animateMotion>
-  </circle>
-  <circle r="4" fill="#FF3B00" filter="url(#packetGlow)">
-    <animateMotion dur="4.5s" begin="2.25s" repeatCount="indefinite">
-      <mpath href="#fullPipelineRail" />
-    </animateMotion>
-  </circle>
-
-  <!-- Bottom Archival Paper Callout Strip (y: 404 -> 459) -->
-  <rect x="1" y="404" width="1198" height="55" fill="#F3F0E6" />
-  <line x1="1" y1="404" x2="1199" y2="404" stroke="#262A3B" stroke-width="1.5" />
-  <text x="24" y="437" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="800" fill="#0B0B0D" letter-spacing="0.05em">BENCHMARK OUTCOME //  108 WINS (74.0%)   |   94.1% FRONTIER WIN RATE   |   +4.41 CREATIVE LIFT   |   +3.11 FINANCE LIFT</text>
+  <text x="940" y="256" text-anchor="middle" font-family="Inter, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#F5F3EC" letter-spacing="-0.02em">Verify &amp; Emit</text>
+  <text x="940" y="280" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#00E58B">Zero ungrounded claims</text>
 </svg>
