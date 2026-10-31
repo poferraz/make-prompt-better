@@ -1,75 +1,148 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="100%" height="100%">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#090D16"/>
-      <stop offset="50%" stop-color="#0F172A"/>
-      <stop offset="100%" stop-color="#131C31"/>
+      <stop offset="0%" stop-color="#050811"/>
+      <stop offset="50%" stop-color="#0B1120"/>
+      <stop offset="100%" stop-color="#0F172A"/>
     </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#38BDF8"/>
-      <stop offset="50%" stop-color="#818CF8"/>
-      <stop offset="100%" stop-color="#C084FC"/>
+    <linearGradient id="prismTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#818CF8" stop-opacity="0.25"/>
     </linearGradient>
-    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.95"/>
+    <linearGradient id="prismLeft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#1E1B4B" stop-opacity="0.75"/>
     </linearGradient>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#334155" stroke-width="0.6" stroke-opacity="0.35"/>
+    <linearGradient id="prismRight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#311042" stop-opacity="0.75"/>
+    </linearGradient>
+    <linearGradient id="cardSurface" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.96"/>
+    </linearGradient>
+    <linearGradient id="beamIn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#FB923C" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="beamOut" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#34D399" stop-opacity="0.3"/>
+    </linearGradient>
+    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <pattern id="isoGrid" width="48" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 48 14 L 24 28 L 0 14 Z" fill="none" stroke="#1E293B" stroke-width="0.8"/>
     </pattern>
   </defs>
 
-  <!-- Background -->
-  <rect width="1200" height="420" rx="18" fill="url(#bg)"/>
-  <rect width="1200" height="420" rx="18" fill="url(#grid)"/>
+  <!-- Background + Isometric Floor Grid -->
+  <rect width="1200" height="460" rx="20" fill="url(#bg)" stroke="#1E293B" stroke-width="1.5"/>
+  <rect width="1200" height="460" rx="20" fill="url(#isoGrid)" opacity="0.65"/>
 
-  <!-- Decorative Glows -->
-  <circle cx="180" cy="80" r="220" fill="#38BDF8" opacity="0.08"/>
-  <circle cx="1020" cy="340" r="240" fill="#818CF8" opacity="0.09"/>
+  <!-- Ambient 3D Spotlights -->
+  <circle cx="880" cy="220" r="230" fill="#38BDF8" opacity="0.09">
+    <animate attributeName="r" values="210;245;210" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="240" cy="120" r="180" fill="#818CF8" opacity="0.07"/>
 
-  <!-- Top Pill Badge -->
-  <rect x="60" y="42" width="430" height="32" rx="16" fill="#1E293B" stroke="#38BDF8" stroke-width="1" stroke-opacity="0.5"/>
-  <circle cx="80" cy="58" r="5" fill="#38BDF8"/>
-  <text x="96" y="63" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12.5" font-weight="600" fill="#E2E8F0" letter-spacing="0.8">RELEASE v4.0.0 • UNIVERSAL AGENT SKILL STANDARD</text>
+  <!-- LEFT COLUMN: Brand & 4 Big Data Tiles -->
+  <rect x="52" y="40" width="296" height="30" rx="15" fill="#0F172A" stroke="#38BDF8" stroke-width="1.2"/>
+  <circle cx="72" cy="55" r="4.5" fill="#34D399">
+    <animate attributeName="opacity" values="1;0.25;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <text x="86" y="59" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" font-weight="700" fill="#E2E8F0" letter-spacing="0.8">v4.1.0 • OCT 30, 2026</text>
 
-  <!-- Main Title -->
-  <text x="60" y="132" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="56" font-weight="800" fill="#F8FAFC" letter-spacing="-1.2">make-prompt-better</text>
-
-  <!-- Subtitle -->
-  <text x="60" y="176" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#94A3B8">
-    Stop guessing with folk prompting. Turn vague prompts, <tspan fill="#38BDF8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="19">AGENTS.md</tspan> files, and
-  </text>
-  <text x="60" y="206" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#94A3B8">
-    agent harnesses into verifiable <tspan fill="#E2E8F0" font-weight="700">Semi-Formal Reasoning Certificates</tspan>.
+  <text x="52" y="124" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="54" font-weight="900" fill="#F8FAFC" letter-spacing="-1.5">make-prompt-better</text>
+  <text x="52" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif" font-size="19.5" font-weight="500" fill="#94A3B8">
+    11-Paper AI Prompt, <tspan fill="#38BDF8" font-family="ui-monospace, monospace">AGENTS.md</tspan> &amp; <tspan fill="#F8FAFC" font-weight="700">Reasoning Certificate Compiler</tspan>
   </text>
 
-  <!-- Metric Cards Row -->
-  <!-- Card 1 -->
-  <rect x="60" y="242" width="250" height="106" rx="12" fill="url(#cardBg)" stroke="#334155" stroke-width="1.2"/>
-  <text x="82" y="286" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="800" fill="#38BDF8">11 Papers</text>
-  <text x="82" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="500" fill="#94A3B8">Peer-reviewed ArXiv synthesis</text>
-  <text x="82" y="330" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#64748B">Meta • Stanford • MIT • ETH</text>
+  <!-- 4 Clean Data-Only KPI Tiles (2x2 Grid) -->
+  <rect x="52" y="194" width="240" height="98" rx="14" fill="url(#cardSurface)" stroke="#38BDF8" stroke-width="1.3" stroke-opacity="0.7"/>
+  <text x="72" y="246" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="900" fill="#38BDF8">94.1%</text>
+  <text x="72" y="272" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700" fill="#94A3B8">FRONTIER WIN RATE</text>
 
-  <!-- Card 2 -->
-  <rect x="330" y="242" width="250" height="106" rx="12" fill="url(#cardBg)" stroke="#334155" stroke-width="1.2"/>
-  <text x="352" y="286" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="800" fill="#818CF8">+25.9%</text>
-  <text x="352" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="500" fill="#94A3B8">Cross-architecture quality gain</text>
-  <text x="352" y="330" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#64748B">96.3% win rate • 4 LLM families</text>
+  <rect x="308" y="194" width="240" height="98" rx="14" fill="url(#cardSurface)" stroke="#34D399" stroke-width="1.3" stroke-opacity="0.7"/>
+  <text x="328" y="246" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="900" fill="#34D399">+27.3%</text>
+  <text x="328" y="272" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700" fill="#94A3B8">GEMINI 3.8 LIFT</text>
 
-  <!-- Card 3 -->
-  <rect x="600" y="242" width="250" height="106" rx="12" fill="url(#cardBg)" stroke="#334155" stroke-width="1.2"/>
-  <text x="622" y="286" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="800" fill="#34D399">0 Orphans</text>
-  <text x="622" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="500" fill="#94A3B8">Zero unsupported conclusions</text>
-  <text x="622" y="330" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#64748B">[P1] → [T1] → [C1] bound</text>
+  <rect x="52" y="306" width="240" height="98" rx="14" fill="url(#cardSurface)" stroke="#C084FC" stroke-width="1.3" stroke-opacity="0.7"/>
+  <text x="72" y="358" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="900" fill="#C084FC">+4.41</text>
+  <text x="72" y="384" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700" fill="#94A3B8">CREATIVE v2 GAIN (/25)</text>
 
-  <!-- Card 4 -->
-  <rect x="870" y="242" width="270" height="106" rx="12" fill="url(#cardBg)" stroke="#334155" stroke-width="1.2"/>
-  <text x="892" y="286" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="800" fill="#C084FC">4 Modes</text>
-  <text x="892" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13.5" font-weight="500" fill="#94A3B8">Max • Lite • LRM/Harness • Creative</text>
-  <text x="892" y="330" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#64748B">12 ready-to-use templates</text>
+  <rect x="308" y="306" width="240" height="98" rx="14" fill="url(#cardSurface)" stroke="#818CF8" stroke-width="1.3" stroke-opacity="0.7"/>
+  <text x="328" y="358" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="900" fill="#818CF8">14 LLMs</text>
+  <text x="328" y="384" font-family="ui-monospace, monospace" font-size="11.5" font-weight="700" fill="#94A3B8">146 TEST PAIRS</text>
+
+  <!-- RIGHT COLUMN: 3D ISOMETRIC MOTION COMPILER -->
+  <path d="M 660 105 L 850 205" stroke="url(#beamIn)" stroke-width="4" stroke-dasharray="8 6" fill="none"/>
+  <path d="M 890 225 L 1075 322" stroke="url(#beamOut)" stroke-width="5" fill="none" filter="url(#glow)"/>
+
+  <!-- Animated Particles along Input Rail -->
+  <circle r="5.5" fill="#FB923C" filter="url(#glow)">
+    <animateMotion dur="2s" repeatCount="indefinite" path="M 660 105 L 850 205"/>
+  </circle>
+  <circle r="4.5" fill="#F43F5E">
+    <animateMotion dur="2s" begin="1s" repeatCount="indefinite" path="M 660 105 L 850 205"/>
+  </circle>
+
+  <!-- Animated Particles along Output Rail -->
+  <circle r="6" fill="#34D399" filter="url(#glow)">
+    <animateMotion dur="1.6s" repeatCount="indefinite" path="M 890 225 L 1075 322"/>
+  </circle>
+  <circle r="5" fill="#38BDF8" filter="url(#glow)">
+    <animateMotion dur="1.6s" begin="0.8s" repeatCount="indefinite" path="M 890 225 L 1075 322"/>
+  </circle>
+
+  <!-- 3D Floating Input Card -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.6s" repeatCount="indefinite"/>
+    <polygon points="605,95 745,50 795,115 655,160" fill="#020617" opacity="0.6"/>
+    <polygon points="600,85 740,40 790,105 650,150" fill="#1E293B" stroke="#F43F5E" stroke-width="1.8"/>
+    <circle cx="635" cy="86" r="4" fill="#F43F5E"/>
+    <text x="646" y="90" font-family="ui-monospace, monospace" font-size="11" font-weight="800" fill="#FDA4AF">RAW PROMPT</text>
+    <line x1="635" y1="106" x2="735" y2="76" stroke="#64748B" stroke-width="3" stroke-linecap="round"/>
+    <line x1="645" y1="120" x2="715" y2="98" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- CENTER: 3D Isometric Glass Compiler Cube -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-12; 0,0" dur="4s" repeatCount="indefinite"/>
+    <ellipse cx="875" cy="245" rx="94" ry="45" fill="none" stroke="#38BDF8" stroke-width="1.6" stroke-dasharray="10 6" opacity="0.6">
+      <animate attributeName="stroke-dashoffset" values="0;32" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
+
+    <polygon points="875,118 965,164 875,210 785,164" fill="url(#prismTop)" stroke="#38BDF8" stroke-width="2"/>
+    <polygon points="785,164 875,210 875,308 785,262" fill="url(#prismLeft)" stroke="#38BDF8" stroke-width="1.6"/>
+    <polygon points="965,164 875,210 875,308 965,262" fill="url(#prismRight)" stroke="#818CF8" stroke-width="1.6"/>
+
+    <circle cx="875" cy="210" r="16" fill="#38BDF8" filter="url(#glow)">
+      <animate attributeName="r" values="13;21;13" dur="2s" repeatCount="indefinite"/>
+    </circle>
+
+    <text x="875" y="168" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#F8FAFC">11 PAPERS</text>
+    <text x="830" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#7DD3FC">[P1]•[T1]</text>
+    <text x="920" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#C4B5FD">[V1]•[NT0]</text>
+  </g>
+
+  <!-- BOTTOM-RIGHT: 3D Stacked Verified Certificate Output -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-9; 0,0" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
+    <polygon points="965,352 1125,298 1175,368 1015,422" fill="#064E3B" opacity="0.55" stroke="#10B981" stroke-width="1"/>
+    <polygon points="965,338 1125,284 1175,354 1015,408" fill="#065F46" opacity="0.75" stroke="#34D399" stroke-width="1.2"/>
+    <polygon points="965,324 1125,270 1175,340 1015,394" fill="#0F172A" stroke="#34D399" stroke-width="2.2"/>
+
+    <circle cx="1002" cy="322" r="5" fill="#34D399"/>
+    <text x="1014" y="326" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#34D399">CERTIFICATE</text>
+    <text x="1016" y="348" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#F8FAFC">[P1] → [T1] → [V1]</text>
+    <text x="1028" y="368" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#38BDF8">+1.66 TRACEABILITY</text>
+  </g>
 
   <!-- Bottom Compatibility Bar -->
-  <text x="60" y="388" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="600" fill="#64748B">
-    WORKS WITH: <tspan fill="#E2E8F0">Claude Code</tspan> • <tspan fill="#E2E8F0">Antigravity</tspan> • <tspan fill="#E2E8F0">Gemini CLI</tspan> • <tspan fill="#E2E8F0">OpenAI Codex</tspan> • <tspan fill="#E2E8F0">Cursor</tspan> • <tspan fill="#E2E8F0">Windsurf</tspan> • <tspan fill="#E2E8F0">Qwen Code</tspan> • <tspan fill="#E2E8F0">Copilot CLI</tspan>
+  <text x="52" y="436" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" font-weight="600" fill="#64748B">
+    WORKS IN: <tspan fill="#E2E8F0">Claude Code</tspan> • <tspan fill="#E2E8F0">Antigravity</tspan> • <tspan fill="#E2E8F0">Gemini CLI</tspan> • <tspan fill="#E2E8F0">Codex CLI</tspan> • <tspan fill="#E2E8F0">Cursor</tspan> • <tspan fill="#E2E8F0">Windsurf</tspan> • <tspan fill="#E2E8F0">Qwen</tspan>
   </text>
 </svg>

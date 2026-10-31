@@ -1,95 +1,104 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="100%">
   <defs>
     <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0B1120"/>
+      <stop offset="0%" stop-color="#050811"/>
       <stop offset="100%" stop-color="#0F172A"/>
     </linearGradient>
-    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748B"/>
-    </marker>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0B1120" stop-opacity="0.96"/>
+    </linearGradient>
+    <pattern id="isoGrid2" width="48" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 48 14 L 24 28 L 0 14 Z" fill="none" stroke="#1E293B" stroke-width="0.7"/>
+    </pattern>
   </defs>
 
-  <rect width="1200" height="540" rx="16" fill="url(#bg2)" stroke="#1E293B" stroke-width="1.5"/>
+  <rect width="1200" height="420" rx="20" fill="url(#bg2)" stroke="#1E293B" stroke-width="1.5"/>
+  <rect width="1200" height="420" rx="20" fill="url(#isoGrid2)" opacity="0.55"/>
 
-  <!-- Header -->
-  <text x="48" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="800" fill="#F8FAFC">The v4.0 Optimization Pipeline &amp; 4 Certificate Modes</text>
-  <text x="48" y="72" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#94A3B8">How raw prompts and context files are classified, stripped of goal bias, and compiled into verifiable certificates</text>
+  <text x="48" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="900" fill="#F8FAFC">4 Model-Aware Certificate Modes (v4.1.0)</text>
+  <text x="1152" y="46" text-anchor="end" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#34D399">AUTO-ROUTED BY MODEL TIER &amp; TASK</text>
 
-  <!-- Step 1: Input & Pre-Processing Row -->
-  <rect x="48" y="100" width="240" height="84" rx="10" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
-  <text x="66" y="128" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" font-weight="700" fill="#38BDF8">STEP 1 • INPUT AUDIT</text>
-  <text x="66" y="150" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">Raw Prompt / AGENTS.md</text>
-  <text x="66" y="170" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#94A3B8">Detect guesswork &amp; missing scope</text>
+  <!-- 4 ISOMETRIC 3D FLOATING MODE CARDS -->
+  <!-- CARD 1: MODE 1 MAX -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.8s" repeatCount="indefinite"/>
+    <rect x="54" y="92" width="260" height="260" rx="16" fill="#020617"/>
+    <rect x="46" y="82" width="260" height="260" rx="16" fill="url(#cardGrad)" stroke="#38BDF8" stroke-width="2"/>
+    <rect x="68" y="104" width="110" height="26" rx="13" fill="#0C4A6E" stroke="#38BDF8" stroke-width="1"/>
+    <text x="123" y="121" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#7DD3FC">~2.2x TOKENS</text>
 
-  <line x1="288" y1="142" x2="328" y2="142" stroke="#64748B" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="68" y="164" font-family="-apple-system, sans-serif" font-size="24" font-weight="900" fill="#F8FAFC">1. Max Mode</text>
+    <text x="68" y="190" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#38BDF8">FRONTIER &amp; CRITICAL</text>
 
-  <rect x="336" y="100" width="260" height="84" rx="10" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
-  <text x="354" y="128" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" font-weight="700" fill="#F43F5E">STEP 2 • [GOAL-BLIND] + [PRISM]</text>
-  <text x="354" y="150" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">Strip Goal Leakage &amp; Persona</text>
-  <text x="354" y="170" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#94A3B8">Omit persona on accuracy/LRM (-5pp risk)</text>
+    <rect x="68" y="214" width="216" height="58" rx="10" fill="#090D16" stroke="#1E293B" stroke-width="1.2"/>
+    <text x="176" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="800" fill="#F8FAFC">[P1] → [T1] → [C1]</text>
+    <text x="176" y="259" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#38BDF8">+ Mandatory Patch</text>
 
-  <line x1="596" y1="142" x2="636" y2="142" stroke="#64748B" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="68" y="308" font-family="-apple-system, sans-serif" font-size="28" font-weight="900" fill="#38BDF8">+3.11</text>
+    <text x="155" y="306" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#94A3B8">FINANCE / CODE</text>
+  </g>
 
-  <rect x="644" y="100" width="250" height="84" rx="10" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
-  <text x="662" y="128" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" font-weight="700" fill="#FBBF24">STEP 3 • [HIERARCHY] + [ACE]</text>
-  <text x="662" y="150" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">Authority Frame &amp; IDs</text>
-  <text x="662" y="170" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#94A3B8">Protocol preamble + [P1]/[T1] tags</text>
+  <!-- CARD 2: MODE 2 LITE -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.8s" begin="0.4s" repeatCount="indefinite"/>
+    <rect x="336" y="92" width="260" height="260" rx="16" fill="#020617"/>
+    <rect x="328" y="82" width="260" height="260" rx="16" fill="url(#cardGrad)" stroke="#34D399" stroke-width="2"/>
+    <rect x="350" y="104" width="110" height="26" rx="13" fill="#064E3B" stroke="#34D399" stroke-width="1"/>
+    <text x="405" y="121" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#6EE7B7">~1.5x TOKENS</text>
 
-  <line x1="894" y1="142" x2="934" y2="142" stroke="#64748B" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="350" y="164" font-family="-apple-system, sans-serif" font-size="24" font-weight="900" fill="#F8FAFC">2. Lite Mode</text>
+    <text x="350" y="190" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#34D399">FLASH / &lt;30B DEFAULT</text>
 
-  <rect x="942" y="100" width="210" height="84" rx="10" fill="#1E293B" stroke="#38BDF8" stroke-width="1.5"/>
-  <text x="960" y="128" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" font-weight="700" fill="#38BDF8">STEP 4 • ROUTE MODE</text>
-  <text x="960" y="150" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">Select Certificate</text>
-  <text x="960" y="170" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#94A3B8">Match stakes &amp; model type</text>
+    <rect x="350" y="214" width="216" height="58" rx="10" fill="#090D16" stroke="#1E293B" stroke-width="1.2"/>
+    <text x="458" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="800" fill="#F8FAFC">In → Step → Fix</text>
+    <text x="458" y="259" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#34D399">Max 3 [P] Premises</text>
 
-  <!-- 4 Mode Columns -->
-  <!-- Mode 1: Max -->
-  <rect x="48" y="220" width="260" height="225" rx="12" fill="#131C31" stroke="#38BDF8" stroke-width="1.4"/>
-  <text x="68" y="250" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700" fill="#38BDF8">MODE 1 • ~2.2x TOKENS</text>
-  <text x="68" y="274" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="800" fill="#F8FAFC">Max Certificate</text>
-  <text x="68" y="296" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12.5" fill="#94A3B8">High-stakes analytical tasks</text>
-  <text x="68" y="324" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• [P1..Pn] Full Premises</text>
-  <text x="68" y="346" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• [T1..Tn] Multi-step Traces</text>
-  <text x="68" y="368" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• [C1] Bound Verdict &amp; Gaps</text>
-  <text x="68" y="390" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• Mandatory Remediation</text>
-  <text x="68" y="422" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" fill="#38BDF8">[META] [ACE] [CODE-SMELLS]</text>
+    <text x="350" y="308" font-family="-apple-system, sans-serif" font-size="28" font-weight="900" fill="#34D399">0 Bloat</text>
+    <text x="462" y="306" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#94A3B8">FAST DAILY TASKS</text>
+  </g>
 
-  <!-- Mode 2: Lite -->
-  <rect x="330" y="220" width="260" height="225" rx="12" fill="#131C31" stroke="#34D399" stroke-width="1.4"/>
-  <text x="350" y="250" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700" fill="#34D399">MODE 2 • ~1.5x TOKENS</text>
-  <text x="350" y="274" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="800" fill="#F8FAFC">Lite Certificate</text>
-  <text x="350" y="296" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12.5" fill="#94A3B8">Routine code &amp; doc analysis</text>
-  <text x="350" y="324" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• Max 3 [P] Premises</text>
-  <text x="350" y="346" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• Single-line arrow traces:</text>
-  <text x="350" y="366" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#34D399">  [T1] In → Step → Finding</text>
-  <text x="350" y="390" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• 1-2 sentence Verdict + Fix</text>
-  <text x="350" y="422" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" fill="#34D399">~80% traceability at lower cost</text>
+  <!-- CARD 3: MODE 3 HARNESS -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.8s" begin="0.8s" repeatCount="indefinite"/>
+    <rect x="618" y="92" width="260" height="260" rx="16" fill="#020617"/>
+    <rect x="610" y="82" width="260" height="260" rx="16" fill="url(#cardGrad)" stroke="#818CF8" stroke-width="2"/>
+    <rect x="632" y="104" width="110" height="26" rx="13" fill="#1E1B4B" stroke="#818CF8" stroke-width="1"/>
+    <text x="687" y="121" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#C7D2FE">~1.2x TOKENS</text>
 
-  <!-- Mode 3: LRM / Harness -->
-  <rect x="612" y="220" width="260" height="225" rx="12" fill="#131C31" stroke="#818CF8" stroke-width="1.4"/>
-  <text x="632" y="250" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700" fill="#818CF8">MODE 3 • ~1.2x TOKENS (NEW)</text>
-  <text x="632" y="274" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="800" fill="#F8FAFC">LRM &amp; Harness Mode</text>
-  <text x="632" y="296" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12.5" fill="#94A3B8">o3 / R1 / Thinking &amp; AGENTS.md</text>
-  <text x="632" y="324" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• Omit visible CoT narration</text>
-  <text x="632" y="346" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• [V1..Vn] Verification Gates</text>
-  <text x="632" y="368" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• Strip repo directory trees</text>
-  <text x="632" y="390" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• Scratchpad Context-as-a-File</text>
-  <text x="632" y="422" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" fill="#818CF8">[CONTEXT-FILES] [HARNESS]</text>
+    <text x="632" y="164" font-family="-apple-system, sans-serif" font-size="24" font-weight="900" fill="#F8FAFC">3. Harness</text>
+    <text x="632" y="190" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#818CF8">LRMs &amp; AGENTS.md</text>
 
-  <!-- Mode 4: Creative v2 -->
-  <rect x="894" y="220" width="258" height="225" rx="12" fill="#131C31" stroke="#C084FC" stroke-width="1.4"/>
-  <text x="914" y="250" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" font-weight="700" fill="#C084FC">MODE 4 • ~1.6x TOKENS (NEW)</text>
-  <text x="914" y="274" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="18" font-weight="800" fill="#F8FAFC">Creative &amp; Divergent v2</text>
-  <text x="914" y="296" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12.5" fill="#94A3B8">Essays, copy &amp; ideation</text>
-  <text x="914" y="324" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• [NT0] Verbalized Sampling</text>
-  <text x="914" y="346" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11.5" fill="#C084FC">  Pick angle with p &lt;= 0.20</text>
-  <text x="914" y="368" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• [NT1..3] Narrative Traces</text>
-  <text x="914" y="390" font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#E2E8F0">• 4 Anti-SlopShape Rules</text>
-  <text x="914" y="422" font-family="ui-monospace, SFMono-Regular, monospace" font-size="11" fill="#C084FC">[VS] [SLOPSHAPE]</text>
+    <rect x="632" y="214" width="216" height="58" rx="10" fill="#090D16" stroke="#1E293B" stroke-width="1.2"/>
+    <text x="740" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="800" fill="#F8FAFC">Code → [V1] → [V2]</text>
+    <text x="740" y="259" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#818CF8">&lt;25% Gate Overhead</text>
+
+    <text x="632" y="308" font-family="-apple-system, sans-serif" font-size="28" font-weight="900" fill="#818CF8">-20%</text>
+    <text x="722" y="306" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#94A3B8">CONTEXT COST</text>
+  </g>
+
+  <!-- CARD 4: MODE 4 CREATIVE v2 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="3.8s" begin="1.2s" repeatCount="indefinite"/>
+    <rect x="900" y="92" width="260" height="260" rx="16" fill="#020617"/>
+    <rect x="892" y="82" width="260" height="260" rx="16" fill="url(#cardGrad)" stroke="#C084FC" stroke-width="2"/>
+    <rect x="914" y="104" width="110" height="26" rx="13" fill="#3B0764" stroke="#C084FC" stroke-width="1"/>
+    <text x="969" y="121" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11.5" font-weight="800" fill="#E9D5FF">~1.6x TOKENS</text>
+
+    <text x="914" y="164" font-family="-apple-system, sans-serif" font-size="24" font-weight="900" fill="#F8FAFC">4. Creative v2</text>
+    <text x="914" y="190" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#C084FC">WRITING &amp; IDEATION</text>
+
+    <rect x="914" y="214" width="216" height="58" rx="10" fill="#090D16" stroke="#1E293B" stroke-width="1.2"/>
+    <text x="1022" y="240" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" font-weight="800" fill="#F8FAFC">[NT0] p &lt;= 0.20</text>
+    <text x="1022" y="259" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#C084FC">+ Anti-SlopShape [SC0]</text>
+
+    <text x="914" y="308" font-family="-apple-system, sans-serif" font-size="28" font-weight="900" fill="#C084FC">+4.41</text>
+    <text x="1002" y="306" font-family="ui-monospace, monospace" font-size="11" font-weight="700" fill="#94A3B8">100% WIN RATE</text>
+  </g>
 
   <!-- Bottom Guard Bar -->
-  <rect x="48" y="465" width="1104" height="50" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1.2"/>
-  <text x="72" y="495" font-family="ui-monospace, SFMono-Regular, monospace" font-size="13" font-weight="600" fill="#F8FAFC">
-    MANDATORY POST-GUARDS (<tspan fill="#38BDF8">[SKILLS-SDO]</tspan> + <tspan fill="#34D399">[META]</tspan>): <tspan font-weight="400" fill="#CBD5E1">Positive Observable-Predicate Recipes • Remediation Block • Traceability Self-Check</tspan>
+  <rect x="46" y="362" width="1106" height="38" rx="10" fill="#0F172A" stroke="#334155" stroke-width="1.2"/>
+  <text x="600" y="386" text-anchor="middle" font-family="ui-monospace, monospace" font-size="12.5" font-weight="700" fill="#E2E8F0">
+    UNIVERSAL INVARIANTS: <tspan fill="#38BDF8">Goal-Blind</tspan> • <tspan fill="#34D399">Self-Contained Data Binding</tspan> • <tspan fill="#818CF8">Positive Predicates</tspan> • <tspan fill="#C084FC">0 Orphan Claims</tspan>
   </text>
 </svg>
