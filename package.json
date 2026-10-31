@@ -1,0 +1,29 @@
+{
+  "name": "make-prompt-better",
+  "version": "4.2.0",
+  "description": "Model-Aware Prompt, Context, and Harness Compiler for AI Coding Agents",
+  "main": "install.sh",
+  "bin": {
+    "make-prompt-better": "./install.sh",
+    "lint-context": "./lint_context.py"
+  },
+  "scripts": {
+    "test": "python3 -m unittest discover -s research/benchmark/v4 -p 'test_*.py' -v",
+    "lint": "python3 lint_context.py --self-test && python3 lint_context.py CLAUDE.md AGENTS.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/poferraz/make-prompt-better.git"
+  },
+  "keywords": [
+    "prompt-engineering",
+    "prompt-compiler",
+    "agent-skills",
+    "agentskills",
+    "claude-code",
+    "gemini-cli",
+    "context-engineering"
+  ],
+  "author": "Paulo Ferraz",
+  "license": "MIT"
+}

@@ -184,7 +184,7 @@ Semi-formal reasoning is a precision tool, not a default setting. Across the v1.
 
 The costs are real: ~2.2x token overhead in Max mode (~1.5x in Lite), proportional latency increase, diminishing returns on already-strong baselines, token starvation if verification tables precede large code implementations on compact models (resolved in v4.1.0 by code-first Template 12), and active accuracy loss if persona framing is misapplied on factual tasks.
 
-**Decision framework (v4.1.0):**
+**Decision framework (v4.2.0):**
 - High-stakes analytical task on a frontier reasoning architecture or for mission-critical human review? **Mode 1: Max Certificate (~2.2x overhead).**
 - Flash-tier or sub-30B parameter model, OR routine analytical task where the model is moderately competent? **Mode 2: Lite Certificate (~1.5x overhead, default for compact/flash models).**
 - Large Reasoning Model (o3, R1, Extended Thinking), async concurrency coding, or `AGENTS.md` / `CLAUDE.md` context file? **Mode 3: LRM / Harness Mode (~1.1x to 1.3x overhead; generates executable code first before `[V1] -> [V2]` verification with `<25%` overhead ceiling, and includes the Context Architecture Contract preamble for `AGENTS.md`/`CLAUDE.md` per Lee et al., 2026 and Gloaguen et al., 2026).**
