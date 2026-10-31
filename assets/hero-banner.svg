@@ -1,133 +1,323 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" width="100%" height="100%">
   <defs>
-    <pattern id="swissGrid1" width="24" height="24" patternUnits="userSpaceOnUse">
-      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#17171B" stroke-width="1" />
+    <!-- 2D Architectural Grid + 3D Perspective Gradients -->
+    <pattern id="isoGridHero" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#141622" stroke-width="1" />
+      <circle cx="32" cy="32" r="1" fill="#25293E" />
     </pattern>
+
+    <linearGradient id="bgDepthHero" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#07080C" />
+      <stop offset="50%" stop-color="#0B0D14" />
+      <stop offset="100%" stop-color="#07080B" />
+    </linearGradient>
+
+    <radialGradient id="coreGlowOrange" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF3B00" stop-opacity="0.38" />
+      <stop offset="55%" stop-color="#FF3B00" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#FF3B00" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="coreGlowEmerald" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00E58B" stop-opacity="0.32" />
+      <stop offset="60%" stop-color="#00E58B" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#00E58B" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="laserSweepRed" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF3B00" stop-opacity="0" />
+      <stop offset="50%" stop-color="#FF3B00" stop-opacity="0.35" />
+      <stop offset="95%" stop-color="#FF6B4A" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#FF3B00" stop-opacity="0" />
+    </linearGradient>
+
+    <linearGradient id="laserSweepGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00E58B" stop-opacity="0" />
+      <stop offset="50%" stop-color="#00E58B" stop-opacity="0.28" />
+      <stop offset="95%" stop-color="#6EE7B7" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#00E58B" stop-opacity="0" />
+    </linearGradient>
+
+    <linearGradient id="ivorySlabFront" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F7F4EB" />
+      <stop offset="100%" stop-color="#E2DEC9" />
+    </linearGradient>
+
+    <linearGradient id="darkSlabFront" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#171A26" />
+      <stop offset="100%" stop-color="#0E1017" />
+    </linearGradient>
+
+    <filter id="shadow3D" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <style>
+      .float-1 { animation: floatCard1 4.2s ease-in-out infinite; }
+      .float-2 { animation: floatCard2 4.8s ease-in-out infinite; }
+      .float-3 { animation: floatCard3 5.4s ease-in-out infinite; }
+      .pulse-ring { animation: ringPulse 3.2s ease-in-out infinite; transform-origin: 648px 245px; }
+      @keyframes floatCard1 { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
+      @keyframes floatCard2 { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(4px); } }
+      @keyframes floatCard3 { 0%, 100% { transform: translateY(2px); } 50% { transform: translateY(-6px); } }
+      @keyframes ringPulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.95; } }
+    </style>
   </defs>
 
-  <!-- Outer Architectural Frame -->
-  <rect width="1200" height="480" fill="#0B0B0D" />
-  <rect x="1" y="1" width="1198" height="478" fill="url(#swissGrid1)" stroke="#2A2A30" stroke-width="1.5" />
+  <!-- Outer Frame & 3D Perspective Grid Floor -->
+  <rect width="1200" height="520" fill="url(#bgDepthHero)" />
+  <rect x="1" y="1" width="1198" height="518" fill="url(#isoGridHero)" stroke="#262A3B" stroke-width="1.5" />
 
-  <!-- Top Specification Telemetry Bar (y: 1 -> 41) -->
-  <rect x="1" y="1" width="1198" height="40" fill="#111115" />
-  <line x1="1" y1="41" x2="1199" y2="41" stroke="#2A2A30" stroke-width="1.5" />
-  <rect x="24" y="14" width="12" height="12" fill="#FF3B00" />
-  <text x="46" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">FIG. 01 // POFERRAZ / MAKE-PROMPT-BETTER</text>
-  <line x1="380" y1="1" x2="380" y2="41" stroke="#2A2A30" stroke-width="1" />
-  <text x="400" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#9A9891" letter-spacing="0.06em">STD: AGENTSKILLS.IO</text>
-  <line x1="590" y1="1" x2="590" y2="41" stroke="#2A2A30" stroke-width="1" />
-  <text x="610" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#9A9891" letter-spacing="0.06em">CORPUS: 11 ARXIV PAPERS (2025-2026)</text>
-  <line x1="980" y1="1" x2="980" y2="41" stroke="#2A2A30" stroke-width="1" />
-  <text x="1004" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#00D67F" letter-spacing="0.06em">RELEASE: v4.2.0</text>
-
-  <!-- Main Vertical Split Hairline (x = 672) -->
-  <line x1="672" y1="41" x2="672" y2="436" stroke="#2A2A30" stroke-width="1.5" />
-
-  <!-- Crosshair Registration Marks -->
-  <g stroke="#5A5955" stroke-width="1">
-    <line x1="666" y1="41" x2="678" y2="41" />
-    <line x1="672" y1="35" x2="672" y2="47" />
-    <line x1="666" y1="254" x2="678" y2="254" />
-    <line x1="672" y1="248" x2="672" y2="260" />
+  <!-- 3D Perspective Horizon Floor Rays -->
+  <g stroke="#1C2033" stroke-width="1" opacity="0.75">
+    <line x1="648" y1="245" x2="0" y2="480" />
+    <line x1="648" y1="245" x2="220" y2="480" />
+    <line x1="648" y1="245" x2="440" y2="480" />
+    <line x1="648" y1="245" x2="860" y2="480" />
+    <line x1="648" y1="245" x2="1080" y2="480" />
+    <line x1="648" y1="245" x2="1200" y2="420" />
+    <!-- Animated 3D Perspective Depth Wave -->
+    <line x1="0" y1="440" x2="1200" y2="440" stroke="#FF3B00" stroke-opacity="0.18" stroke-dasharray="8 8">
+      <animate attributeName="y1" values="360;475;360" dur="8s" repeatCount="indefinite" />
+      <animate attributeName="y2" values="360;475;360" dur="8s" repeatCount="indefinite" />
+    </line>
   </g>
 
-  <!-- ================= LEFT EDITORIAL COLUMN (x: 1 -> 672) ================= -->
-  <g transform="translate(36, 74)">
-    <text x="0" y="0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#FF3B00" letter-spacing="0.1em">01 // MODEL-AWARE PROMPT &amp; CONTEXT COMPILER</text>
+  <!-- Ambient Volumetric Light Orbs -->
+  <circle cx="648" cy="245" r="190" fill="url(#coreGlowOrange)">
+    <animate attributeName="r" values="165;215;165" dur="4.5s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="945" cy="335" r="210" fill="url(#coreGlowEmerald)">
+    <animate attributeName="r" values="185;235;185" dur="5.2s" repeatCount="indefinite" />
+  </circle>
 
-    <!-- Editorial Display Headline -->
-    <text x="0" y="46" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="44" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">Prompting is not folklore.</text>
-    <text x="0" y="94" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="44" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">It is <tspan fill="#FF3B00">compilation.</tspan></text>
+  <!-- Top Telemetry Bar (y: 1 -> 41) -->
+  <rect x="1" y="1" width="1198" height="40" fill="#0D0F17" />
+  <line x1="1" y1="41" x2="1199" y2="41" stroke="#262A3B" stroke-width="1.5" />
+  <rect x="24" y="14" width="12" height="12" fill="#FF3B00">
+    <animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite" />
+  </rect>
+  <text x="46" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">FIG. 01 // POFERRAZ / MAKE-PROMPT-BETTER [3D AST COMPILER]</text>
+  <line x1="450" y1="1" x2="450" y2="41" stroke="#262A3B" stroke-width="1" />
+  <text x="468" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#9A9891" letter-spacing="0.06em">STD: AGENTSKILLS.IO</text>
+  <line x1="650" y1="1" x2="650" y2="41" stroke="#262A3B" stroke-width="1" />
+  <text x="668" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#9A9891" letter-spacing="0.06em">CORPUS: 11 ARXIV PAPERS (2025-2026)</text>
+  <line x1="985" y1="1" x2="985" y2="41" stroke="#262A3B" stroke-width="1" />
+  <circle cx="1006" cy="21" r="4.5" fill="#00E58B">
+    <animate attributeName="r" values="3.5;5.5;3.5" dur="1.6s" repeatCount="indefinite" />
+  </circle>
+  <text x="1018" y="25" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#00E58B" letter-spacing="0.06em">RELEASE: v4.2.0</text>
+
+  <!-- ================= LEFT COLUMN: EDITORIAL + 3D MONOLITHS (x: 1 -> 616) ================= -->
+  <g transform="translate(32, 68)">
+    <text x="0" y="0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.1em">01 // ANTI-FLUFF PROMPT, CONTEXT &amp; HARNESS COMPILER</text>
+
+    <!-- High-Impact Display Headline -->
+    <text x="0" y="42" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="38" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">Stop "Enhancing" Prompts.</text>
+    <text x="0" y="86" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="38" font-weight="900" fill="#F3F0E6" letter-spacing="-0.03em">Compile Them Into <tspan fill="#FF3B00">Proofs.</tspan></text>
 
     <!-- Editorial Subhead -->
-    <text x="0" y="130" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="400" fill="#A8A69E">Strip attention-degrading roleplay, goal bias, and /init directory trees.</text>
-    <text x="0" y="152" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="400" fill="#A8A69E">Compile tasks and CLAUDE.md files into verifiable execution certificates.</text>
+    <text x="0" y="118" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="400" fill="#A8A69E">Roleplay fluff (-5.3pp MMLU), goal leakage, and /init trees make LLMs worse.</text>
+    <text x="0" y="138" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="400" fill="#A8A69E">Compile prompts and CLAUDE.md files into verifiable Semi-Formal Certificates.</text>
   </g>
 
-  <!-- Left Mid: Exposed 3-Column Swiss Spec Table (y: 254 -> 368) -->
-  <line x1="1" y1="254" x2="672" y2="254" stroke="#2A2A30" stroke-width="1.5" />
-  <line x1="1" y1="368" x2="672" y2="368" stroke="#2A2A30" stroke-width="1.5" />
-
-  <!-- Cell 1: High-Contrast Archival Paper Callout (x=1..224) -->
-  <rect x="2" y="255" width="222" height="112" fill="#F3F0E6" />
-  <text x="24" y="278" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#5A5955" letter-spacing="0.08em">FRONTIER WIN RATE</text>
-  <text x="24" y="322" font-family="Inter, -apple-system, sans-serif" font-size="38" font-weight="900" fill="#0B0B0D" letter-spacing="-0.03em">94.1%</text>
-  <text x="24" y="350" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00">+27.3% lift on Gemini 3.8</text>
-
-  <line x1="224" y1="254" x2="224" y2="368" stroke="#2A2A30" stroke-width="1.5" />
-
-  <!-- Cell 2: Anti-SlopShape Gain (x=224..448) -->
-  <rect x="225" y="255" width="222" height="112" fill="#0F0F13" />
-  <text x="244" y="278" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#9A9891" letter-spacing="0.08em">ANTI-SLOPSHAPE GAIN</text>
-  <text x="244" y="322" font-family="Inter, -apple-system, sans-serif" font-size="36" font-weight="800" fill="#F3F0E6" letter-spacing="-0.02em">+4.41<tspan font-size="19" fill="#6E6D68"> /25</tspan></text>
-  <text x="244" y="350" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#00D67F">100% win rate (2.1x div)</text>
-
-  <line x1="448" y1="254" x2="448" y2="368" stroke="#2A2A30" stroke-width="1.5" />
-
-  <!-- Cell 3: Context Compaction (x=448..672) -->
-  <rect x="449" y="255" width="222" height="112" fill="#0F0F13" />
-  <text x="468" y="278" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#9A9891" letter-spacing="0.08em">CLAUDE.MD COMPACTION</text>
-  <text x="468" y="322" font-family="Inter, -apple-system, sans-serif" font-size="36" font-weight="800" fill="#F3F0E6" letter-spacing="-0.02em">-20%<tspan font-size="19" fill="#6E6D68"> COST</tspan></text>
-  <text x="468" y="350" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">+7.0/25 Frontier task lift</text>
-
-  <!-- Left Bottom CLI Execution Strip (y: 368 -> 436) -->
-  <rect x="2" y="369" width="669" height="66" fill="#0B0B0D" />
-  <text x="24" y="392" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#6E6D68" letter-spacing="0.08em">INSTALL &amp; COMPILE COMMAND</text>
-  <text x="24" y="418" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="700" fill="#FF3B00">$</text>
-  <text x="42" y="418" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="600" fill="#F3F0E6">./install.sh --symlink  &amp;&amp;  /make-prompt-better &lt;task-or-CLAUDE.md&gt;</text>
-
-  <!-- ================= RIGHT COMPILER DIFF INSPECTOR (x: 672 -> 1199) ================= -->
-  <g transform="translate(673, 42)">
-    <rect x="0" y="0" width="525" height="34" fill="#141419" />
-    <line x1="0" y1="34" x2="525" y2="34" stroke="#2A2A30" stroke-width="1" />
-    <text x="20" y="22" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#F3F0E6" letter-spacing="0.06em">COMPILER TRACE // DIFF INSPECTOR</text>
-    <text x="356" y="22" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#9A9891">146 PAIRS / 14 LLMS</text>
-
-    <!-- PASS 1: Stripped Folk Anti-Patterns -->
-    <g transform="translate(20, 48)">
-      <text x="0" y="13" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">PASS 01 // STRIP FOLK PROMPTING HABITS (INPUT)</text>
-
-      <rect x="0" y="22" width="486" height="30" fill="#1F1110" stroke="#4D1F1A" stroke-width="1" />
-      <text x="12" y="42" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#FF6B4A">- "You are a world-class 10x expert..."</text>
-      <text x="342" y="42" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00">[PRISM: -5.3pp MMLU]</text>
-
-      <rect x="0" y="57" width="486" height="30" fill="#1F1110" stroke="#4D1F1A" stroke-width="1" />
-      <text x="12" y="77" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#FF6B4A">- "Need this for tomorrow's client demo"</text>
-      <text x="342" y="77" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00">[GOAL-BLIND: Biased]</text>
-
-      <rect x="0" y="92" width="486" height="30" fill="#1F1110" stroke="#4D1F1A" stroke-width="1" />
-      <text x="12" y="112" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#FF6B4A">- "Do not hallucinate or make any bugs"</text>
-      <text x="342" y="112" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00">[SKILLS-SDO: Drops]</text>
-    </g>
-
-    <line x1="0" y1="184" x2="525" y2="184" stroke="#2A2A30" stroke-width="1" />
-
-    <!-- PASS 2: Compiled Execution Certificate -->
-    <g transform="translate(20, 198)">
-      <text x="0" y="13" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F" letter-spacing="0.06em">PASS 02 // EMIT VERIFIED CERTIFICATE (OUTPUT)</text>
-
-      <rect x="0" y="22" width="486" height="30" fill="#0C1F17" stroke="#164E38" stroke-width="1" />
-      <text x="12" y="42" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#6EE7B7">+ [P1..Pn] Self-contained data &amp; type bounds</text>
-      <text x="366" y="42" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F">[ACE: +10.6%]</text>
-
-      <rect x="0" y="57" width="486" height="30" fill="#0C1F17" stroke="#164E38" stroke-width="1" />
-      <text x="12" y="77" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#6EE7B7">+ [T1..Tn] Body-level call &amp; state trace</text>
-      <text x="366" y="77" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F">[META: 93% Acc]</text>
-
-      <rect x="0" y="92" width="486" height="30" fill="#0C1F17" stroke="#164E38" stroke-width="1" />
-      <text x="12" y="112" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#6EE7B7">+ [V1..V2] Post-hoc runnable self-test gate</text>
-      <text x="366" y="112" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F">[HARNESS: &lt;25%]</text>
-
-      <rect x="0" y="127" width="486" height="30" fill="#0C1F17" stroke="#164E38" stroke-width="1" />
-      <text x="12" y="147" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="600" fill="#6EE7B7">+ [NT0/SC0] Low-p angle (p&lt;=.20) + rarity</text>
-      <text x="366" y="147" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00D67F">[VS: 2.1x Div]</text>
+  <!-- 3 Extruded 3D Isometric Metric Monoliths (y: 232 -> 382) -->
+  <!-- MONOLITH 1: Frontier Win Rate (Ivory 3D Extruded Slab) -->
+  <g class="float-1" filter="url(#shadow3D)">
+    <g transform="translate(28, 240)">
+      <animateTransform attributeName="transform" type="translate" values="28,240; 28,233; 28,240" dur="4.2s" repeatCount="indefinite" />
+      <!-- 3D Top Bevel Face -->
+      <polygon points="0,0 10,-10 190,-10 180,0" fill="#FFFFFF" />
+      <!-- 3D Right Bevel Face -->
+      <polygon points="180,0 190,-10 190,112 180,122" fill="#B8B3A0" />
+      <!-- 3D Front Main Face -->
+      <rect x="0" y="0" width="180" height="122" fill="url(#ivorySlabFront)" stroke="#FFFFFF" stroke-width="1" />
+      <rect x="0" y="0" width="180" height="4" fill="#FF3B00" />
+      <text x="16" y="26" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="800" fill="#4A4944" letter-spacing="0.08em">FRONTIER WIN RATE</text>
+      <text x="16" y="72" font-family="Inter, -apple-system, sans-serif" font-size="38" font-weight="900" fill="#0B0B0D" letter-spacing="-0.03em">94.1%</text>
+      <text x="16" y="102" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00">+27.3% max lift</text>
     </g>
   </g>
 
-  <!-- Bottom Full-Width Runtime Compatibility Index Bar (y: 436 -> 479) -->
-  <rect x="1" y="436" width="1198" height="43" fill="#111115" />
-  <line x1="1" y1="436" x2="1199" y2="436" stroke="#2A2A30" stroke-width="1.5" />
-  <text x="24" y="462" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">RUNTIMES //</text>
-  <text x="136" y="462" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#F3F0E6" letter-spacing="0.04em">[01] CLAUDE CODE    [02] GEMINI CLI    [03] ANTIGRAVITY    [04] CURSOR &amp; WINDSURF    [05] OPENAI CODEX    [06] QWEN CODE</text>
+  <!-- MONOLITH 2: Anti-SlopShape Gain (Obsidian 3D Extruded Slab) -->
+  <g class="float-2" filter="url(#shadow3D)">
+    <g transform="translate(226, 240)">
+      <animateTransform attributeName="transform" type="translate" values="226,236; 226,243; 226,236" dur="4.8s" repeatCount="indefinite" />
+      <!-- 3D Top Bevel Face -->
+      <polygon points="0,0 10,-10 190,-10 180,0" fill="#262B3D" />
+      <!-- 3D Right Bevel Face -->
+      <polygon points="180,0 190,-10 190,112 180,122" fill="#090B10" stroke="#262B3D" stroke-width="0.8" />
+      <!-- 3D Front Face -->
+      <rect x="0" y="0" width="180" height="122" fill="url(#darkSlabFront)" stroke="#2E344A" stroke-width="1" />
+      <rect x="0" y="0" width="180" height="4" fill="#00E58B" />
+      <text x="16" y="26" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#9A9891" letter-spacing="0.08em">CREATIVE LIFT</text>
+      <text x="16" y="72" font-family="Inter, -apple-system, sans-serif" font-size="35" font-weight="800" fill="#F3F0E6" letter-spacing="-0.02em">+4.41<tspan font-size="17" fill="#6E6D68"> /25</tspan></text>
+      <text x="16" y="102" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00E58B">100% W (2.1x div)</text>
+    </g>
+  </g>
+
+  <!-- MONOLITH 3: Context Compaction (Obsidian 3D Extruded Slab) -->
+  <g class="float-3" filter="url(#shadow3D)">
+    <g transform="translate(424, 240)">
+      <animateTransform attributeName="transform" type="translate" values="424,240; 424,232; 424,240" dur="5.4s" repeatCount="indefinite" />
+      <!-- 3D Top Bevel Face -->
+      <polygon points="0,0 10,-10 190,-10 180,0" fill="#262B3D" />
+      <!-- 3D Right Bevel Face -->
+      <polygon points="180,0 190,-10 190,112 180,122" fill="#090B10" stroke="#262B3D" stroke-width="0.8" />
+      <!-- 3D Front Face -->
+      <rect x="0" y="0" width="180" height="122" fill="url(#darkSlabFront)" stroke="#2E344A" stroke-width="1" />
+      <rect x="0" y="0" width="180" height="4" fill="#38BDF8" />
+      <text x="16" y="26" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#9A9891" letter-spacing="0.08em">CLAUDE.MD PRUNING</text>
+      <text x="16" y="72" font-family="Inter, -apple-system, sans-serif" font-size="35" font-weight="800" fill="#F3F0E6" letter-spacing="-0.02em">-20%<tspan font-size="17" fill="#6E6D68"> COST</tspan></text>
+      <text x="16" y="102" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#38BDF8">+7.0/25 Task Lift</text>
+    </g>
+  </g>
+
+  <!-- Left Bottom 3D Terminal Deck (y: 386 -> 462) -->
+  <g transform="translate(28, 386)" filter="url(#shadow3D)">
+    <polygon points="0,0 8,-8 584,-8 576,0" fill="#1F2436" />
+    <polygon points="576,0 584,-8 584,60 576,68" fill="#08090E" />
+    <rect x="0" y="0" width="576" height="68" fill="#0C0E16" stroke="#2E344A" stroke-width="1.2" />
+    <text x="18" y="23" font-family="'JetBrains Mono', Consolas, monospace" font-size="10" font-weight="700" fill="#6E6D68" letter-spacing="0.08em">ZERO-INSTALL CLI &amp; AGENT SKILL COMMAND</text>
+    <text x="18" y="49" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#FF3B00">$</text>
+    <text x="34" y="49" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#F3F0E6">npx make-prompt-better init --symlink  &amp;&amp;  /make-prompt-better</text>
+    <!-- Blinking 3D Terminal Cursor -->
+    <rect x="522" y="35" width="9" height="17" fill="#00E58B">
+      <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" />
+    </rect>
+  </g>
+
+  <!-- ================= CENTER 3D ISOMETRIC COMPILER PRISM CORE (x = 648) ================= -->
+  <line x1="648" y1="41" x2="648" y2="475" stroke="#262A3B" stroke-width="1.5" stroke-dasharray="4 4" />
+
+  <!-- Rotating 3D Orbital Gyro Rings around Compiler Core -->
+  <g transform="translate(648, 250)">
+    <ellipse cx="0" cy="0" rx="34" ry="14" fill="none" stroke="#FF3B00" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.8">
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="9s" repeatCount="indefinite" />
+    </ellipse>
+    <ellipse cx="0" cy="0" rx="34" ry="14" fill="none" stroke="#00E58B" stroke-width="1.5" stroke-dasharray="8 5" opacity="0.8">
+      <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="7s" repeatCount="indefinite" />
+    </ellipse>
+    <!-- Levitating 3D Isometric Hexagonal Prism Core -->
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0,-6; 0,6; 0,-6" dur="3.2s" repeatCount="indefinite" />
+      <!-- Top Isometric Diamond -->
+      <polygon points="0,-24 22,-12 0,0 -22,-12" fill="#FF6B4A" stroke="#F3F0E6" stroke-width="1" />
+      <!-- Left Isometric Face -->
+      <polygon points="-22,-12 0,0 0,24 -22,12" fill="#C82800" stroke="#FF3B00" stroke-width="1" />
+      <!-- Right Isometric Face -->
+      <polygon points="0,0 22,-12 22,12 0,24" fill="#00A866" stroke="#00E58B" stroke-width="1" />
+      <circle cx="0" cy="0" r="3.5" fill="#FFFFFF" filter="url(#neonGlow)">
+        <animate attributeName="r" values="2.5;5;2.5" dur="1.5s" repeatCount="indefinite" />
+      </circle>
+    </g>
+  </g>
+
+  <!-- ================= RIGHT COMPILER 3D DIFF INSPECTOR (x: 682 -> 1180) ================= -->
+  <g transform="translate(684, 52)">
+    <!-- 3D Extruded Inspector Header -->
+    <rect x="0" y="0" width="490" height="32" fill="#121521" stroke="#262A3B" stroke-width="1" />
+    <circle cx="16" cy="16" r="4" fill="#FF3B00" />
+    <circle cx="30" cy="16" r="4" fill="#F59E0B" />
+    <circle cx="44" cy="16" r="4" fill="#00E58B" />
+    <text x="62" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#F3F0E6" letter-spacing="0.06em">3D AST DIFF INSPECTOR // VISCERAL DELTA</text>
+    <text x="364" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#00E58B">146 PAIRS / 14 LLMS</text>
+
+    <!-- PASS 01: 3D Extruded Folk Anti-Pattern Slabs with Animated Laser Sanitizer -->
+    <g transform="translate(0, 42)">
+      <text x="4" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">PASS 01 // SANITIZE FOLK PROMPTING &amp; DILUTION (INPUT)</text>
+
+      <!-- Card 1 (3D Extruded Crimson Slab) -->
+      <g transform="translate(0, 22)">
+        <polygon points="0,0 6,-6 490,-6 484,0" fill="#3A1715" />
+        <polygon points="484,0 490,-6 490,26 484,32" fill="#180807" />
+        <rect x="0" y="0" width="484" height="32" fill="#1D0E0E" stroke="#5C221E" stroke-width="1" />
+        <text x="12" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#FF6B4A">- "You are a world-class 10x elite expert..."</text>
+        <text x="344" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#FF3B00">[PRISM: -5.3pp MMLU]</text>
+      </g>
+
+      <!-- Card 2 -->
+      <g transform="translate(0, 62)">
+        <polygon points="0,0 6,-6 490,-6 484,0" fill="#3A1715" />
+        <polygon points="484,0 490,-6 490,26 484,32" fill="#180807" />
+        <rect x="0" y="0" width="484" height="32" fill="#1D0E0E" stroke="#5C221E" stroke-width="1" />
+        <text x="12" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#FF6B4A">- "Need this for tomorrow's client demo"</text>
+        <text x="344" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#FF3B00">[GOAL-BLIND: Biased]</text>
+      </g>
+
+      <!-- Card 3 -->
+      <g transform="translate(0, 102)">
+        <polygon points="0,0 6,-6 490,-6 484,0" fill="#3A1715" />
+        <polygon points="484,0 490,-6 490,26 484,32" fill="#180807" />
+        <rect x="0" y="0" width="484" height="32" fill="#1D0E0E" stroke="#5C221E" stroke-width="1" />
+        <text x="12" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#FF6B4A">- "State final answer first, don't hallucinate"</text>
+        <text x="344" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#FF3B00">[ORDER-02: Collapses]</text>
+      </g>
+
+      <!-- Sweeping 3D Sanitizer Laser Plane across Pass 01 -->
+      <rect x="0" y="16" width="54" height="122" fill="url(#laserSweepRed)" pointer-events="none">
+        <animate attributeName="x" values="-50;440;-50" dur="5.5s" repeatCount="indefinite" />
+      </rect>
+    </g>
+
+    <!-- PASS 02: 3D Extruded Verified Certificate Slabs with Animated Verification Pulse -->
+    <g transform="translate(0, 198)">
+      <text x="4" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#00E58B" letter-spacing="0.06em">PASS 02 // EMIT VERIFIED EXECUTION CERTIFICATE (OUTPUT)</text>
+
+      <!-- Cert Slab 1 -->
+      <g transform="translate(0, 22)">
+        <polygon points="0,0 6,-6 490,-6 484,0" fill="#133B2B" />
+        <polygon points="484,0 490,-6 490,26 484,32" fill="#06150F" />
+        <rect x="0" y="0" width="484" height="32" fill="#0A1F17" stroke="#185A3F" stroke-width="1" />
+        <text x="12" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#6EE7B7">+ [P1..Pn] Self-contained data &amp; type bounds</text>
+        <text x="362" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#00E58B">[ACE: +10.6% Acc]</text>
+      </g>
+
+      <!-- Cert Slab 2 -->
+      <g transform="translate(0, 62)">
+        <polygon points="0,0 6,-6 490,-6 484,0" fill="#133B2B" />
+        <polygon points="484,0 490,-6 490,26 484,32" fill="#06150F" />
+        <rect x="0" y="0" width="484" height="32" fill="#0A1F17" stroke="#185A3F" stroke-width="1" />
+        <text x="12" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#6EE7B7">+ [T1..Tn] Body-level call &amp; state trace</text>
+        <text x="362" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#00E58B">[META: 93.0% Eqv]</text>
+      </g>
+
+      <!-- Cert Slab 3 -->
+      <g transform="translate(0, 102)">
+        <polygon points="0,0 6,-6 490,-6 484,0" fill="#133B2B" />
+        <polygon points="484,0 490,-6 490,26 484,32" fill="#06150F" />
+        <rect x="0" y="0" width="484" height="32" fill="#0A1F17" stroke="#185A3F" stroke-width="1" />
+        <text x="12" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#6EE7B7">+ [V1..V2] Code-first + runnable self-test</text>
+        <text x="362" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#00E58B">[HARNESS: &lt;25%]</text>
+      </g>
+
+      <!-- Cert Slab 4 -->
+      <g transform="translate(0, 142)">
+        <polygon points="0,0 6,-6 490,-6 484,0" fill="#133B2B" />
+        <polygon points="484,0 490,-6 490,26 484,32" fill="#06150F" />
+        <rect x="0" y="0" width="484" height="32" fill="#0A1F17" stroke="#185A3F" stroke-width="1" />
+        <text x="12" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#6EE7B7">+ [NT0/SC0] Tail angle (p&lt;=.20) + rarity</text>
+        <text x="362" y="20" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#00E58B">[VS: 2.1x Div]</text>
+      </g>
+
+      <!-- Sweeping 3D Verification Beam across Pass 02 -->
+      <rect x="0" y="16" width="60" height="162" fill="url(#laserSweepGreen)" pointer-events="none">
+        <animate attributeName="x" values="-60;440;-60" dur="4.8s" begin="1.2s" repeatCount="indefinite" />
+      </rect>
+    </g>
+  </g>
+
+  <!-- Bottom Full-Width Runtime Compatibility Index Bar (y: 475 -> 519) -->
+  <rect x="1" y="475" width="1198" height="44" fill="#0D0F17" />
+  <line x1="1" y1="475" x2="1199" y2="475" stroke="#262A3B" stroke-width="1.5" />
+  <text x="24" y="502" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">RUNTIMES //</text>
+  <text x="136" y="502" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="700" fill="#F3F0E6" letter-spacing="0.04em">[01] CLAUDE CODE    [02] GEMINI CLI    [03] ANTIGRAVITY    [04] CURSOR (.MDC)    [05] OPENAI CODEX    [06] QWEN CODE</text>
 </svg>

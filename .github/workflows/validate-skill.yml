@@ -27,6 +27,8 @@ jobs:
         run: |
           python3 lint_context.py --self-test
           python3 lint_context.py CLAUDE.md AGENTS.md
+          node scripts/lint-prompt.mjs --self-test
+          node scripts/lint-prompt.mjs CLAUDE.md AGENTS.md
 
       - name: Validate SKILL.md, Templates, Links, and Documentation Invariants
         run: |

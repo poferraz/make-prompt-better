@@ -13,9 +13,9 @@
 
 </div>
 
-## Stop Prompt Guessing. Compile Prompts Into Verified Execution Certificates.
+## Stop "Enhancing" Prompts with Fluff. Compile Them Into Verified Execution Certificates.
 
-Most prompt advice on the internet actively makes modern AI models worse:
+Most consumer "prompt enhancers" and folk prompting habits actively make modern AI models worse:
 
 * **Expert roleplay bloat hurts accuracy:** Prefixing *"You are a world-class expert"* **drops factual accuracy by up to 5.3 percentage points** on MMLU because uncalibrated personas prime confident fabrication ([Hu, Rostami & Thomason, 2026](make-prompt-better/references/research-principles.md)).
 
@@ -29,31 +29,27 @@ Most prompt advice on the internet actively makes modern AI models worse:
 
 ### 10-Second Universal Install
 
-```
-git clone https://github.com/poferraz/make-prompt-better.git && cd make-prompt-better && ./install.sh --symlink
+```bash
+# Option 1: Zero-install via Agent Skills CLI or npx
+npx skills add poferraz/make-prompt-better
+npx make-prompt-better init --symlink
 
+# Option 2: Git clone & multi-runtime POSIX installer (Claude, Gemini, Antigravity, Codex, Cursor, Qwen)
+git clone https://github.com/poferraz/make-prompt-better.git && cd make-prompt-better && ./install.sh --symlink
 ```
 
 > **Try it immediately in your agent:** Type `/make-prompt-better` followed by any rough coding task, analytical query, creative draft, or `CLAUDE.md` file to compile it into a verifiable execution spec.
 
-#### Manual Per-Tool & Workspace Rule Install
+#### Per-Runtime Install & Deterministic Prompt Linting
 
-```
-# Universal (Antigravity, Gemini CLI, OpenAI Codex CLI, Copilot CLI, OpenCode)
-mkdir -p ~/.agents/skills && cp -r make-prompt-better ~/.agents/skills/make-prompt-better
+```bash
+# Target a specific agent runtime or install directly into a project workspace (.claude, .cursor/rules/*.mdc)
+./install.sh --runtime cursor --project
+./install.sh --runtime codex --global
 
-# Gemini CLI & Antigravity
-mkdir -p ~/.gemini/skills ~/.gemini/config/skills && cp -r make-prompt-better ~/.gemini/skills/make-prompt-better
-
-# Claude Code
-mkdir -p ~/.claude/skills && cp -r make-prompt-better ~/.claude/skills/make-prompt-better
-
-# Cursor / Windsurf workspace rule
-mkdir -p .cursor/rules && cp make-prompt-better/SKILL.md .cursor/rules/make-prompt-better.mdc
-
-# Audit your repository's CLAUDE.md or AGENTS.md for [CONTEXT-CERT] compliance (0-100 score)
+# Audit any prompt, CLAUDE.md, or AGENTS.md on 6 deterministic rules (DILUTION-01..HARNESS-06, 0-100 score)
+npx make-prompt-better lint CLAUDE.md AGENTS.md
 python3 lint_context.py CLAUDE.md AGENTS.md
-
 ```
 
 ### See the Compiler in Action (5-Second Diff)

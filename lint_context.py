@@ -45,6 +45,17 @@ UNGROUNDED_NEGATIVE_RE = re.compile(
     r"do\s+not\s+make\s+mistakes|never\s+make\s+bugs|be\s+100%\s+accurate)\b",
     re.I,
 )
+CONCLUSION_FIRST_RE = re.compile(
+    r"\b(?:lead\s+with\s+(?:the\s+)?(?:final\s+)?(?:answer|verdict|conclusion)|"
+    r"state\s+(?:the\s+)?(?:final\s+)?(?:answer|verdict)\s+first|"
+    r"point\s+first\s+before\s+reasoning)\b",
+    re.I,
+)
+GOAL_LEAKAGE_RE = re.compile(
+    r"\b(?:for\s+(?:tomorrow's|our|the)\s+(?:client\s+demo|board\s+meeting|investor\s+pitch)|"
+    r"so\s+we\s+can\s+prove\s+that|my\s+career\s+depends\s+on)\b",
+    re.I,
+)
 EM_EN_DASH_RE = re.compile(r"[\u2014\u2013]")
 
 # 2. [CONTEXT-CERT] 4-Pillar Signals (Mode 3 Pattern B)
@@ -137,6 +148,26 @@ def audit_context_text(text: str, filename: str = "CLAUDE.md") -> dict[str, Any]
             "paper": "[SKILLS-SDO] arXiv:2608.12610",
             "issue": f"Found ungrounded negative constraints ({neg_hits[:3]!r}) that fail under attention load.",
             "remediation": "Replace negative prohibitions ('don't hallucinate') with positive verification recipes (e.g., 'Cite exact file:line anchors for every claim').",
+        })
+
+    order_hits = CONCLUSION_FIRST_RE.findall(text)
+    if order_hits:
+        bloat_score -= 10
+        findings.append({
+            "severity": "HIGH",
+            "paper": "[META] arXiv:2603.01896",
+            "issue": f"Found conclusion-first reversal directive ({order_hits[:2]!r}) that suppresses evidence tracing.",
+            "remediation": "Enforce Reason-Before-Conclude ordering: complete [P] Premises and [T] Traces before emitting the Verdict.",
+        })
+
+    leakage_hits = GOAL_LEAKAGE_RE.findall(text)
+    if leakage_hits:
+        bloat_score -= 10
+        findings.append({
+            "severity": "MEDIUM",
+            "paper": "[GOAL-BLIND] arXiv:2602.09504",
+            "issue": f"Found downstream goal/stake leakage ({leakage_hits[:2]!r}).",
+            "remediation": "Enforce Goal-Blind Isolation: specify what artifact to verify without disclosing downstream business stakes.",
         })
     bloat_score = max(0, bloat_score)
 

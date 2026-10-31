@@ -1,0 +1,23 @@
+{
+  "name": "make-prompt-better",
+  "description": "Research-grounded Prompt, Context & Harness Compiler (11 arXiv papers, 4 Certificate Modes). Compiles vague prompts and CLAUDE.md/AGENTS.md files into verifiable execution certificates.",
+  "version": "4.2.0",
+  "author": {
+    "name": "Paulo Ferraz",
+    "url": "https://github.com/poferraz"
+  },
+  "homepage": "https://github.com/poferraz/make-prompt-better",
+  "repository": "https://github.com/poferraz/make-prompt-better",
+  "license": "MIT",
+  "keywords": [
+    "prompt-compiler",
+    "semi-formal-reasoning",
+    "context-engineering",
+    "harness-engineering",
+    "claude-code",
+    "agentskills"
+  ],
+  "skills": [
+    "./make-prompt-better"
+  ]
+}

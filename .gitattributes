@@ -1,0 +1,4 @@
+# .gitattributes - Accurate GitHub Linguist classification
+install.sh linguist-vendored
+*.sh linguist-vendored
+*.md linguist-detectable=false

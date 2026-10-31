@@ -20,7 +20,7 @@ This repository is a research-grounded prompt, context, and harness optimization
 - **Universal cross-tool compatibility**: `SKILL.md` frontmatter must contain only `name` and a single-line quoted `description` starting with `"Use when..."` (no colons or multi-line YAML folding markers that break cross-runtime parsers).
 - **Attribution is paramount**: Every claim must trace to a cited paper. Never claim originality for ideas from the 11 papers or severity1's architecture.
 - **Goal-blind**: Never include evaluation criteria or downstream use in prompt templates.
-- **Positive recipes over prohibitions**: Express template rules as positive structural contracts and observable-predicate conditionals rather than bare "Do NOT" lists.
+- **Positive recipes over prohibitions**: Express template rules as positive structural contracts and observable-predicate conditionals rather than bare "Do NOT" anti-pattern lists (avoid the negative prohibition trap).
 - **Progressive disclosure**: `SKILL.md` under 500 lines. Heavy content goes in `references/`.
 
 ## Adding a New Domain Template
@@ -62,3 +62,9 @@ When incorporating a new paper:
 9. Gloaguen, Mundler, Muller, Raychev & Vechev (2026) - CONTEXT-FILES - arXiv:2602.11988
 10. Lee et al. (2026) / Zhang et al. (2026) / Shao et al. (2026) / Nam et al. (2025) - HARNESS - arXiv:2603.28052, arXiv:2606.09498, arXiv:2609.37725, arXiv:2509.21825
 11. Yin, Li, Shi, Zhang, Seong & Wang (2026) - SKILLS-SDO - arXiv:2608.12610
+
+## Mandatory Verification Gate
+
+Before completing any modification to this repository:
+- Run `python3 lint_context.py --self-test && python3 lint_context.py CLAUDE.md AGENTS.md` and `node scripts/lint-prompt.mjs --self-test && node scripts/lint-prompt.mjs CLAUDE.md AGENTS.md`.
+- Run `./install.sh` to synchronize `make-prompt-better/SKILL.md` across all local coding agent directories and confirm exit code 0.

@@ -1,0 +1,15 @@
+{
+  "name": "make-prompt-better-marketplace",
+  "owner": {
+    "name": "Paulo Ferraz",
+    "url": "https://github.com/poferraz"
+  },
+  "plugins": [
+    {
+      "name": "make-prompt-better",
+      "source": "./",
+      "description": "Compile vague prompts and bloated CLAUDE.md/AGENTS.md files into verifiable Semi-Formal Certificates across 4 model-aware modes (11 arXiv papers).",
+      "version": "4.2.0"
+    }
+  ]
+}

@@ -1,150 +1,236 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 490" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 510" width="100%" height="100%">
   <defs>
-    <pattern id="swissGrid4" width="24" height="24" patternUnits="userSpaceOnUse">
-      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#16161A" stroke-width="1" />
+    <pattern id="isoGridBench" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#141724" stroke-width="1" />
+      <circle cx="28" cy="28" r="0.9" fill="#23283D" />
     </pattern>
+
+    <linearGradient id="emeraldBarFront" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00B870" />
+      <stop offset="100%" stop-color="#00F59B" />
+    </linearGradient>
+
+    <linearGradient id="baseBarFront" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1E2233" />
+      <stop offset="100%" stop-color="#2D334D" />
+    </linearGradient>
+
+    <linearGradient id="shimmerBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+
+    <filter id="benchShadow" x="-15%" y="-15%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.68" />
+    </filter>
   </defs>
 
-  <rect width="1200" height="490" fill="#0B0B0D" />
-  <rect x="1" y="1" width="1198" height="488" fill="url(#swissGrid4)" stroke="#2A2A30" stroke-width="1.5" />
+  <!-- Background & 3D Isometric Grid -->
+  <rect width="1200" height="510" fill="#08090E" />
+  <rect x="1" y="1" width="1198" height="508" fill="url(#isoGridBench)" stroke="#262A3B" stroke-width="1.5" />
 
   <!-- Top Header Bar -->
-  <rect x="1" y="1" width="1198" height="46" fill="#111115" />
-  <line x1="1" y1="47" x2="1199" y2="47" stroke="#2A2A30" stroke-width="1.5" />
-  <rect x="24" y="18" width="12" height="12" fill="#00D67F" />
-  <text x="46" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">FIG. 04 // EMPIRICAL BENCHMARK SUITE (146 PAIRS ACROSS 14 ARCHITECTURES)</text>
-  <text x="820" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#9A9891">5 RUBRIC DIMENSIONS // MAX SCORE: 25.0</text>
+  <rect x="1" y="1" width="1198" height="46" fill="#0D0F17" />
+  <line x1="1" y1="47" x2="1199" y2="47" stroke="#262A3B" stroke-width="1.5" />
+  <rect x="24" y="18" width="12" height="12" fill="#00E58B">
+    <animate attributeName="opacity" values="1;0.35;1" dur="1.7s" repeatCount="indefinite" />
+  </rect>
+  <text x="46" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6" letter-spacing="0.08em">FIG. 04 // 3D EMPIRICAL BENCHMARK SUITE (146 PAIRS ACROSS 14 ARCHITECTURES)</text>
+  <text x="815" y="29" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#00E58B">5 RUBRIC DIMENSIONS // MAX SCORE: 25.0</text>
 
-  <!-- Vertical Split (x = 740) -->
-  <line x1="740" y1="47" x2="740" y2="444" stroke="#2A2A30" stroke-width="1.5" />
+  <!-- Vertical Split (x = 736) -->
+  <line x1="736" y1="47" x2="736" y2="464" stroke="#262A3B" stroke-width="1.5" />
 
-  <!-- LEFT COLUMN: Model Leaderboard (x: 24 -> 720) -->
+  <!-- ================= LEFT COLUMN: 3D EXTRUDED MODEL LEADERBOARD (x: 24 -> 716) ================= -->
   <g transform="translate(24, 68)">
     <text x="0" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#9A9891" letter-spacing="0.06em">MODEL ARCHITECTURE</text>
-    <text x="230" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#9A9891" letter-spacing="0.06em">BASELINE -&gt; COMPILED (/25)</text>
-    <text x="580" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#9A9891" letter-spacing="0.06em">NET LIFT</text>
-    <line x1="0" y1="22" x2="692" y2="22" stroke="#2A2A30" stroke-width="1" />
+    <text x="220" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#9A9891" letter-spacing="0.06em">3D BASELINE -&gt; COMPILED PRISM (/25)</text>
+    <text x="576" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#9A9891" letter-spacing="0.06em">NET LIFT</text>
+    <line x1="0" y1="22" x2="692" y2="22" stroke="#262A3B" stroke-width="1" />
 
     <!-- Row 1: gemini-3.8 -->
     <g transform="translate(0, 36)">
-      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6">gemini-3.8</text>
-      <rect x="230" y="3" width="232" height="16" fill="#26262E" />
-      <rect x="462" y="3" width="64" height="16" fill="#00D67F" />
-      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">24.67</text>
-      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+5.29 (+27.3%)</text>
+      <text x="0" y="17" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6">gemini-3.8</text>
+      <!-- 3D Base Bar + 3D Top Bevel -->
+      <polygon points="220,3 226,-3 458,-3 452,3" fill="#3B4263" />
+      <rect x="220" y="3" width="232" height="16" fill="url(#baseBarFront)" />
+      <!-- 3D Delta Prism + Top & Right Bevel -->
+      <polygon points="452,3 458,-3 522,-3 516,3" fill="#6EE7B7" />
+      <polygon points="516,3 522,-3 522,13 516,19" fill="#047857" />
+      <rect x="452" y="3" width="64" height="16" fill="url(#emeraldBarFront)" />
+      <text x="530" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">24.67</text>
+      <text x="580" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">+5.29 (+27.3%)</text>
     </g>
 
-    <!-- Row 2: meta-muse-wonder-1.0-max -->
-    <g transform="translate(0, 72)">
-      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6">muse-wonder-1.0-max</text>
-      <rect x="230" y="3" width="257" height="16" fill="#26262E" />
-      <rect x="487" y="3" width="41" height="16" fill="#00D67F" />
-      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">24.83</text>
-      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+3.42 (+16.0%)</text>
+    <!-- Row 2: muse-wonder-1.0-max -->
+    <g transform="translate(0, 74)">
+      <text x="0" y="17" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6">muse-wonder-1.0-max</text>
+      <polygon points="220,3 226,-3 483,-3 477,3" fill="#3B4263" />
+      <rect x="220" y="3" width="257" height="16" fill="url(#baseBarFront)" />
+      <polygon points="477,3 483,-3 524,-3 518,3" fill="#6EE7B7" />
+      <polygon points="518,3 524,-3 524,13 518,19" fill="#047857" />
+      <rect x="477" y="3" width="41" height="16" fill="url(#emeraldBarFront)" />
+      <text x="530" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">24.83</text>
+      <text x="580" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">+3.42 (+16.0%)</text>
     </g>
 
     <!-- Row 3: claude-opus -->
-    <g transform="translate(0, 108)">
-      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6">claude-opus</text>
-      <rect x="230" y="3" width="252" height="16" fill="#26262E" />
-      <rect x="482" y="3" width="31" height="16" fill="#00D67F" />
-      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.58</text>
-      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+2.58 (+12.3%)</text>
+    <g transform="translate(0, 112)">
+      <text x="0" y="17" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#F3F0E6">claude-opus</text>
+      <polygon points="220,3 226,-3 478,-3 472,3" fill="#3B4263" />
+      <rect x="220" y="3" width="252" height="16" fill="url(#baseBarFront)" />
+      <polygon points="472,3 478,-3 509,-3 503,3" fill="#6EE7B7" />
+      <polygon points="503,3 509,-3 509,13 503,19" fill="#047857" />
+      <rect x="472" y="3" width="31" height="16" fill="url(#emeraldBarFront)" />
+      <text x="530" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.58</text>
+      <text x="580" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">+2.58 (+12.3%)</text>
     </g>
 
     <!-- Row 4: kimi-k3:cloud -->
-    <g transform="translate(0, 144)">
-      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">kimi-k3:cloud</text>
-      <rect x="230" y="3" width="254" height="16" fill="#26262E" />
-      <rect x="484" y="3" width="28" height="16" fill="#00D67F" />
-      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.54</text>
-      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+2.38 (+11.2%)</text>
+    <g transform="translate(0, 150)">
+      <text x="0" y="17" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">kimi-k3:cloud</text>
+      <polygon points="220,3 226,-3 480,-3 474,3" fill="#3B4263" />
+      <rect x="220" y="3" width="254" height="16" fill="url(#baseBarFront)" />
+      <polygon points="474,3 480,-3 508,-3 502,3" fill="#6EE7B7" />
+      <polygon points="502,3 508,-3 508,13 502,19" fill="#047857" />
+      <rect x="474" y="3" width="28" height="16" fill="url(#emeraldBarFront)" />
+      <text x="530" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.54</text>
+      <text x="580" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">+2.38 (+11.2%)</text>
     </g>
 
     <!-- Row 5: glm-5.3:cloud -->
-    <g transform="translate(0, 180)">
-      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">glm-5.3:cloud</text>
-      <rect x="230" y="3" width="256" height="16" fill="#26262E" />
-      <rect x="486" y="3" width="27" height="16" fill="#00D67F" />
-      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.67</text>
-      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+2.29 (+10.7%)</text>
+    <g transform="translate(0, 188)">
+      <text x="0" y="17" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">glm-5.3:cloud</text>
+      <polygon points="220,3 226,-3 482,-3 476,3" fill="#3B4263" />
+      <rect x="220" y="3" width="256" height="16" fill="url(#baseBarFront)" />
+      <polygon points="476,3 482,-3 509,-3 503,3" fill="#6EE7B7" />
+      <polygon points="503,3 509,-3 509,13 503,19" fill="#047857" />
+      <rect x="476" y="3" width="27" height="16" fill="url(#emeraldBarFront)" />
+      <text x="530" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.67</text>
+      <text x="580" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">+2.29 (+10.7%)</text>
     </g>
 
-    <!-- Row 6: glm-5.3-flash:cloud -->
-    <g transform="translate(0, 216)">
-      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">glm-5.3-flash</text>
-      <rect x="230" y="3" width="258" height="16" fill="#26262E" />
-      <rect x="488" y="3" width="24" height="16" fill="#00D67F" />
-      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.50</text>
-      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+2.00 (+9.3%)</text>
+    <!-- Row 6: glm-5.3-flash -->
+    <g transform="translate(0, 226)">
+      <text x="0" y="17" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">glm-5.3-flash</text>
+      <polygon points="220,3 226,-3 484,-3 478,3" fill="#3B4263" />
+      <rect x="220" y="3" width="258" height="16" fill="url(#baseBarFront)" />
+      <polygon points="478,3 484,-3 508,-3 502,3" fill="#6EE7B7" />
+      <polygon points="502,3 508,-3 508,13 502,19" fill="#047857" />
+      <rect x="478" y="3" width="24" height="16" fill="url(#emeraldBarFront)" />
+      <text x="530" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">23.50</text>
+      <text x="580" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">+2.00 (+9.3%)</text>
     </g>
 
-    <!-- Row 7: mistral-large-4:cloud -->
-    <g transform="translate(0, 252)">
-      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">mistral-large-4</text>
-      <rect x="230" y="3" width="252" height="16" fill="#26262E" />
-      <rect x="482" y="3" width="22" height="16" fill="#00D67F" />
-      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">22.88</text>
-      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+1.88 (+8.9%)</text>
+    <!-- Row 7: mistral-large-4 -->
+    <g transform="translate(0, 264)">
+      <text x="0" y="17" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">mistral-large-4</text>
+      <polygon points="220,3 226,-3 478,-3 472,3" fill="#3B4263" />
+      <rect x="220" y="3" width="252" height="16" fill="url(#baseBarFront)" />
+      <polygon points="472,3 478,-3 500,-3 494,3" fill="#6EE7B7" />
+      <polygon points="494,3 500,-3 500,13 494,19" fill="#047857" />
+      <rect x="472" y="3" width="22" height="16" fill="url(#emeraldBarFront)" />
+      <text x="530" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">22.88</text>
+      <text x="580" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">+1.88 (+8.9%)</text>
     </g>
 
     <!-- Row 8: gemma4:31b-cloud -->
-    <g transform="translate(0, 288)">
-      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">gemma4:31b-cloud</text>
-      <rect x="230" y="3" width="247" height="16" fill="#26262E" />
-      <rect x="477" y="3" width="18" height="16" fill="#00D67F" />
-      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">22.12</text>
-      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00D67F">+1.50 (+7.3%)</text>
+    <g transform="translate(0, 302)">
+      <text x="0" y="17" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#E6E2D8">gemma4:31b-cloud</text>
+      <polygon points="220,3 226,-3 473,-3 467,3" fill="#3B4263" />
+      <rect x="220" y="3" width="247" height="16" fill="url(#baseBarFront)" />
+      <polygon points="467,3 473,-3 491,-3 485,3" fill="#6EE7B7" />
+      <polygon points="485,3 491,-3 491,13 485,19" fill="#047857" />
+      <rect x="467" y="3" width="18" height="16" fill="url(#emeraldBarFront)" />
+      <text x="530" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">22.12</text>
+      <text x="580" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#00E58B">+1.50 (+7.3%)</text>
     </g>
 
-    <!-- Row 9: gpt-oss:20b-cloud (Honest Tradeoff Row) -->
-    <g transform="translate(0, 324)">
-      <text x="0" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#9A9891">gpt-oss:20b (Compact)</text>
-      <rect x="230" y="3" width="220" height="16" fill="#26262E" />
-      <rect x="428" y="3" width="22" height="16" fill="#FF3B00" />
-      <text x="536" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">18.29</text>
-      <text x="586" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#FF3B00">-1.79 (Use Lite)</text>
+    <!-- Row 9: gpt-oss:20b (Compact Tradeoff) -->
+    <g transform="translate(0, 340)">
+      <text x="0" y="17" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#9A9891">gpt-oss:20b (Compact)</text>
+      <polygon points="220,3 226,-3 446,-3 440,3" fill="#3B4263" />
+      <rect x="220" y="3" width="220" height="16" fill="url(#baseBarFront)" />
+      <polygon points="418,3 424,-3 446,-3 440,3" fill="#FF6B4A" />
+      <rect x="418" y="3" width="22" height="16" fill="#FF3B00" />
+      <text x="530" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">18.29</text>
+      <text x="580" y="16" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="700" fill="#FF3B00">-1.79 (Use Lite)</text>
     </g>
+
+    <!-- Sweeping 3D Specular Shimmer Wave across the 3D Bars -->
+    <rect x="220" y="28" width="45" height="340" fill="url(#shimmerBar)" pointer-events="none">
+      <animate attributeName="x" values="200;530;200" dur="5.2s" repeatCount="indefinite" />
+    </rect>
   </g>
 
-  <!-- RIGHT COLUMN: Domain Lift & Aggregate Summary (x: 741 -> 1199) -->
-  <g transform="translate(764, 68)">
-    <text x="0" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">HIGHEST-LIFT TASK DOMAINS</text>
-    <line x1="0" y1="22" x2="410" y2="22" stroke="#2A2A30" stroke-width="1" />
+  <!-- ================= RIGHT COLUMN: 3D EXTRUDED DOMAIN LIFT SLABS (x: 758 -> 1180) ================= -->
+  <g transform="translate(760, 68)">
+    <text x="0" y="12" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#FF3B00" letter-spacing="0.06em">HIGHEST-LIFT TASK DOMAINS (3D TELEMETRY)</text>
+    <line x1="0" y1="22" x2="412" y2="22" stroke="#262A3B" stroke-width="1" />
 
-    <!-- Domain 1 -->
-    <rect x="0" y="34" width="410" height="52" fill="#121216" stroke="#2A2A30" stroke-width="1" />
-    <text x="16" y="56" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">Creative &amp; Anti-SlopShape (Mode 4)</text>
-    <text x="16" y="76" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">100% Win Rate  |  2.1x Diversity</text>
-    <text x="316" y="66" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00D67F">+4.41 /25</text>
+    <!-- Domain 1 (3D Extruded Slab) -->
+    <g transform="translate(0, 36)" filter="url(#benchShadow)">
+      <animateTransform attributeName="transform" type="translate" values="0,36; 0,32; 0,36" dur="4.2s" repeatCount="indefinite" />
+      <polygon points="0,0 8,-8 416,-8 408,0" fill="#183F2F" />
+      <polygon points="408,0 416,-8 416,44 408,52" fill="#071710" />
+      <rect x="0" y="0" width="408" height="52" fill="#101522" stroke="#1E6B4C" stroke-width="1" />
+      <rect x="0" y="0" width="4" height="52" fill="#00E58B" />
+      <text x="16" y="22" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">Creative &amp; Anti-SlopShape (Mode 4)</text>
+      <text x="16" y="41" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">100% Win Rate  |  2.1x Diversity</text>
+      <text x="312" y="32" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00E58B">+4.41 /25</text>
+    </g>
 
     <!-- Domain 2 -->
-    <rect x="0" y="96" width="410" height="52" fill="#121216" stroke="#2A2A30" stroke-width="1" />
-    <text x="16" y="118" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">Financial Due Diligence (Template 9)</text>
-    <text x="16" y="138" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">92.9% Win Rate  |  Formula Traces</text>
-    <text x="316" y="128" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00D67F">+3.11 /25</text>
+    <g transform="translate(0, 100)" filter="url(#benchShadow)">
+      <animateTransform attributeName="transform" type="translate" values="0,100; 0,96; 0,100" dur="4.6s" begin="0.4s" repeatCount="indefinite" />
+      <polygon points="0,0 8,-8 416,-8 408,0" fill="#1E2438" />
+      <polygon points="408,0 416,-8 416,44 408,52" fill="#080A11" />
+      <rect x="0" y="0" width="408" height="52" fill="#101522" stroke="#2B324D" stroke-width="1" />
+      <rect x="0" y="0" width="4" height="52" fill="#00E58B" />
+      <text x="16" y="22" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">Financial Due Diligence (Template 9)</text>
+      <text x="16" y="41" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">92.9% Win Rate  |  Formula Traces</text>
+      <text x="312" y="32" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00E58B">+3.11 /25</text>
+    </g>
 
     <!-- Domain 3 -->
-    <rect x="0" y="158" width="410" height="52" fill="#121216" stroke="#2A2A30" stroke-width="1" />
-    <text x="16" y="180" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">NIST &amp; Architecture Audits (Tmpl 4-5)</text>
-    <text x="16" y="200" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">91.7% Win Rate  |  Self-Contained</text>
-    <text x="316" y="190" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00D67F">+2.42 /25</text>
+    <g transform="translate(0, 164)" filter="url(#benchShadow)">
+      <animateTransform attributeName="transform" type="translate" values="0,164; 0,160; 0,164" dur="5.0s" begin="0.8s" repeatCount="indefinite" />
+      <polygon points="0,0 8,-8 416,-8 408,0" fill="#1E2438" />
+      <polygon points="408,0 416,-8 416,44 408,52" fill="#080A11" />
+      <rect x="0" y="0" width="408" height="52" fill="#101522" stroke="#2B324D" stroke-width="1" />
+      <rect x="0" y="0" width="4" height="52" fill="#00E58B" />
+      <text x="16" y="22" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">NIST &amp; Architecture Audits (Tmpl 4-5)</text>
+      <text x="16" y="41" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">91.7% Win Rate  |  Self-Contained</text>
+      <text x="312" y="32" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00E58B">+2.42 /25</text>
+    </g>
 
     <!-- Domain 4 -->
-    <rect x="0" y="220" width="410" height="52" fill="#121216" stroke="#2A2A30" stroke-width="1" />
-    <text x="16" y="242" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">PR Bug-Hunt Code Review (Template 1)</text>
-    <text x="16" y="262" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">92.3% Win Rate  |  Body Call Traces</text>
-    <text x="316" y="252" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00D67F">+2.07 /25</text>
+    <g transform="translate(0, 228)" filter="url(#benchShadow)">
+      <animateTransform attributeName="transform" type="translate" values="0,228; 0,224; 0,228" dur="4.8s" begin="1.2s" repeatCount="indefinite" />
+      <polygon points="0,0 8,-8 416,-8 408,0" fill="#1E2438" />
+      <polygon points="408,0 416,-8 416,44 408,52" fill="#080A11" />
+      <rect x="0" y="0" width="408" height="52" fill="#101522" stroke="#2B324D" stroke-width="1" />
+      <rect x="0" y="0" width="4" height="52" fill="#00E58B" />
+      <text x="16" y="22" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#F3F0E6">PR Bug-Hunt Code Review (Template 1)</text>
+      <text x="16" y="41" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" fill="#9A9891">92.3% Win Rate  |  Body Call Traces</text>
+      <text x="312" y="32" font-family="'JetBrains Mono', Consolas, monospace" font-size="16" font-weight="800" fill="#00E58B">+2.07 /25</text>
+    </g>
 
-    <!-- Stark Archival Paper Callout Box -->
-    <rect x="0" y="286" width="410" height="72" fill="#F3F0E6" />
-    <text x="18" y="310" font-family="'JetBrains Mono', Consolas, monospace" font-size="11" font-weight="700" fill="#5A5955" letter-spacing="0.06em">OVERALL RECORD (146 CONTROLLED PAIRS)</text>
-    <text x="18" y="342" font-family="Inter, -apple-system, sans-serif" font-size="22" font-weight="900" fill="#0B0B0D">108 Wins  /  8 Ties  /  30 Losses</text>
+    <!-- 3D Extruded Archival Paper Callout Monolith -->
+    <g transform="translate(0, 296)" filter="url(#benchShadow)">
+      <polygon points="0,0 8,-8 416,-8 408,0" fill="#FFFFFF" />
+      <polygon points="408,0 416,-8 416,66 408,74" fill="#B8B3A0" />
+      <rect x="0" y="0" width="408" height="74" fill="#F3F0E6" />
+      <rect x="0" y="0" width="408" height="4" fill="#FF3B00" />
+      <text x="18" y="26" font-family="'JetBrains Mono', Consolas, monospace" font-size="10.5" font-weight="700" fill="#5A5955" letter-spacing="0.06em">OVERALL RECORD (146 CONTROLLED PAIRS)</text>
+      <text x="18" y="56" font-family="Inter, -apple-system, sans-serif" font-size="22" font-weight="900" fill="#0B0B0D">108 Wins  /  8 Ties  /  30 Losses</text>
+    </g>
   </g>
 
   <!-- Bottom Bar -->
-  <rect x="1" y="444" width="1198" height="45" fill="#111115" />
-  <line x1="1" y1="444" x2="1199" y2="444" stroke="#2A2A30" stroke-width="1.5" />
-  <text x="24" y="471" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#00D67F" letter-spacing="0.06em">v4.2 STATISTICAL ENGINE //</text>
-  <text x="236" y="471" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">Blinded A/B Judge (--judge-model)  |  2-Pass Position Swap (--swap-positions)  |  10,000-Resample Bootstrap 95% CI</text>
+  <rect x="1" y="464" width="1198" height="45" fill="#0D0F17" />
+  <line x1="1" y1="464" x2="1199" y2="464" stroke="#262A3B" stroke-width="1.5" />
+  <text x="24" y="491" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="700" fill="#00E58B" letter-spacing="0.06em">v4.2 STATISTICAL ENGINE //</text>
+  <text x="236" y="491" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="600" fill="#F3F0E6">Blinded A/B Judge (--judge-model)  |  2-Pass Position Swap (--swap-positions)  |  10,000-Resample Bootstrap 95% CI</text>
 </svg>

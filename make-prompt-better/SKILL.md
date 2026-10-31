@@ -41,6 +41,12 @@ Each principle in this workflow traces to an empirical finding. For full summari
 
 Follow these steps in order whenever a user asks to optimize, harden, or review a prompt or context file.
 
+### Step 0: Check Skip Conditions (Anti-Overhead Guardrail) (`[META]`, `[HARNESS]`)
+
+Before applying a certificate template, evaluate whether structured scaffolding should be skipped (Ugare & Chandra, 2026; Lee et al., 2026):
+- **Trivial single-step requests** (single-line syntax fixes, simple factual lookups, pure formatting tweaks, or direct command translations): Skip full certificate compilation and apply only a 1-to-3 line goal-blind clarity cleanup.
+- **Ultra-compact models (`<8B` parameters)**: Full multi-step pre-answer tables cause token starvation on sub-8B models; use a minimal 2-premise (`[P1]-[P2]`) prompt or direct code-first instruction.
+
 ### Step 1: Classify the Task Type & Target Model Tier (`[PRISM]`, `[HARNESS]`)
 
 Determine the primary cognitive demand of the prompt and the capacity tier of the target model:
@@ -62,15 +68,15 @@ Choose the certificate mode that matches the task stakes, model family, and exec
 | **3. LRM / Harness Mode** | Reasoning models (o3, DeepSeek-R1, Claude Extended Thinking, Gemini Thinking), algorithmic concurrency coding, OR `AGENTS.md` / `CLAUDE.md` / agent system prompts | ~1.1x to 1.3x | For LRMs & concurrency coding: Compact `[P]` Premises + Complete Executable Implementation First + Post-Hoc Verification Gate (`[V1] Concurrency & State Invariants -> [V2] Executable Self-Test Harness`, `<25%` verification overhead). For `AGENTS.md`: Minimal Viable Context pruning (`[CONTEXT-FILES]`, `[HARNESS]`) |
 | **4. Creative & Divergent v2** | Copywriting, essays, blog posts, storytelling, brand messaging, open-ended ideation | ~1.6x | Backstage `[NT0]` Verbalized Sampling distribution + `[NT1]`-`[NT3]` Narrative Traces + `[SLOPSHAPE]` structural rarity contract + clean final prose |
 
-### Step 2: Diagnose the Original Prompt
+### Step 2: Pre-Flight Anti-Dilution Sanitizer & Failure Diagnosis
 
-Audit the user's input against six failure patterns:
-1. **Goal leakage (`[GOAL-BLIND]`)**: Does it reveal why the user wants the output, business stakes, or how it will be graded?
-2. **Guesswork gaps (`[META]`, `[ACE]`)**: Where can the model infer from surface names instead of tracing concrete artifacts?
-3. **Weak priority framing (`[HIERARCHY]`)**: Does it rely on polite requests ("please make sure") or system/user split instead of protocol authority?
-4. **Negative prohibition traps (`[SKILLS-SDO]`)**: Does it use vague "Do not X" lists instead of positive structural recipes and observable predicates?
-5. **Context bloat or LRM overthinking (`[CONTEXT-FILES]`, `[HARNESS]`)**: Does an `AGENTS.md` include codebase directory overviews, or does an LRM prompt force redundant visible step-by-step CoT?
-6. **Mode collapse & SlopShape risk (`[VS]`, `[SLOPSHAPE]`)**: For writing tasks, will the prompt produce the highest-typicality cliché in a tidy, self-announcing AI structure?
+Mechanically scan and repair the user's input against six empirical failure patterns before injecting any certificate structure:
+1. **Conclusion-first reversal & instruction dilution (`[META]`, `[HIERARCHY]`)**: Strip or relocate directives like *"Lead with the final answer"*, *"State the verdict first"*, or competing style fluff so the model completes its `[P]` -> `[T]` verification trace before emitting its conclusion (Ugare & Chandra, 2026; Geng et al., 2025).
+2. **Goal leakage (`[GOAL-BLIND]`)**: Strip references to why the user wants the output, business stakes, timelines, or how it will be graded so the model acts as a neutral analytical sensor (Cao, Jiang & Xu, 2026).
+3. **Guesswork & persona traps (`[META]`, `[ACE]`, `[PRISM]`)**: Strip flowery expert roleplay (*"You are a 10x world-class..."*) on accuracy/coding tasks (-5.3pp MMLU penalty per Hu, Rostami & Thomason, 2026) and identify where the model might infer from symbol names instead of tracing concrete artifacts.
+4. **Weak priority framing & mid-prompt burial (`[HIERARCHY]`)**: Replace polite requests (*"please make sure"*) with protocol authority framing (*"The standard analytical protocol requires..."*) and anchor inviolable verification rules at the very end of the prompt to leverage recency bias (Geng et al., 2025).
+5. **Negative prohibition traps (`[SKILLS-SDO]`)**: Convert bare *"Do not X"* or *"Don't hallucinate"* lists into positive structural recipes and observable-predicate conditionals (Yin et al., 2026).
+6. **Context bloat, LRM overthinking & SlopShape risk (`[CONTEXT-FILES]`, `[HARNESS]`, `[VS]`, `[SLOPSHAPE]`)**: Strip static `/init` directory trees from `AGENTS.md`/`CLAUDE.md` (Gloaguen et al., 2026), avoid forcing visible pre-code tables on reasoning/compact models (Lee et al., 2026), and enforce `[NT0]` + `[SC0]` on creative writing (Zhang et al., 2025; Madler, 2026).
 
 ### Step 3: Select and Adapt the Certificate Structure
 
@@ -200,10 +206,18 @@ TRACEABILITY SELF-CHECK (mandatory before finalizing):
 Verify that every claim in your Formal Conclusion cites at least one `[T]` or `[V]` identifier from above. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[Pn] or remove the claim so zero orphaned conclusions remain.
 ```
 
-### Step 5: Present the Optimized Result
+### Step 5: Present the Optimized Result (Compact Receipt + Compiled Prompt)
 
-Deliver:
-1. **Task Classification & Mode Selection**: State the task type (`[PRISM]`), target persona rule, model-aware routing choice (defaulting to Mode 2 Lite for flash-tier or sub-30B models, Mode 1 Max for frontier reasoning architectures or mission-critical review), and expected token tradeoff.
+To prevent terminal scroll fatigue in 80-column CLI viewports, present the output in three clean tiers:
+1. **Compact 6-Line Compiler Receipt**:
+   ```text
+   [COMPILER RECEIPT // make-prompt-better v4.2.0]
+   [MODE]         : Mode <1|2|3|4> (<Max|Lite|LRM-Harness|Creative-v2>) | Template <#>: <Name>
+   [PERSONA]      : <Omitted (Accuracy/LRM) | Minimal <=5w (Mixed) | Full (Alignment)> [PRISM]
+   [ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+   [DATA-BINDING] : 100% Self-Contained in [P1..Pn] | Recency-Anchored Gate [ACE, HIERARCHY]
+   [OVERHEAD]     : ~<1.1x-2.2x> token budget | Deterministically verifiable
+   ```
 2. **The Optimized Prompt**: In a clean, copy-pasteable code block. Hard invariant: The rewritten prompt must embed all input code, tables, numbers, and case facts directly inside the prompt premises; never leave empty placeholders like `[insert code here]` or refer to external context (Ugare & Chandra, 2026; Zhang, Hu et al., 2026).
 3. **Research Rationale**: A concise bullet list mapping each change to its paper citation (`[META]`, `[GOAL-BLIND]`, `[ACE]`, `[HIERARCHY]`, `[CODE-SMELLS]`, `[PRISM]`, `[VS]`, `[SLOPSHAPE]`, `[CONTEXT-FILES]`, `[HARNESS]`, `[SKILLS-SDO]`).
 
