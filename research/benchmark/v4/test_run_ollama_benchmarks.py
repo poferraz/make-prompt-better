@@ -75,6 +75,39 @@ class ChatStreamingTests(unittest.TestCase):
             with self.assertRaisesRegex((RuntimeError, OSError), "without response content"):
                 runner.call_ollama_chat("model", [], max_retries=1)
 
+    @mock.patch.object(runner.time, "sleep")
+    def test_timeout_retries_with_same_seed_and_timeout(self, sleep):
+        payloads = []
+        def request(req, timeout):
+            payloads.append((json.loads(req.data), timeout))
+            if len(payloads) == 1:
+                raise TimeoutError("timed out")
+            return stream({"message": {"content": "recovered"}, "done": True})
+        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=request):
+            result = runner.call_ollama_chat("judge", [], timeout=7, max_retries=2, initial_delay=0, seed=123)
+        self.assertEqual(result["content"], "recovered")
+        self.assertEqual([p[0]["options"]["seed"] for p in payloads], [123, 123])
+        self.assertEqual([p[1] for p in payloads], [7, 7])
+        self.assertEqual(sleep.call_count, 2)
+
+    @mock.patch.object(runner.time, "sleep")
+    def test_http_retry_and_nonretryable_error(self, sleep):
+        error = runner.urllib.error.HTTPError("http://example", 503, "unavailable", {}, io.BytesIO(b"temporary"))
+        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=[error, stream({"message": {"content": "ok"}, "done": True})]):
+            self.assertEqual(runner.call_ollama_chat("model", [], max_retries=2, initial_delay=0)["content"], "ok")
+        error = runner.urllib.error.HTTPError("http://example", 401, "unauthorized", {}, io.BytesIO(b"denied"))
+        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=error) as urlopen:
+            with self.assertRaisesRegex(RuntimeError, "401"):
+                runner.call_ollama_chat("model", [], max_retries=3)
+            self.assertEqual(urlopen.call_count, 1)
+
+    @mock.patch.object(runner.time, "sleep")
+    def test_exhausted_timeouts_raise(self, sleep):
+        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=TimeoutError("timed out")) as urlopen:
+            with self.assertRaises(TimeoutError):
+                runner.call_ollama_chat("model", [], max_retries=2, initial_delay=0)
+            self.assertEqual(urlopen.call_count, 2)
+
 
 class BenchmarkResumeTests(unittest.TestCase):
     def test_resume_refreshes_a_report_older_than_the_saved_tests(self):
