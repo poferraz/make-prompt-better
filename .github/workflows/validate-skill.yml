@@ -134,6 +134,9 @@ jobs:
           print("[PASS] All relative links in core documentation resolve cleanly")
           EOF
 
+      - name: Run CLI, installer, and package integration tests
+        run: python3 -m unittest discover -s tests -v
+
       - name: Run Benchmark & Aggregation Unit Tests
         run: |
           python3 -m unittest discover -s research/benchmark/v4 -p "test_*.py" -v

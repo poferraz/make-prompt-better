@@ -1,0 +1,83 @@
+name: Recurring regression tests
+
+on:
+  schedule:
+    - cron: '23 4 * * *'
+    - cron: '43 5 * * 0'
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: 'Integer seed for reproducible property cases'
+        required: true
+        default: '42'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recurring-${{ github.workflow }}-${{ github.ref }}-${{ github.event.schedule || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  full:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: '3.10'
+          - os: ubuntu-latest
+            python: '3.12'
+          - os: macos-latest
+            python: '3.12'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Select and record seed
+        env:
+          REQUESTED_SEED: ${{ inputs.seed }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          seed="${REQUESTED_SEED:-$(date -u +%Y%m%d)}"
+          [[ "$seed" =~ ^[0-9]{1,9}$ ]] || { echo 'Seed must be 1 to 9 digits'; exit 1; }
+          echo "TEST_SEED=$seed" >> "$GITHUB_ENV"
+          if [[ "$SCHEDULE" == '43 5 * * 0' ]]; then echo 'TEST_CASES=2000' >> "$GITHUB_ENV"; else echo 'TEST_CASES=200' >> "$GITHUB_ENV"; fi
+          mkdir -p test-artifacts
+          printf 'Seed: %s\nReproduce: TEST_SEED=%s TEST_CASES=%s python3 -m unittest discover -s research/benchmark/v4 -p test_properties.py -v\n' "$seed" "$seed" "$([[ "$SCHEDULE" == '43 5 * * 0' ]] && echo 2000 || echo 200)" | tee test-artifacts/reproduce.txt
+      - name: Install coverage tool
+        run: python -m pip install coverage==7.6.12
+      - name: Install JavaScript coverage tool
+        run: npm install --prefix "$RUNNER_TEMP/c8" --no-audit --no-fund c8@10.1.3
+      - name: Integration tests and JavaScript coverage
+        run: |
+          "$RUNNER_TEMP/c8/node_modules/.bin/c8" --all --include 'bin/*.mjs' --include 'scripts/*.mjs' --reporter=text --reporter=lcov --reports-dir test-artifacts/js-coverage --check-coverage --lines 85 --branches 78 python -m unittest discover -s tests -v 2>&1 | tee test-artifacts/integration.log
+      - name: Additional reproducible seeds
+        run: |
+          for offset in 1 2; do
+            seed=$((10#$TEST_SEED + offset))
+            echo "TEST_SEED=$seed TEST_CASES=$TEST_CASES python -m unittest discover -s research/benchmark/v4 -p test_properties.py -v" | tee -a test-artifacts/reproduce.txt
+            TEST_SEED="$seed" python -m unittest discover -s research/benchmark/v4 -p test_properties.py -v 2>&1 | tee "test-artifacts/seed-$seed.log"
+          done
+      - name: Python branch coverage
+        run: |
+          python -m coverage run -m unittest discover -s research/benchmark/v4 -p 'test_*.py' -v
+          python -m coverage run -a lint_context.py --self-test
+          python -m coverage run -a research/benchmark/v4/rejudge_saved_outputs.py --self-test
+          python -m coverage run -a research/benchmark/v4/blind_stats_engine.py
+          python -m coverage run -a scripts/check-release.py
+          python -m coverage xml -o test-artifacts/coverage.xml
+          python -m coverage report --fail-under=78 | tee test-artifacts/coverage.txt
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-reports-${{ matrix.os }}-py${{ matrix.python }}
+          path: test-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
