@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report incorrect research citations, broken links, or structural problems in templates
+about: Report installation, CLI, benchmark, citation, link, or template problems
 title: '[BUG] '
 labels: bug
 assignees: ''
@@ -13,6 +13,10 @@ A clear description of what is wrong.
 ## What File Is Affected
 
 Which file contains the problem? For example: `make-prompt-better/references/domain-templates.md`, `make-prompt-better/SKILL.md`, `docs/methodology.md`.
+
+## Environment
+
+Version or commit, operating system, agent runtime/version, install command, and Node/Python version if relevant. Include sanitized error output; keep credentials and private prompts out of reports.
 
 ## Steps to Reproduce (if applicable)
 

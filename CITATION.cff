@@ -9,7 +9,7 @@ authors:
 repository-code: "https://github.com/poferraz/make-prompt-better"
 url: "https://github.com/poferraz/make-prompt-better"
 license: MIT
-version: 4.2.0
+version: 4.3.0
 date-released: "2026-10-31"
 keywords:
   - prompt-engineering

@@ -571,6 +571,7 @@ def run_model_benchmark(
                 messages=[{"role": "user", "content": opt_prompt_to_send}],
                 host=host,
                 timeout=timeout,
+                seed=seed,
             )
 
             # Step D: Evaluate Baseline vs. Optimized
@@ -593,6 +594,7 @@ def run_model_benchmark(
                     messages=[{"role": "user", "content": eval_instruction_p1}],
                     host=host,
                     timeout=timeout,
+                    seed=seed,
                 )
                 parsed_p1 = unblind_parsed_scores(parse_scores(eval_res["content"]), mapping_p1)
 
@@ -606,6 +608,7 @@ def run_model_benchmark(
                         messages=[{"role": "user", "content": eval_instruction_p2}],
                         host=host,
                         timeout=timeout,
+                        seed=seed,
                     )
                     parsed_p2 = unblind_parsed_scores(parse_scores(eval_res_p2["content"]), mapping_p2)
                     parsed = merge_position_swapped_scores(parsed_p1, parsed_p2)
@@ -636,6 +639,7 @@ def run_model_benchmark(
                     messages=[{"role": "user", "content": eval_instruction}],
                     host=host,
                     timeout=timeout,
+                    seed=seed,
                 )
                 parsed = parse_scores(eval_res["content"])
 
@@ -735,6 +739,7 @@ def run_model_benchmark(
             messages=[{"role": "user", "content": final_prompt}],
             host=host,
             timeout=timeout,
+            seed=seed,
         )
         final_content = final_res["content"]
     except Exception as exc:

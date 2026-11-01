@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.0] - 2026-10-31
+
+### Changed
+- Preserve all requested deliverables and operational constraints; default routine analysis to proportional certificates (Zhang, Hu et al., 2026; Ugare & Chandra, 2026).
+- Keep creative planning internal unless requested, and retain required context-file sections (Zhang et al., 2025; Gloaguen et al., 2026).
+- Report benchmark results by protocol with cluster-robust uncertainty and explicit negative results. Existing benchmark scores describe earlier runs, not a fresh v4.3.0 evaluation.
+
+### Fixed
+- Synchronize CLI, plugin, citation, Python, installer, and hero version metadata.
+- Restore CI test compatibility with the anonymized judge prompt and forward custom inference seeds through execution, judging, and synthesis.
+- Replace unpublished npm installation instructions with the source installation path.
+- Align contribution and security guidance with the current executable tools and requirement-preservation contract.
+
+### Maintenance
+- Pin CI action revisions, limit workflow permissions, add monthly action update checks, and verify release metadata in CI.
+- Add support routes and a repeatable release checklist.
+
 ## [4.2.0] - 2026-10-31
 
 ### The Compiler, Blind Evaluation & Swiss Editorial Redesign

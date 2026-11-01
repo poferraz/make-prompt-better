@@ -1,6 +1,6 @@
 # Contributing to make-prompt-better
 
-Thank you for your interest in contributing. This project is built on peer-reviewed research, and we ask that all contributions meet the same standard.
+Thank you for your interest in contributing. This project draws on research papers and preprints; methodological claims require source attribution.
 
 ## Code of Conduct
 
@@ -12,7 +12,7 @@ This project synthesizes the work of original researchers. We do not claim their
 
 ## Quality Bar
 
-Every contribution must cite research or provide empirical evidence. We do not accept prompt patterns based solely on anecdote or intuition. Acceptable foundations include:
+Methodological contributions must cite research or provide empirical evidence. Documentation, installation, and tooling fixes can use a reproducible example or verification output. We do not accept prompt patterns based solely on anecdote or intuition. Acceptable foundations include:
 
 - Peer-reviewed papers (preferred)
 - Reproducible benchmarks with documented methodology
@@ -33,7 +33,7 @@ To contribute a new domain certificate template:
    - **FORMAL CONCLUSION**: Must reference traces and remain goal-blind (per Cao, Jiang & Xu, 2026)
    - **REMEDIATION / NEXT ACTION** and **TRACEABILITY SELF-CHECK** blocks
    - **Persona guidance line**: State whether to OMIT, use MINIMAL, or use FULL persona (per PRISM: Hu, Rostami & Thomason, 2026)
-3. Update the template count in `make-prompt-better/SKILL.md` and `README.md`
+3. The current contract requires exactly 12 templates. Propose additions in an issue first; an accepted expansion must update the count in the skill, README, both agent contracts, and CI together.
 4. Add a before/after example in `make-prompt-better/references/examples.md` if the domain is commonly used
 5. Verify: numbered identifiers present, authority framing used, goal-blind conclusion, persona guidance stated
 
@@ -69,16 +69,19 @@ To incorporate a new paper into the methodology:
 
 Do not use em dashes or en dashes as sentence punctuation anywhere in this project. Use commas, colons, or semicolons instead. Hyphens in compound words are fine: goal-blind, semi-formal, peer-reviewed are all acceptable.
 
-Incorrect: "The methodology, based on six papers, produces better prompts."
 Incorrect: "The methodology - based on six papers - produces better prompts."
 
 Correct: "The methodology, based on six papers, produces better prompts."
 
 ### Goal-Blind Rule
 
-All prompt templates in this project must be goal-blind. This means they must not include evaluation criteria, success metrics, or downstream use instructions. The template should specify what to analyze and how to structure reasoning, but never what a "good" or "correct" output looks like. This constraint comes from (Cao, Jiang & Xu, 2026): including evaluation criteria in prompts degrades performance because it constrains the reasoning process.
+Preserve requested deliverables and decision-relevant constraints such as deadlines, budgets, target environments, and output schemas. Remove pressure toward a desired verdict or score (Cao, Jiang & Xu, 2026; Zhang, Hu et al., 2026). A testable acceptance condition is not automatically goal leakage.
 
-If you are unsure whether a template violates this rule, ask yourself: does this instruction tell the model what answer to reach, or does it tell the model how to think? Only the latter is acceptable.
+## Local Verification
+
+Run `npm test`, `npm run lint`, `python3 scripts/check-release.py`, and `bash -n install.sh`. Before declaring changes complete, run the exact validation command in [AGENTS.md](../AGENTS.md) and `./install.sh`. The latter syncs your local agent installations. For a preview, use `./install.sh --dry-run`.
+
+For a first contribution, reproduce an installation issue, fix a documented link, or add a concrete before/after example. Check existing issues and pull requests before opening a duplicate.
 
 ## Questions
 

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Private security report
+    url: https://github.com/poferraz/make-prompt-better/blob/main/SECURITY.md
+    about: Report vulnerabilities using the private contact in the security policy.
+  - name: Installation and usage help
+    url: https://github.com/poferraz/make-prompt-better/blob/main/SUPPORT.md
+    about: Start with the documented commands and include your runtime when asking for help.

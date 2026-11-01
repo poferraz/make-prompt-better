@@ -117,9 +117,11 @@ class BenchmarkResumeTests(unittest.TestCase):
 """
         contents = iter(["baseline", "Review the function", "optimized answer", evaluation, "final report"])
         calls = []
+        seeds = []
 
-        def chat(*, model, messages, host, timeout):
+        def chat(*, model, messages, host, timeout, seed=42):
             calls.append(messages[0]["content"])
+            seeds.append(seed)
             content = next(contents)
             return {"content": content, "words": len(content.split()), "eval_count": 1,
                     "prompt_eval_count": 1, "elapsed_seconds": 0}
@@ -130,7 +132,7 @@ class BenchmarkResumeTests(unittest.TestCase):
             with mock.patch.object(runner, "REPO_ROOT", root), \
                  mock.patch.object(runner, "RESULTS_ROOT", results), \
                  mock.patch.object(runner, "call_ollama_chat", side_effect=chat):
-                self.assertTrue(runner.run_model_benchmark("model", "", [1], "http://localhost", False, 10))
+                self.assertTrue(runner.run_model_benchmark("model", "", [1], "http://localhost", False, 10, seed=17))
             saved = json.loads((results / "model" / "metrics.json").read_text(encoding="utf-8"))
             report = (results / "model" / "EVALUATION_RESULTS.md").read_text(encoding="utf-8")
 
@@ -139,6 +141,7 @@ class BenchmarkResumeTests(unittest.TestCase):
         self.assertEqual(test.get("executed_optimized_prompt"), calls[2])
         self.assertIn("def calculate_discount", calls[2])
         self.assertIn("### EXECUTED OPTIMIZED PROMPT", report)
+        self.assertEqual(seeds, [17] * 5)
 
     def test_resume_preserves_an_existing_complete_report(self):
         response = {"content": "original", "words": 1, "eval_count": 1}
@@ -224,7 +227,11 @@ class BlindEvaluationProtocolTests(unittest.TestCase):
         )
         self.assertNotIn("OPTIMIZED PROMPT", prompt)
         self.assertNotIn("=== BASELINE RESPONSE ===", prompt)
-        self.assertIn("=== CANDIDATE RESPONSE A", prompt)
+        self.assertIn("=== CANDIDATE A", prompt)
+        self.assertIn("=== CANDIDATE B", prompt)
+        self.assertIn("| Candidate A (1-5) | Candidate B (1-5) |", prompt)
+        self.assertNotIn("Baseline", prompt)
+        self.assertNotIn("Optimized", prompt)
         self.assertNotIn("[P1]", prompt)
 
     def test_merge_position_swapped_scores_averages_and_flags_consistency(self):

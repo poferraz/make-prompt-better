@@ -16,7 +16,7 @@ If this PR touches a specific research citation or domain template, name it here
 
 ## Verification Steps
 
-Describe how you verified the change is correct:
+Describe commands, exit codes, and relevant output. Run the AGENTS.md validation gate and installation sync. Mark citation checks not applicable for changes without research claims:
 - [ ] All numbers trace to the cited paper
 - [ ] arXiv links resolve correctly
 - [ ] Cross-references between files are consistent
@@ -24,7 +24,7 @@ Describe how you verified the change is correct:
 ## Formatting Checklist
 
 - [ ] No em dashes or en dashes used as sentence punctuation (commas, colons, or semicolons instead)
-- [ ] Prompt templates are goal-blind (no evaluation criteria, success metrics, or downstream use)
+- [ ] Prompt templates preserve all deliverables and operational constraints while removing pressure toward a desired verdict
 - [ ] New research citations follow the format: (Author, Year) inline, full citation with arXiv link in attribution sections
 - [ ] Attribution is present and correct (credit original researchers, not this project)
 

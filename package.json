@@ -1,7 +1,7 @@
 {
   "name": "make-prompt-better",
   "version": "4.3.0",
-  "description": "Compile vague prompts into verifiable Semi-Formal Certificates (+25.9% quality across 11 ArXiv papers). Universal Skill for Claude Code, Codex, Cursor & Gemini.",
+  "description": "Research-grounded prompt and agent-context optimization with four task-proportional modes, requirement preservation, and deterministic linting.",
   "type": "module",
   "main": "bin/cli.mjs",
   "bin": {
@@ -19,7 +19,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "python3 -m unittest discover -s research/benchmark/v4 -p 'test_*.py' -v && node scripts/lint-prompt.mjs --self-test",
+    "test": "python3 -m unittest discover -s research/benchmark/v4 -p 'test_*.py' -v && node scripts/lint-prompt.mjs --self-test && python3 research/benchmark/v4/blind_stats_engine.py",
     "lint": "python3 lint_context.py --self-test && python3 lint_context.py CLAUDE.md AGENTS.md && node scripts/lint-prompt.mjs CLAUDE.md AGENTS.md"
   },
   "repository": {

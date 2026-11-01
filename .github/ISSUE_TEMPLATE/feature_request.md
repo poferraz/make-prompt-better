@@ -24,7 +24,7 @@ Describe what you want to add or change. Be specific about which files are affec
 
 ## Research Basis
 
-Per the project's quality bar, every contribution must cite research or provide empirical evidence.
+Per the project's quality bar, methodological contributions must cite research or provide empirical evidence; tooling and documentation requests can provide a reproducible use case.
 
 **For new domain templates**: Which existing template is the closest model? What domain-specific constraints should the certificate enforce?
 
@@ -34,7 +34,7 @@ Per the project's quality bar, every contribution must cite research or provide 
 
 ## Goal-Blind Compliance
 
-If this feature includes prompt templates or instructions, confirm that they do not include evaluation criteria, success metrics, or downstream use instructions. The template should tell the model how to think, not what answer to reach.
+If this feature includes prompt templates or instructions, confirm that they preserve requested deliverables and operational constraints while removing pressure toward a desired verdict (Cao, Jiang & Xu, 2026; Zhang, Hu et al., 2026).
 
 ## Affected Files
 

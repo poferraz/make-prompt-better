@@ -5,18 +5,32 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
+
+      - name: Check release metadata
+        run: python3 scripts/check-release.py
 
       - name: Validate install.sh Syntax and Dry-Run
         run: |
@@ -40,6 +54,8 @@ jobs:
           # 1. Progressive disclosure check (<500 lines)
           skill_path = Path("make-prompt-better/SKILL.md")
           skill_text = skill_path.read_text(encoding="utf-8")
+          strict_fm = re.match(r'^---\nname: make-prompt-better\ndescription: "(Use when [^\n:\"]+)"\n---\n', skill_text)
+          assert strict_fm and len(strict_fm.group(1)) < 450, "Frontmatter must match the agent contract"
           skill_lines = skill_text.splitlines()
           assert len(skill_lines) < 500, f"SKILL.md is {len(skill_lines)} lines (must be < 500)"
           print(f"[PASS] SKILL.md line count: {len(skill_lines)} / 500")
@@ -88,6 +104,7 @@ jobs:
               "README.md",
               "CLAUDE.md",
               "AGENTS.md",
+              "research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md",
           ]
           for rel_path in target_files:
               txt = Path(rel_path).read_text(encoding="utf-8")
@@ -120,3 +137,4 @@ jobs:
       - name: Run Benchmark & Aggregation Unit Tests
         run: |
           python3 -m unittest discover -s research/benchmark/v4 -p "test_*.py" -v
+          python3 research/benchmark/v4/blind_stats_engine.py

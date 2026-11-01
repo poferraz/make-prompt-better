@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Zero-Dependency Universal CLI for make-prompt-better (v4.2.0)
+ * Zero-Dependency Universal CLI for make-prompt-better
  *
  * Commands:
  *   npx make-prompt-better init [options]     Install skill across local coding agents
@@ -18,9 +18,10 @@ import { lintPromptText, formatReport } from "../scripts/lint-prompt.mjs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
+const { version } = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, "package.json"), "utf8"));
 
 function printHelp() {
-  console.log(`make-prompt-better v4.2.0 - Research-Grounded Prompt, Context & Harness Compiler
+  console.log(`make-prompt-better v${version} - Research-Grounded Prompt, Context & Harness Compiler
 
 Usage:
   npx make-prompt-better [init] [options]       Sync skill to local AI coding agents
@@ -40,7 +41,7 @@ Install Options (passed to install.sh):
 const args = process.argv.slice(2);
 
 if (args.includes("-v") || args.includes("--version")) {
-  console.log("4.2.0");
+  console.log(version);
   process.exit(0);
 }
 

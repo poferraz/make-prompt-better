@@ -143,7 +143,7 @@ write_cursor_mdc() {
   mkdir -p "${mdc_dir}"
   {
     echo "---"
-    echo "description: \"Use when optimizing, hardening, or rewriting any prompt, system instruction, AGENTS.md or CLAUDE.md context file, or agent workflow (v4.2.0) to improve accuracy, auditability, structured output compliance, or creative diversity.\""
+    sed -n '2,/^---$/p' "${SKILL_SRC}/SKILL.md" | sed -n '/^description: /p'
     echo "globs:"
     echo "alwaysApply: false"
     echo "---"

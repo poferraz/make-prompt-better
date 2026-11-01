@@ -15,8 +15,14 @@ Do not file a public GitHub issue for security vulnerabilities.
 
 ## Response Expectations
 
-You will receive an acknowledgment within 48 hours. The maintainer will assess the report and respond with a plan within 5 business days.
+The maintainer aims to acknowledge reports within 48 hours and provide an initial assessment within 5 business days. This is a volunteer-maintained project; response times are not guaranteed.
 
 ## Scope
 
-This project is a documentation and methodology repository. There is no executable code, no API integrations, and no user data handling. Vulnerabilities would typically involve: misleading research citations, incorrect claims attributed to papers, or broken links that could direct users to malicious content.
+The repository includes a Bash installer, Node.js CLI and linter, Python tooling, benchmark scripts that connect to model APIs, and GitHub Actions workflows. Reports may concern unsafe filesystem operations, code execution, credential exposure, dependency or workflow compromise, or malicious installation links.
+
+Submit ordinary citation corrections, broken documentation links, and benchmark-methodology questions through public issues unless disclosure would create a security risk. Remove credentials and private prompt content from examples and logs.
+
+## Supported Versions
+
+Security fixes target the latest release and the current `main` branch. Older versions have no separate maintenance branch.
