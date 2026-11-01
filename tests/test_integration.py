@@ -73,6 +73,39 @@ class InstallerTests(unittest.TestCase):
         for args in [('--runtime', 'bad'), ('--runtime',)]:
             self.assertNotEqual(run('bash', str(ROOT / 'install.sh'), *args).returncode, 0)
 
+    def test_interrupted_copy_can_be_retried(self):
+        with tempfile.TemporaryDirectory(prefix='interrupted install ') as tmp:
+            root = Path(tmp)
+            fakebin = root / 'fakebin'
+            fakebin.mkdir()
+            fakecp = fakebin / 'cp'
+            fakecp.write_text('#!/bin/sh\nkill -TERM $$\n')
+            fakecp.chmod(0o755)
+            env = dict(os.environ, PATH=str(fakebin) + os.pathsep + os.environ['PATH'])
+            args = ('bash', str(ROOT / 'install.sh'), '--project', '--runtime', 'claude')
+            interrupted = run(*args, cwd=root, env=env)
+            self.assertNotEqual(interrupted.returncode, 0)
+            recovered = run(*args, cwd=root)
+            self.assertEqual(recovered.returncode, 0, recovered.stderr)
+            self.assertTrue((root / '.claude/skills/make-prompt-better/SKILL.md').exists())
+
+    @unittest.skipIf(hasattr(os, 'geteuid') and os.geteuid() == 0, 'root bypasses directory permissions')
+    def test_permission_error_is_reported_and_recoverable(self):
+        with tempfile.TemporaryDirectory(prefix='permission install ') as tmp:
+            root = Path(tmp)
+            agent = root / '.claude'
+            agent.mkdir(mode=0o500)
+            args = ('bash', str(ROOT / 'install.sh'), '--project', '--runtime', 'claude')
+            try:
+                denied = run(*args, cwd=root)
+                self.assertNotEqual(denied.returncode, 0)
+                self.assertFalse((agent / 'skills/make-prompt-better/SKILL.md').exists())
+            finally:
+                agent.chmod(0o700)
+            recovered = run(*args, cwd=root)
+            self.assertEqual(recovered.returncode, 0, recovered.stderr)
+            self.assertTrue((agent / 'skills/make-prompt-better/SKILL.md').exists())
+
 
 class PackageTests(unittest.TestCase):
     def test_actual_archive_installs_and_runs(self):

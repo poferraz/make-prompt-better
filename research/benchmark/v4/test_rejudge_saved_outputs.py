@@ -33,3 +33,31 @@ class SavedPairsTests(unittest.TestCase):
             (model / 'metrics.json').write_text('{')
             with self.assertRaises(json.JSONDecodeError):
                 rejudge.load_saved_pairs(Path(tmp))
+
+    def test_judge_seed_and_swapped_mapping(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            model = Path(tmp) / 'model'
+            model.mkdir()
+            (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
+                '1': {'baseline': {'content': 'BASE_TEXT'}, 'optimized_response': {'content': 'OPT_TEXT'}}
+            }}))
+            calls = []
+            def judge(**kwargs):
+                calls.append(kwargs)
+                prompt = kwargs['messages'][0]['content']
+                # Score by response identity, independently of position.
+                a_is_base = prompt.index('BASE_TEXT') < prompt.index('OPT_TEXT')
+                left, right = (3, 5) if a_is_base else (5, 3)
+                rows = '\n'.join(f'| {name} | {left} | {right} |' for name in
+                                 ['Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'])
+                return {'content': rows}
+            with mock.patch.object(rejudge, 'call_ollama_chat', side_effect=judge), \
+                 mock.patch.object(rejudge, 'compute_stratified_benchmark_summary', return_value={}) as summary:
+                self.assertEqual(rejudge.main(['--results-dir', tmp, '--swap-positions', '--seed', '17', '--judge-model', 'fake']), 0)
+            self.assertEqual(len(calls), 2)
+            self.assertEqual([c['seed'] for c in calls], [17, 17])
+            self.assertEqual([c['model'] for c in calls], ['fake', 'fake'])
+            record = summary.call_args.args[0][0]
+            self.assertEqual((record['baseline_total'], record['optimized_total'], record['delta_total']), (15, 25, 10))
+            self.assertTrue(record['position_swap_consistent'])
+            self.assertEqual(summary.call_args.kwargs['seed'], 17)
