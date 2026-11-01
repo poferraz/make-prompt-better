@@ -1,6 +1,6 @@
 {
   "name": "make-prompt-better",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "description": "Compile vague prompts into verifiable Semi-Formal Certificates (+25.9% quality across 11 ArXiv papers). Universal Skill for Claude Code, Codex, Cursor & Gemini.",
   "type": "module",
   "main": "bin/cli.mjs",

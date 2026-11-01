@@ -1,165 +1,187 @@
 # EVALUATION RESULTS: make-prompt-better v4.0 (gemma4:31b-cloud)
 
 - **Model**: `gemma4:31b-cloud`
-- **Timestamp**: `2026-10-30T06:21:26Z`
+- **Timestamp**: `2026-10-31T20:08:41Z`
 - **Protocol**: 12-Test v4.0 Isolated Context Pipeline (Baseline -> Optimize Prompt -> Execute Optimized -> Rubric Evaluation)
+- **Rendering**: Dash punctuation is normalized in this report; original model output is preserved in `metrics.json`.
 
 ## TEST 1: Code Review (Accuracy | Mode 1 (Max Certificate, Template 1 [P1]-[P3]))
 
 ### BASELINE RESPONSE
 
-Yes, this function has a significant logic bug regarding how it handles percentages.
+Yes, this function has a **major logic bug** regarding how percentages are handled.
 
-### The Main Bug: Decimal vs. Percentage
-In Python (and most programming languages), math operations treat numbers as absolute values. If you pass `discount_percent` as a whole number (e.g., `20` for 20%), the calculation will fail.
+### The Main Bug: Percentage vs. Decimal
+In Python (and most programming languages), if you want to calculate a percentage of a number, you must divide the percentage by 100. 
 
-**The math currently looks like this:**
-If `price` is 100 and `discount_percent` is 20:
-`final_price = 100 - (100 * 20)` 
-`final_price = 100 - 2000`
-`final_price = -1900` (which then returns `0` because of your `if` statement).
+Currently, your code treats `discount_percent` as a multiplier. For example, if `discount_percent` is `20` (meaning 20%), your code does this:
+`price - (price * 20)` $\rightarrow$ `price - (20 * price)` $\rightarrow$ `-19 * price`.
 
-To fix this, you must divide the discount by 100.
+Because the result is almost always negative, your `if final_price < 0` check will trigger, and the function will **almost always return 0**.
+
+### Other Potential Issues
+1.  **Mutation of Input:** While not a "crash" bug, modifying `discount_percent += 10` changes the local variable. If this were a more complex object, it could lead to side effects.
+2.  **Input Validation:** The function assumes `discount_percent` is passed as a whole number (like `20`) rather than a decimal (like `0.20`). If a user passes `0.20`, the `+ 10` will make it `10.20` (1,020%), which is incorrect.
 
 ---
 
-### Other Potential Issues
-1.  **The "Member" Logic:** You are adding 10 to the `discount_percent`. If the input is `0.20` (20%), adding 10 makes it `10.20` (1020%), which will result in a price of 0. If you intend to add 10 **percentage points**, you need to be consistent with your units.
-2.  **Floating Point Precision:** Using floats for currency can lead to rounding errors (e.g., `19.990000000000002`). For production financial apps, the `decimal` module is preferred.
+### The Corrected Code
 
-### The Fixed Code
-
-Depending on how you want to pass the arguments, here is the corrected version:
+Here is the fixed version. I have added a division by 100 to handle the percentage correctly:
 
 ```python
 def calculate_discount(price, discount_percent, is_member):
-    # Assume discount_percent is passed as a whole number (e.g., 20 for 20%)
+    # 1. Calculate the total percentage first
+    total_discount = discount_percent
     if is_member:
-        discount_percent += 10
-        
-    # Convert the percentage to a decimal (e.g., 30 becomes 0.30)
-    discount_amount = price * (discount_percent / 100)
+        total_discount += 10
+    
+    # 2. Convert percentage (e.g., 20) to decimal (e.g., 0.20)
+    discount_amount = price * (total_discount / 100)
+    
     final_price = price - discount_amount
     
-    # Ensure price doesn't go negative if discount exceeds 100%
+    # 3. Prevent negative prices
     return max(0, final_price)
 
-# Test cases
+# Test Cases:
 print(calculate_discount(100, 20, False)) # Expected: 80.0
-print(calculate_discount(100, 20, True))  # Expected: 70.0 (20% + 10% = 30% off)
+print(calculate_discount(100, 20, True))  # Expected: 70.0 (20% + 10% bonus)
 ```
 
-### Summary of Changes:
-*   **Added `/ 100`**: This converts the percentage to a multiplier.
-*   **Used `max(0, final_price)`**: This is a cleaner, more "Pythonic" way to ensure the number doesn't drop below zero than using an `if` statement.
+### Key Changes Made:
+*   **`/ 100`**: Now correctly calculates the discount amount.
+*   **`total_discount` variable**: Created a new variable instead of modifying the input parameter for better clarity.
+*   **`max(0, final_price)`**: A cleaner, more "Pythonic" way to ensure the value doesn't go below zero.
 
 ### OPTIMIZED PROMPT
+
+```text
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 1 (Max Certificate) | Template 1: Code Review / Patch Verification
+[PERSONA]      : Omitted (Accuracy) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..P4] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~2.2x token budget | Deterministically verifiable
+```
 
 The standard code review protocol requires completing the following analytical certificate before issuing any verdict. Every section must be completed using observable code artifacts.
 
 ### PREMISES
-- [P1] Files modified: Python function `calculate_discount`
-- [P2] Symbols affected: `calculate_discount(price, discount_percent, is_member)`
-- [P3] Runtime constraints: Python 3.x; standard floating-point arithmetic; expected input types (numeric `price` and `discount_percent`, boolean `is_member`).
+- [P1] Primary artifact examined:
+```python
+def calculate_discount(price, discount_percent, is_member):
+    if is_member:
+        discount_percent += 10
+    final_price = price - (price * discount_percent)
+    if final_price < 0:
+        return 0
+    return final_price
+```
+- [P2] Symbols affected: `calculate_discount` (function), `price` (parameter), `discount_percent` (parameter), `is_member` (parameter), `final_price` (local variable).
+- [P3] Applicable rules or invariants: 
+    1. Mathematical correctness: Discounts should typically be treated as percentages (e.g., 0.10 for 10%) or scaled correctly.
+    2. Type safety: Operations must be valid for expected numeric inputs.
+    3. Boundary conditions: Final prices should not be negative.
+- [P4] Unverified inputs: Specific intended scale for `discount_percent` (e.g., whether 10 means 10% or 0.10) is not explicitly provided in the source.
 
 ### EXECUTION TRACES
-For each modified code path or potential edge case, provide a step-by-step verification (Entry -> Call Chain -> State Mutation -> Result):
-- [T1] Trace [Standard Member Path]:
-  1. Entry point: `is_member=True`, `price=100`, `discount_percent=0.1`
-  2. Call chain: Internal logic evaluation.
-  3. Data flow & state: Trace the mutation of `discount_percent` and the calculation of `final_price`.
-  4. Exit condition: Return value vs. expected value.
-- [T2] Trace [Standard Non-Member Path]:
-  1. Entry point: `is_member=False`, `price=100`, `discount_percent=0.1`
-  2. Call chain: Internal logic evaluation.
-  3. Data flow & state: Trace the calculation of `final_price`.
-  4. Exit condition: Return value vs. expected value.
-- [T3] Trace [Boundary/Edge Case - High Discount]:
-  1. Entry point: Inputs resulting in `discount_percent` >= 1.0.
-  2. Call chain: Internal logic evaluation.
-  3. Data flow & state: Trace the calculation of `final_price`.
-  4. Exit condition: Verify behavior of the `final_price < 0` guard.
+Walk through the concrete path for each logic branch:
+- [T1] Trace [Member Path]: 
+    1. Entry: `is_member = True`.
+    2. Operation: `discount_percent` is incremented by 10.
+    3. Data flow: Calculate `final_price = price - (price * (discount_percent + 10))`.
+    4. Observable Result: Analyze if adding 10 to a percentage value (e.g., 0.15 + 10 = 10.15) results in a mathematically sound discount calculation.
+- [T2] Trace [Non-Member Path]:
+    1. Entry: `is_member = False`.
+    2. Operation: `discount_percent` remains unchanged.
+    3. Data flow: Calculate `final_price = price - (price * discount_percent)`.
+    4. Observable Result: Analyze if the multiplication `price * discount_percent` correctly applies a discount based on the input scale.
+- [T3] Trace [Boundary Check]:
+    1. Entry: `final_price` calculation result.
+    2. Operation: `if final_price < 0: return 0`.
+    3. Observable Result: Verify if this effectively prevents negative returns.
 
-Grounding rule: Trace the actual implementation body of every operation rather than inferring behavior from variable names. When a behavior is based on an assumption of input type, record it as an assumption.
+Grounding rule: Trace the actual implementation body of the function rather than inferring behavior from variable names. When a path cannot be verified from [P1]-[P4], record `UNABLE TO TRACE: [missing input]`.
 
 ### FORMAL CONCLUSION
-- Verdict: [PASS / FAIL / EQUIVALENT / NOT EQUIVALENT]
-- Supporting traces: [cite specific T-identifiers for every finding]
-- Verification gaps: [paths marked UNABLE TO TRACE and the files/inputs needed]
-- Confidence: [HIGH / MEDIUM / LOW with justification tied to T-identifiers]
+Derive your verdict solely from the premises and traces above:
+- Verdict: [PASS / FAIL]
+- Supporting traces: [cite T1, T2, T3 for every claim]
+- Verification gaps: [list any path marked UNABLE TO TRACE and the missing input required]
 
 ### REMEDIATION / NEXT ACTION
-The task is incomplete until this section provides one of:
-- A complete, copy-pasteable code patch fixing all defects identified in [T]
-- Exact test cases to cover any unverified paths in Verification Gaps
-- The explicit statement: "No remediation required: [reason citing T-identifiers]"
+The task is incomplete until this section contains one of the following:
+- A complete, copy-pasteable fix (revised Python code) correcting all defects identified in [T]
+- A concrete sequence of verification commands/test cases to resolve any Verification Gaps
+- The explicit statement: "No remediation required: [reason grounded in T-identifiers]"
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every step in [T] traces on explicit implementation details in [P1]-[P3] rather than symbol names.
-- Missing-evidence predicate: When a path cannot be verified, record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Verification Gaps.
-- Neutrality predicate: Derive the Verdict strictly from [T] traces without referencing downstream business goals.
+- Data-binding predicate: All input code and rules are embedded verbatim in [P1]-[P4].
+- Grounding rule: Base every step in [T] traces on explicit implementation details in [P1] rather than symbol names.
+- Missing-evidence predicate: When a path cannot be verified, record `UNABLE TO TRACE: [exact missing input]` and list it under Verification Gaps.
+- Neutrality predicate: Derive the Verdict strictly from `[T]` traces.
 
-TRACEABILITY SELF-CHECK: Verify that every claim in the Formal Conclusion cites at least one [T] identifier. Remove or trace any unreferenced claim.
+TRACEABILITY SELF-CHECK (mandatory before finalizing):
+Verify that every claim in your Formal Conclusion cites at least one `[T]` identifier from above. If any claim lacks a supporting identifier, either add the missing trace or remove the claim so zero orphaned conclusions remain.
 
 ### OPTIMIZED RESPONSE
 
-**NOTICE:** To complete this certificate, the source code implementation of `calculate_discount` must be provided. As no code artifact was included in the prompt, the following analysis is based on the **absence of implementation**.
-
-### PREMISES
-- [P1] Files modified: Python function `calculate_discount` (Implementation Missing)
-- [P2] Symbols affected: `calculate_discount(price, discount_percent, is_member)`
-- [P3] Runtime constraints: Python 3.x; standard floating-point arithmetic; expected input types (numeric `price` and `discount_percent`, boolean `is_member`).
-
 ### EXECUTION TRACES
-- [T1] Trace [Standard Member Path]:
-  1. Entry point: `is_member=True`, `price=100`, `discount_percent=0.1`
-  2. Call chain: `UNABLE TO TRACE: Implementation body missing`
-  3. Data flow & state: `UNABLE TO TRACE: Implementation body missing`
-  4. Exit condition: `UNABLE TO TRACE: Implementation body missing`
-
-- [T2] Trace [Standard Non-Member Path]:
-  1. Entry point: `is_member=False`, `price=100`, `discount_percent=0.1`
-  2. Call chain: `UNABLE TO TRACE: Implementation body missing`
-  3. Data flow & state: `UNABLE TO TRACE: Implementation body missing`
-  4. Exit condition: `UNABLE TO TRACE: Implementation body missing`
-
-- [T3] Trace [Boundary/Edge Case - High Discount]:
-  1. Entry point: `price=100`, `discount_percent=1.1`, `is_member=False`
-  2. Call chain: `UNABLE TO TRACE: Implementation body missing`
-  3. Data flow & state: `UNABLE TO TRACE: Implementation body missing`
-  4. Exit condition: `UNABLE TO TRACE: Implementation body missing`
+- [T1] Trace [Member Path]: 
+    1. Entry: `is_member = True`.
+    2. Operation: `discount_percent` is incremented by 10 (`discount_percent += 10`).
+    3. Data flow: `final_price = price - (price * (discount_percent + 10))`.
+    4. Observable Result: If `discount_percent` is a decimal (e.g., 0.15), the result is `price - (price * 10.15)`, leading to a massive negative value. If `discount_percent` is an integer (e.g., 15), the result is `price - (price * 25)`, also leading to a massive negative value. Adding a whole number (10) to a multiplier is mathematically unsound for percentage calculations.
+- [T2] Trace [Non-Member Path]:
+    1. Entry: `is_member = False`.
+    2. Operation: `discount_percent` remains unchanged.
+    3. Data flow: `final_price = price - (price * discount_percent)`.
+    4. Observable Result: If `discount_percent` is intended as a percentage (e.g., 20 for 20%), the calculation `price * 20` deducts 20x the price, not 20%. If intended as a decimal (0.20), it is correct. However, [T1] proves the logic is inconsistent with decimal usage.
+- [T3] Trace [Boundary Check]:
+    1. Entry: `final_price` calculation result.
+    2. Operation: `if final_price < 0: return 0`.
+    3. Observable Result: This prevents negative returns; however, because [T1] and [T2] consistently produce large negative numbers for standard percentage inputs, this branch will be triggered almost every time, returning 0 regardless of the actual price.
 
 ### FORMAL CONCLUSION
-- Verdict: **FAIL**
-- Supporting traces: [T1], [T2], [T3]
-- Verification gaps: All paths marked `UNABLE TO TRACE`. Missing the actual source code for the function `calculate_discount`.
-- Confidence: **HIGH** (Justification: It is an observable fact that no code was provided for analysis; therefore, no logic can be verified).
+- Verdict: FAIL
+- Supporting traces: 
+    - Logic is mathematically unsound: adding 10 to a multiplier creates an invalid discount rate [T1].
+    - Scale inconsistency: the multiplication logic fails if inputs are integers, and the addition logic fails if inputs are decimals [T1, T2].
+    - Masking defect: the boundary check effectively hides the calculation errors by returning 0 for almost all typical inputs [T3].
+- Verification gaps: None.
 
 ### REMEDIATION / NEXT ACTION
-The task is incomplete. Please provide the Python source code for the `calculate_discount` function. 
-
-**Required input for next iteration:**
 ```python
 def calculate_discount(price, discount_percent, is_member):
-    # implementation goes here
+    # Normalize discount_percent to a decimal (e.g., 15 becomes 0.15)
+    # Assuming input is passed as a whole number (e.g., 15 for 15%)
+    discount_decimal = discount_percent / 100.0
+    
+    if is_member:
+        # Add 10% to the discount rate correctly
+        discount_decimal += 0.10
+        
+    final_price = price * (1 - discount_decimal)
+    
+    if final_price < 0:
+        return 0.0
+    return final_price
 ```
 
 ### EVALUATION: TEST 1
 
-- **Word Count**: Baseline `311` words | Optimized `283` words | Ratio `0.91x`
-- **Eval Tokens**: Baseline `648` | Optimized `595`
+- **Word Count**: Baseline `309` words | Optimized `356` words | Ratio `1.15x`
+- **Eval Tokens**: Baseline `619` | Optimized `709`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 1         | -4    |
-| Completeness  | 5        | 1         | -4    |
-| Structure     | 4        | 5         | +1    |
-| Actionability | 5        | 1         | -4    |
-| Traceability  | 3        | 5         | +2    |
-| TOTAL         | 22/25    | 13/25     | -9    |
-
-**Explanation:**
-The Optimized response failed completely because it hallucinated that the source code was missing, even though the code was clearly provided in the original task. While the structured "certificate" format provides superior traceability and structure, it is useless when the model ignores the primary input, making the Baseline response infinitely more useful and accurate.
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 5 | 0 | Both correctly identify the fundamental mathematical flaw: treating a percentage integer as a multiplier and the resulting interaction with the negative check. |
+| Completeness | 5 | 5 | 0 | Both candidates identify the logic bug, the scaling issue, and the masking effect of the `if final_price < 0` check. |
+| Structure | 4 | 5 | +1 | Candidate B's structure is more intuitive for a code review. Candidate A uses a "Trace" format which is rigorous but slightly over-engineered for such a simple function. |
+| Actionability | 5 | 5 | 0 | Both provide clean, working corrected code. Candidate B's use of `max(0, final_price)` is slightly more idiomatic Python. |
+| Traceability | 5 | 3 | -2 | Candidate A explicitly traces the data flow for both member and non-member paths, making the logic failure undeniable and easy to verify. |
+| **TOTAL (/25)** | **24** | **23** | **-1** | **Winner: Baseline** |
 
 ---
 
@@ -167,165 +189,162 @@ The Optimized response failed completely because it hallucinated that the source
 
 ### BASELINE RESPONSE
 
-To analyze the company's financial health, we must first calculate the absolute operating expenses and the resulting operating profit (EBITDA) for each quarter.
+To analyze the company's financial health, we must first calculate the operating profit (EBIT) for each quarter.
 
 ### 1. Quantitative Breakdown
 
 | Quarter | Revenue | OpEx % | OpEx ($) | Operating Profit | Profit Margin |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Q1** | $50M | 78% | $39.0M | **$11.0M** | 22% |
-| **Q2** | $47M | 82% | $38.5M | **$8.5M** | 18% |
+| **Q2** | $47M | 82% | $38.54M | **$8.46M** | 18% |
 | **Q3** | $52M | 75% | $39.0M | **$13.0M** | 25% |
-| **Q4** | $61M | 71% | $43.3M | **$17.7M** | 29% |
-| **Total** | **$210M** | **76.5% (Avg)** | **$160.3M** | **$50.2M** | **23.9%** |
+| **Q4** | $61M | 71% | $43.31M | **$17.69M** | 29% |
+| **Total** | **$210M** | **76.5% (avg)**| **$160.1M** | **$50.15M** | **23.9%** |
 
 ---
 
 ### 2. Financial Health Analysis
 
-#### **Revenue Growth & Momentum**
-The company shows a strong positive trajectory. After a slight dip in Q2, revenue grew by **29.8% from Q2 to Q4**. The jump to $61M in Q4 suggests strong year-end demand or successful scaling of operations.
+#### **Positive Trends: Scaling and Efficiency**
+*   **Revenue Growth:** The company shows a strong recovery and growth trajectory. After a slight dip in Q2, revenue grew by ~29.8% from Q2 to Q4.
+*   **Operational Leverage:** This is the most positive signal. As revenue increased, the operating expense percentage *decreased* (from 82% in Q2 to 71% in Q4). This indicates that the company is scaling efficiently; they are growing their top line faster than their costs.
+*   **Profitability Expansion:** Operating profit more than doubled from Q2 ($8.46M) to Q4 ($17.69M), showing a significant increase in the company's ability to generate cash from its core operations.
 
-#### **Operational Efficiency (The "Margin Expansion")**
-This is the most positive aspect of the report. The company is demonstrating **economies of scale**: as revenue increases, the percentage of operating expenses is decreasing.
-*   **Q2 (Trough):** 82% OpEx / 18% Margin
-*   **Q4 (Peak):** 71% OpEx / 29% Margin
-This indicates that the company's fixed costs are staying relatively stable while variable revenue grows, leading to significant margin expansion.
+#### **Risk Factors: Debt and Cash Flow**
+*   **The Q3 Debt Injection:** The company took on $15M in new debt in Q3. In a vacuum, debt is a risk. However, the timing is critical:
+    *   **Scenario A (Growth Capital):** If the debt was used to fund the expansion that led to the Q4 revenue spike ($61M) and the efficiency gains, the debt was a strategic and successful investment.
+    *   **Scenario B (Liquidity Gap):** If the debt was taken because the company was running out of cash despite being profitable, it suggests poor working capital management.
+*   **Debt-to-Profit Ratio:** The total annual operating profit ($50.15M) comfortably covers the new debt ($15M). Assuming the interest rate is standard, the company has a high "Interest Coverage Ratio," meaning the debt is manageable.
 
-#### **Debt & Liquidity**
-The company took on $15M in debt in Q3. While debt generally increases risk, the context here is favorable:
-*   **Debt-to-Profit Ratio:** The total operating profit for the year ($50.2M) easily covers the new debt ($15M). 
-*   **Strategic Timing:** The debt was taken in Q3, immediately preceding the massive revenue and profit surge in Q4. This suggests the debt may have been used as "growth capital" (e.g., investing in inventory, marketing, or infrastructure) that directly contributed to the Q4 success.
+### 3. Final Verdict: **Strong/Improving**
 
----
+The company is in **good financial health** with an upward trajectory. 
 
-### 3. Final Verdict
+**Summary:**
+*   **Stability:** High. They are consistently profitable in every quarter.
+*   **Momentum:** Strong. Both revenue and margins are trending upward.
+*   **Risk:** Low to Moderate. While they added debt, their operating profit in Q4 alone ($17.69M) is greater than the total amount of the new loan ($15M).
 
-**Financial Health: Strong / Improving**
-
-**Strengths:**
-*   **Accelerating Profitability:** Operating profit more than doubled from Q2 ($8.5M) to Q4 ($17.7M).
-*   **Operating Leverage:** The ability to lower OpEx as a percentage of revenue indicates a highly scalable business model.
-*   **Manageable Leverage:** The $15M debt is modest compared to the annual operating cash flow.
-
-**Risks to Monitor:**
-*   **Sustainability:** It is important to determine if the Q4 surge was a seasonal anomaly or a permanent growth step.
-*   **Interest Coverage:** While the principal is manageable, the company must ensure that interest payments on the $15M debt do not erode the gains made in operational efficiency.
+**Recommendation for further investigation:**
+To complete this analysis, one would need to see the **Interest Rate** on the $15M debt and the **Net Income** (to see if taxes or non-operating losses offset these operating gains).
 
 ### OPTIMIZED PROMPT
+
+```text
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 1 (Max Certificate) | Template 9: Financial Due Diligence
+[PERSONA]      : Omitted (Accuracy) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..Pn] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~2.2x token budget | Deterministically verifiable
+```
 
 The standard financial due diligence methodology requires completing this analytical certificate before presenting any posture summary.
 
 ### PREMISES
-- [P1] Reported Revenue: Q1: $50M, Q2: $47M, Q3: $52M, Q4: $61M.
-- [P2] Operating Expense Ratios: Q1: 78%, Q2: 82%, Q3: 75%, Q4: 71%.
-- [P3] Capital Events: $15M new debt incurred in Q3.
-- [P4] Analytical Dimensions: Revenue trajectory, Operating Margin trends, and Debt-to-Revenue impact.
+- [P1] Financial Data:
+    - Q1: Revenue = $50M; Operating Expenses = 78% of Revenue
+    - Q2: Revenue = $47M; Operating Expenses = 82% of Revenue
+    - Q3: Revenue = $52M; Operating Expenses = 75% of Revenue
+    - Q4: Revenue = $61M; Operating Expenses = 71% of Revenue
+- [P2] Capital Events:
+    - Q3: New debt issuance of $15M
+- [P3] Analytical Dimensions: Revenue trajectory, operating margin trends, and leverage impact.
 
 ### FINANCIAL TRACES
-For each analytical dimension in [P4], complete the following:
+For each analytical dimension in [P3], complete a full verification trace:
 - [T1] Revenue Trajectory:
-  1. Reported figures: [Extract data from P1]
-  2. Derived calculation: [Calculate absolute and percentage change per quarter]
-  3. Period trajectory: [Identify growth or contraction trends]
-  4. Statement reconciliation: [Cross-check against P1]
+    1. Reported figures: [Exact sequence from P1]
+    2. Derived calculation: [Quarter-over-quarter growth rates and total annual revenue]
+    3. Trajectory: [Direction and rate of change]
 - [T2] Operating Margin Analysis:
-  1. Reported figures: [Extract ratios from P2]
-  2. Derived calculation: [Calculate absolute operating expense in dollars and the resulting operating profit for each quarter]
-  3. Period trajectory: [Determine if margins are expanding or contracting]
-  4. Statement reconciliation: [Cross-check against P1 and P2]
-- [T3] Debt & Liquidity Impact:
-  1. Reported figures: [Extract debt amount from P3]
-  2. Derived calculation: [Analyze debt relative to the Q3/Q4 revenue scale from P1]
-  3. Period trajectory: [Evaluate the timing of debt acquisition relative to the margin shift in T2]
-  4. Statement reconciliation: [Cross-check against P3]
+    1. Reported figures: [Expense percentages from P1]
+    2. Derived calculation: [Absolute expense values per quarter and implied operating margins]
+    3. Trajectory: [Trend in efficiency/margin expansion or contraction]
+- [T3] Debt & Leverage Impact:
+    1. Reported figures: [Debt amount from P2]
+    2. Derived calculation: [Timing of debt relative to revenue peaks/troughs in P1]
+    3. Structural observation: [Correlation between Q3 debt and subsequent Q4 performance]
 
-Grounding rule: Compute metrics exclusively from figures present in [P1]-[P3]. When a required input (e.g., total assets or previous debt levels) is missing, record `INSUFFICIENT DATA FOR [T]: [missing metric]`.
+Grounding rule: Compute metrics exclusively from figures present in [P1] and [P2]. When a required input (e.g., total assets or interest rates) is missing, record `INSUFFICIENT DATA FOR [T]: [missing metric]`.
 
 ### FORMAL CONCLUSION
-- Financial posture summary: [Factual synthesis citing T-identifiers]
-- Verified strengths vs. structural divergences: [Separated, citing T-traces]
-- Data completeness gaps: [All items marked INSUFFICIENT DATA]
+Derive the verdict strictly from the traces above:
+- Financial Posture Summary: [Factual synthesis citing T-identifiers]
+- Verified Strengths vs. Structural Divergences: [Separated, citing T-traces]
+- Data Completeness Gaps: [All items marked INSUFFICIENT DATA]
 
 ### REMEDIATION / NEXT ACTION
-The task is incomplete until this section provides:
-- A specific list of additional financial statements or metrics (e.g., Balance Sheet, Cash Flow Statement) required to resolve Data Completeness Gaps.
-- The explicit statement: "No remediation required: [reason citing T-identifiers]"
+The task is incomplete until this section contains one of the following:
+- A concrete list of follow-up diligence requests (e.g., balance sheet, interest coverage ratio) needed to resolve gaps in [T].
+- The explicit statement: "No remediation required: [reason grounded in T-identifiers]."
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every step in [T] traces on explicit data points in [P1]-[P3] rather than general financial assumptions.
-- Missing-evidence predicate: When a path cannot be verified from [P1]-[P3], record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Verification Gaps.
-- Neutrality predicate: Derive the Verdict strictly from `[T]` traces without referencing external industry benchmarks or subjective "health" adjectives unless grounded in the calculated deltas.
+- Data-binding predicate: All input figures from the raw report are embedded verbatim in [P1]-[P2].
+- Grounding rule: Base every step in [T] traces on explicit data points in [P1]-[P2] rather than general financial intuition.
+- Neutrality predicate: Derive the Conclusion strictly from [T] traces without referencing external business goals or subjective "health" benchmarks.
 
 TRACEABILITY SELF-CHECK (mandatory before finalizing):
-Verify that every claim in the Formal Conclusion cites at least one `[T]` identifier. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P3] or remove the claim so zero orphaned conclusions remain.
+Verify that every claim in your Formal Conclusion cites at least one [T] identifier. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P2] or remove the claim so zero orphaned conclusions remain.
 
 ### OPTIMIZED RESPONSE
 
-### FINANCIAL ANALYTICAL CERTIFICATE
+### FINANCIAL TRACES
 
-#### FINANCIAL TRACES
 **[T1] Revenue Trajectory:**
-1. Reported figures: Q1: $50M, Q2: $47M, Q3: $52M, Q4: $61M.
-2. Derived calculation: 
-   - Q1 to Q2: -$3M (-6.0%)
-   - Q2 to Q3: +$5M (+10.6%)
-   - Q3 to Q4: +$9M (+17.3%)
-3. Period trajectory: Initial contraction in Q2 followed by accelerating growth through Q4.
-4. Statement reconciliation: Verified against [P1].
+1. **Reported figures:** Q1: $50M; Q2: $47M; Q3: $52M; Q4: $61M.
+2. **Derived calculation:** 
+    - QoQ Growth: Q2 (-6%), Q3 (+10.6%), Q4 (+17.3%).
+    - Total Annual Revenue: $210M.
+3. **Trajectory:** Positive acceleration; revenue declined slightly in Q2 but showed increasing growth rates through Q4.
 
 **[T2] Operating Margin Analysis:**
-1. Reported figures: Q1: 78%, Q2: 82%, Q3: 75%, Q4: 71%.
-2. Derived calculation:
-   - Q1: Exp: $39M | Profit: $11M
-   - Q2: Exp: $38.54M | Profit: $8.46M
-   - Q3: Exp: $39M | Profit: $13M
-   - Q4: Exp: $43.31M | Profit: $17.69M
-3. Period trajectory: Margins are expanding (Operating expense ratios are decreasing from 82% peak in Q2 to 71% in Q4).
-4. Statement reconciliation: Verified against [P1] and [P2].
+1. **Reported figures:** Q1: 78%; Q2: 82%; Q3: 75%; Q4: 71%.
+2. **Derived calculation:**
+    - Q1: Exp $39M | Margin 22%
+    - Q2: Exp $38.54M | Margin 18%
+    - Q3: Exp $39M | Margin 25%
+    - Q4: Exp $43.31M | Margin 29%
+3. **Trajectory:** Efficiency expansion; operating margins improved from a trough of 18% (Q2) to a peak of 29% (Q4).
 
-**[T3] Debt & Liquidity Impact:**
-1. Reported figures: $15M new debt incurred in Q3.
-2. Derived calculation: 
-   - Debt relative to Q3 Revenue: 28.8% ($15M / $52M)
-   - Debt relative to Q4 Revenue: 24.6% ($15M / $61M)
-3. Period trajectory: Debt was acquired in Q3; subsequent to this event, operating margins expanded from 75% (Q3) to 71% (Q4) [T2].
-4. Statement reconciliation: Verified against [P3] and [P1].
+**[T3] Debt & Leverage Impact:**
+1. **Reported figures:** Q3: $15M debt issuance.
+2. **Derived calculation:** Debt issued in Q3 ($15M) immediately preceded the highest revenue growth (+17.3%) and highest margin (29%) observed in Q4.
+3. **Structural observation:** Temporal correlation exists between Q3 capital infusion and Q4 performance acceleration.
 
----
+***
 
-#### FORMAL CONCLUSION
-- **Financial posture summary:** The entity experienced a revenue recovery and acceleration from Q2 to Q4 [T1], coinciding with an expansion of operating margins [T2] and a capital injection of $15M in Q3 [T3].
-- **Verified strengths vs. structural divergences:**
-    - *Strengths:* Positive revenue delta between Q2 and Q4 [T1]; consistent reduction in operating expense ratios from Q2 onwards [T2].
-    - *Structural Divergences:* Q2 presented a simultaneous dip in revenue [T1] and a peak in operating expense ratios [T2].
-- **Data completeness gaps:** 
-    - INSUFFICIENT DATA FOR [T3]: Total assets, existing debt levels (prior to Q3), and interest rates.
+### FORMAL CONCLUSION
 
----
+- **Financial Posture Summary:** The entity exhibits an accelerating revenue trajectory [T1] paired with expanding operating margins [T2], with a significant performance spike in Q4 following a Q3 debt event [T3].
+- **Verified Strengths vs. Structural Divergences:**
+    - *Strengths:* Consistent margin expansion from Q2 to Q4 [T2] and strong year-end revenue growth [T1].
+    - *Structural Divergences:* Revenue contraction in Q2 [T1] coincided with the lowest operating margin of the year [T2].
+- **Data Completeness Gaps:** 
+    - INSUFFICIENT DATA FOR [T3]: Interest rates, total assets, and total liabilities (preventing calculation of Debt-to-Equity or Interest Coverage ratios).
 
-#### REMEDIATION / NEXT ACTION
-**Required Documentation to resolve Data Completeness Gaps:**
-1. **Balance Sheet:** Required to determine total leverage (Debt-to-Equity) and current liquidity ratios, as [T3] currently only analyzes new debt relative to revenue.
-2. **Cash Flow Statement:** Required to verify if the $15M debt [T3] was used for operational scaling (contributing to the [T2] margin expansion) or debt servicing.
-3. **Income Statement (Detailed):** Required to separate interest expenses from operating expenses to determine Net Margin.
+***
+
+### REMEDIATION / NEXT ACTION
+
+The following follow-up diligence requests are required to resolve gaps in [T3]:
+1. **Full Balance Sheet:** To determine total leverage and asset base.
+2. **Debt Schedule:** To identify interest rates and repayment terms for the $15M issuance.
+3. **Interest Expense:** To calculate the interest coverage ratio and determine if Q4 margin expansion [T2] is offset by financing costs.
 
 ### EVALUATION: TEST 2
 
-- **Word Count**: Baseline `432` words | Optimized `383` words | Ratio `0.89x`
-- **Eval Tokens**: Baseline `779` | Optimized `788`
+- **Word Count**: Baseline `454` words | Optimized `326` words | Ratio `0.72x`
+- **Eval Tokens**: Baseline `813` | Optimized `653`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 5         | 0     |
-| Completeness  | 4        | 5         | +1    |
-| Structure     | 4        | 5         | +1    |
-| Actionability | 3        | 5         | +2    |
-| Traceability  | 3        | 5         | +2    |
-| TOTAL         | 19/25    | 25/25     | +6    |
-
-**Explanation:**
-The Optimized response transforms a standard summary into a professional audit, replacing subjective interpretations (e.g., "strong positive trajectory") with verified mathematical traces ([T1]-[T3]). It significantly improves actionability by explicitly identifying data gaps (missing Balance Sheet/Cash Flow) rather than making assumptions about debt coverage. The structured "Analytical Certificate" format ensures total traceability, linking every conclusion back to a specific premise or calculation.
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 5 | 0 | Both candidates correctly calculated the revenue totals, expenses, and margins. |
+| Completeness | 5 | 4 | +1 | Response A provides a more holistic analysis of financial health, including total annual profit and a specific "Verdict." Response B is slightly more clinical and omits the total annual profit figure. |
+| Structure | 5 | 4 | +1 | Response A uses a standard financial reporting format (Table $\rightarrow$ Analysis $\rightarrow$ Verdict) which is more intuitive for this task than Response B's "Traces" format. |
+| Actionability | 4 | 5 | -1 | Response B's "Remediation / Next Action" section is superior, providing a specific checklist of required documents (Balance Sheet, Debt Schedule) to resolve the data gaps. |
+| Traceability | 5 | 5 | 0 | Both responses make their mathematical derivations clear and easy to follow. |
+| **TOTAL (/25)** | **24** | **23** | **+1** | **Winner: Baseline** |
 
 ---
 
@@ -333,53 +352,59 @@ The Optimized response transforms a standard summary into a professional audit, 
 
 ### BASELINE RESPONSE
 
-***Disclaimer:** This information is for educational purposes and simulates a clinical reasoning exercise. In a real-world clinical setting, follow established Advanced Cardiovascular Life Support (ACLS) and institutional protocols immediately.*
+***Disclaimer:** This information is for educational purposes and simulates a clinical case study. In a real-world scenario, this is a medical emergency requiring immediate activation of the emergency response system (911 or hospital Rapid Response/Code Team).*
 
 ### Most Likely Diagnosis
-**Inferior Wall ST-Elevation Myocardial Infarction (STEMI)** with signs of **Cardiogenic Shock** (hypotension and tachycardia).
+**Acute Inferior Wall ST-Elevation Myocardial Infarction (STEMI) with Cardiogenic Shock.**
 
 **Clinical Reasoning:**
-*   **Presentation:** Classic ischemic symptoms (chest pain radiating to the left arm, diaphoresis, dyspnea).
-*   **ECG:** ST elevation in leads II, III, and aVF specifically localizes the infarct to the inferior wall of the left ventricle (typically involving the Right Coronary Artery - RCA).
-*   **Hemodynamics:** The blood pressure (90/60) and heart rate (110) indicate hemodynamic instability. In the context of an inferior STEMI, this suggests either extensive myocardial damage, right ventricular (RV) involvement, or cardiogenic shock.
+*   **Presentation:** Classic symptoms of MI (substernal chest pain radiating to the left arm, diaphoresis, dyspnea).
+*   **ECG:** ST elevation in leads **II, III, and aVF** specifically localizes the infarct to the inferior wall of the left ventricle (typically involving the Right Coronary Artery - RCA).
+*   **Hemodynamics:** The patient is hypotensive (BP 90/60) and tachycardic (HR 110), suggesting the MI is causing hemodynamic instability (cardiogenic shock) or involving the Right Ventricle (RV infarct).
 
 ---
 
 ### Immediate Priorities
 
-The primary goal is **reperfusion** and **hemodynamic stabilization**.
+The goal is "Time is Muscle." The priorities are divided into stabilization and definitive reperfusion.
 
 #### 1. Immediate Stabilization (The "ABC"s)
-*   **Oxygenation:** Maintain $\text{SpO}_2 > 90\%$. Since he is at 94%, supplemental oxygen may be titrated based on local guidelines.
-*   **Aspirin:** Administer 162–325 mg of non-enteric coated aspirin (chewed) immediately to inhibit platelet aggregation.
-*   **Avoid Nitrates/Morphine (Crucial):** In inferior STEMI, there is a high probability of **Right Ventricular (RV) Infarction**. Nitrates and morphine reduce preload; in an RV infarct, the heart is preload-dependent. Administering these could cause a catastrophic drop in blood pressure.
+*   **Oxygenation:** Maintain $\text{SpO}_2 > 90\%$. Given he is at 94%, supplemental oxygen may be titrated carefully.
+*   **Antiplatelet Therapy:** Administer **Aspirin** (chewed for rapid absorption) immediately.
+*   **Avoid Nitrates/Morphine:** **CRITICAL.** In inferior STEMIs, there is a high risk of **Right Ventricular (RV) Infarction**. Nitrates and morphine reduce preload; if the patient is RV-dependent, these drugs can cause a catastrophic drop in blood pressure.
+*   **Fluid Resuscitation:** If the patient is hypotensive and RV involvement is suspected (confirmed by right-sided ECG leads V4R), a cautious **bolus of Normal Saline** is indicated to maintain preload and BP.
 
-#### 2. Hemodynamic Support
-*   **Fluid Resuscitation:** If RV infarction is suspected (confirmed via right-sided ECG leads V3R and V4R), cautious IV fluid boluses (normal saline) are indicated to maintain preload and BP.
-*   **Vasopressors/Inotropes:** If fluids fail to stabilize BP, initiate pressors (e.g., norepinephrine) to maintain organ perfusion.
+#### 2. Urgent Diagnostics
+*   **Right-Sided ECG:** Obtain leads **V3R and V4R** to confirm Right Ventricular involvement.
+*   **Cardiac Markers:** While troponin is pending, **do not wait** for the result to initiate reperfusion therapy in the presence of ST elevation.
 
-#### 3. Urgent Reperfusion (Time is Muscle)
-*   **Activate the Cath Lab:** The definitive treatment is **Primary Percutaneous Coronary Intervention (PCI)**. The goal is a "door-to-balloon" time of $\le 90$ minutes.
-*   **Fibrinolytics:** If PCI is not available within 120 minutes, consider fibrinolytic therapy (unless contraindicated).
+#### 3. Definitive Reperfusion (The Gold Standard)
+*   **Primary Percutaneous Coronary Intervention (PCI):** The priority is to activate the Cardiac Catheterization Lab immediately for mechanical opening of the blocked artery.
+    *   *Goal:* Door-to-balloon time $\le 90$ minutes.
+*   **Fibrinolytics:** If PCI is unavailable within 120 minutes, consider thrombolytic therapy (provided there are no contraindications).
 
-#### 4. Adjunctive Pharmacotherapy
-*   **P2Y12 Inhibitor:** Loading dose of Clopidogrel, Ticagrelor, or Prasugrel (usually administered in coordination with the cardiology team).
-*   **Anticoagulation:** Heparin (UFH) or Bivalirudin.
-*   **Beta-Blockers:** **CONTRAINDICATED** in this acute phase due to the patient's hypotension and tachycardia (risk of inducing cardiogenic shock).
-
-#### 5. Monitoring
-*   **Continuous ECG:** Monitor for lethal arrhythmias (e.g., Ventricular Fibrillation or Third-degree Heart Block, which is common in inferior MI).
-*   **Right-Sided ECG:** Perform a right-sided ECG (V4R) immediately to confirm RV involvement.
+#### 4. Ongoing Monitoring
+*   **Continuous ECG Monitoring:** Patients with inferior MIs are prone to bradycardia, heart blocks (AV blocks), and ventricular arrhythmias.
+*   **IV Access:** Establish two large-bore IVs.
 
 ### OPTIMIZED PROMPT
+
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 1 (Max Certificate) | Template 7: Medical / Clinical Reasoning
+[PERSONA]      : Omitted (Accuracy/Critical) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..P4] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~2.2x token budget | Deterministically verifiable
+
+***
 
 Clinical reasoning methodology, as established in evidence-based medicine, requires completing this structured certificate before presenting any differential synthesis.
 
 ### PREMISES
-- [P1] Presenting context: 58-year-old male; sudden onset chest pain radiating to left arm; diaphoresis; shortness of breath.
-- [P2] Objective findings: BP 90/60; HR 110; SpO2 94%; ECG: ST elevation in leads II, III, and aVF.
-- [P3] Active regimen: Troponin pending; no other medications or history provided.
-- [P4] Reference guidelines: Current ACC/AHA and ESC guidelines for Acute Coronary Syndromes (ACS) and hemodynamic instability.
+- [P1] Presenting context: 58-year-old male; sudden onset chest pain radiating to the left arm, diaphoresis, and shortness of breath.
+- [P2] Objective findings: BP 90/60 mmHg, HR 110 bpm, SpO2 94%. ECG shows ST elevation in leads II, III, and aVF.
+- [P3] Active regimen: Troponin pending; no other medications or allergies provided.
+- [P4] Reference guidelines: Current standard of care for Acute Coronary Syndromes (ACS) and hemodynamic instability.
 
 ### DIAGNOSTIC & THERAPEUTIC TRACES
 For each plausible condition in the differential:
@@ -389,106 +414,84 @@ For each plausible condition in the differential:
   3. Discriminating gaps: [missing history, lab, or imaging needed to confirm/exclude]
   4. Acuity & risk: [time-sensitivity and consensus urgency criteria per P4]
 
-Grounding rule: Evaluate multiple competing hypotheses across all data points in [P1]-[P3] before ranking, separating probability from acuity. When a finding is missing from the premises, record `ABSENT FROM [P1-P3]: [finding]`.
+Grounding rule: Evaluate multiple competing hypotheses across all data points in [P1]-[P3] before ranking, separating probability from acuity. Base every trace on explicit content in the premises. When evidence is missing, record `UNABLE TO TRACE: [missing input]`.
 
 ### FORMAL CONCLUSION
 - Evidence-ranked differential: [conditions ordered by supporting T-traces]
 - High-acuity exclusions required: [urgent conditions citing T-identifiers]
 - Critical information gaps: [discriminating workup items from T-traces]
+- Immediate priorities: [urgent interventions derived from T-traces and P4]
 
 ### REMEDIATION / NEXT ACTION
-List the concrete diagnostic workup questions or verification checks needed to resolve the discriminating gaps in [T], and the immediate prioritized clinical interventions grounded in [P2] and [P4].
+List the concrete diagnostic workup questions or verification checks needed to resolve the discriminating gaps in [T].
 
 DISCLAIMER: This output is structured analytical support, not clinical advice. All diagnostic and treatment decisions require a licensed healthcare clinician.
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every step in [T] traces on explicit implementation details or data points in [P1]-[P4] rather than assumptions.
+- Data-binding predicate: All input patient data (age, vitals, ECG) are embedded verbatim in [P1]-[P3] to ensure the prompt is 100% self-contained.
+- Grounding rule: Base every step in [T] traces on explicit implementation details or data points in [P1]-[P4] rather than general medical intuition.
 - Missing-evidence predicate: When a path cannot be verified from [P1]-[P4], record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Critical Information Gaps.
-- Counterexample predicate: When disconfirming evidence appears in [P1]-[P4], record it as a dedicated [T] trace even if the overall verdict is positive.
-- Neutrality predicate: Derive the Conclusion strictly from [T] traces without referencing external case-study goals or evaluation rubrics.
+- Neutrality predicate: Derive the Conclusion strictly from [T] traces.
 
 TRACEABILITY SELF-CHECK (mandatory before finalizing):
-Verify that every condition and workup item in the conclusion cites a specific [T] trace and [P] premise. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P4] or remove the claim so zero orphaned conclusions remain.
+Verify that every condition, priority, and workup item in the Formal Conclusion cites at least one [T] identifier and [P] premise. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P4] or remove the claim.
 
 ### OPTIMIZED RESPONSE
 
 ### DIAGNOSTIC & THERAPEUTIC TRACES
 
-- **[T1] Condition: Inferior ST-Elevation Myocardial Infarction (STEMI)**
-    1. Supporting findings: [P1] sudden onset chest pain radiating to left arm, diaphoresis, SOB; [P2] ST elevation in leads II, III, and aVF.
-    2. Disconfirming findings: None.
-    3. Discriminating gaps: [P3] Troponin pending; ABSENT FROM [P1-P3]: Right ventricular lead (V4R) ECG to assess RV involvement; ABSENT FROM [P1-P3]: Coronary angiography.
-    4. Acuity & risk: Extremely High; per [P4], requires immediate reperfusion therapy (PCI/Fibrinolytics) to prevent myocardial necrosis.
+**[T1] Condition: Inferior ST-Elevation Myocardial Infarction (STEMI)**
+1. **Supporting findings:** [P1] Sudden onset chest pain radiating to left arm, diaphoresis, SOB; [P2] ECG shows ST elevation in leads II, III, and aVF; [P2] Hypotension (BP 90/60) and Tachycardia (HR 110) suggesting cardiogenic shock or right ventricular involvement.
+2. **Disconfirming findings:** None.
+3. **Discriminating gaps:** `UNABLE TO TRACE: [Troponin levels]`; `UNABLE TO TRACE: [Right-sided ECG (V4R) to confirm RV infarct]`.
+4. **Acuity & risk:** Extreme. Time-sensitive reperfusion required per [P4]. High risk of mortality due to hemodynamic instability [P2].
 
-- **[T2] Condition: Right Ventricular Infarction (as extension of Inferior STEMI)**
-    1. Supporting findings: [P1] SOB; [P2] BP 90/60 (hypotension), HR 110 (tachycardia), ST elevation in leads II, III, aVF.
-    2. Disconfirming findings: None.
-    3. Discriminating gaps: ABSENT FROM [P1-P3]: Right-sided ECG (V4R); ABSENT FROM [P1-P3]: Bedside echocardiogram for wall motion abnormalities.
-    4. Acuity & risk: Extremely High; per [P4], necessitates cautious fluid management and avoidance of nitrates due to preload dependence.
+**[T2] Condition: Acute Aortic Dissection (Stanford Type A)**
+1. **Supporting findings:** [P1] Sudden onset chest pain; [P2] Hypotension (BP 90/60).
+2. **Disconfirming findings:** `UNABLE TO TRACE: [Lack of mention of tearing/ripping pain or BP differential between arms]`.
+3. **Discriminating gaps:** `UNABLE TO TRACE: [CT Angiography or TEE]`; `UNABLE TO TRACE: [Blood pressure in opposite arm]`.
+4. **Acuity & risk:** Extreme. Immediate surgical emergency; administration of thrombolytics (standard for STEMI) would be fatal.
 
-- **[T3] Condition: Aortic Dissection (Type A involving Right Coronary Artery)**
-    1. Supporting findings: [P1] Sudden onset chest pain; [P2] BP 90/60 (hypotension/shock), ST elevation in II, III, aVF (if dissection occludes RCA ostium).
-    2. Disconfirming findings: [P1] Radiation to left arm (more typical of ACS than the "tearing" back pain of dissection, though not exclusionary).
-    3. Discriminating gaps: ABSENT FROM [P1-P3]: Blood pressure differential between arms; ABSENT FROM [P1-P3]: CT Angiography (CTA) of the aorta.
-    4. Acuity & risk: Extremely High; per [P4], immediate surgical emergency; anticoagulation for STEMI would be contraindicated.
+**[T3] Condition: Pulmonary Embolism (PE)**
+1. **Supporting findings:** [P1] Sudden onset SOB, chest pain, diaphoresis; [P2] Tachycardia (HR 110), Hypotension (BP 90/60), marginally low SpO2 (94%).
+2. **Disconfirming findings:** [P2] ECG shows ST elevation in II, III, aVF (more specific for myocardial ischemia than the S1Q3T3 or sinus tach typically seen in PE).
+3. **Discriminating gaps:** `UNABLE TO TRACE: [D-dimer or CT Pulmonary Angiogram]`; `UNABLE TO TRACE: [Risk factors like recent surgery or immobility]`.
+4. **Acuity & risk:** High. Hemodynamically unstable PE requires urgent intervention per [P4].
 
-- **[T4] Condition: Pulmonary Embolism (PE)**
-    1. Supporting findings: [P1] Sudden SOB, chest pain; [P2] BP 90/60, HR 110, SpO2 94%.
-    2. Disconfirming findings: [P2] ST elevation in II, III, aVF (more indicative of transmural ischemia than the S1Q3T3 or non-specific changes typical of PE).
-    3. Discriminating gaps: ABSENT FROM [P1-P3]: D-dimer or CT Pulmonary Angiogram (CTPA); ABSENT FROM [P1-P3]: Risk factors (immobilization, surgery).
-    4. Acuity & risk: High; per [P4], hemodynamic instability (BP 90/60) classifies this as "Massive PE."
-
----
+***
 
 ### FORMAL CONCLUSION
+- **Evidence-ranked differential:** 
+    1. Inferior STEMI ([T1], supported by [P1, P2])
+    2. Acute Aortic Dissection ([T2], supported by [P1, P2])
+    3. Pulmonary Embolism ([T3], supported by [P1, P2])
+- **High-acuity exclusions required:** Aortic Dissection [T2] must be excluded before anticoagulation/thrombolysis for STEMI [T1] due to risk of fatal hemorrhage.
+- **Critical information gaps:** Troponin levels [P3/T1], Right-sided ECG [T1], CT Angiography [T2/T3], and bilateral BP measurements [T2].
+- **Immediate priorities:** Stabilize hemodynamics [P2/P4], emergent cardiology consultation for reperfusion [T1/P4], and rapid rule-out of aortic dissection [T2].
 
-- **Evidence-ranked differential:**
-    1. Inferior STEMI [T1] (Strongest alignment with [P1], [P2])
-    2. RV Infarction [T2] (Strong alignment with [P2] hypotension/tachycardia)
-    3. Aortic Dissection [T3] (Plausible given [P1] sudden onset and [P2] shock)
-    4. Pulmonary Embolism [T4] (Aligned with [P1] SOB and [P2] instability)
-
-- **High-acuity exclusions required:**
-    - Aortic Dissection [T3] (Must exclude before thrombolytics/antiplatelets)
-    - Right Ventricular Infarction [T2] (Must identify to manage fluids/nitrate contraindication)
-
-- **Critical information gaps:**
-    - Right-sided ECG (V4R) [T1, T2]
-    - CTA Chest/Aorta [T3, T4]
-    - Troponin results [P3, T1]
-    - Physical exam for pulse deficits/blood pressure asymmetry [T3]
-
----
+***
 
 ### REMEDIATION / NEXT ACTION
+1. **Verification Check:** Obtain bilateral blood pressure readings to screen for Aortic Dissection [T2].
+2. **Diagnostic Workup:** Perform right-sided ECG (V4R) to evaluate for Right Ventricular Infarction, which would contraindicate nitrates in the setting of hypotension [T1, P2].
+3. **Verification Check:** Review Troponin results immediately upon availability [P3].
+4. **Diagnostic Workup:** Urgent CT Angiography if Aortic Dissection or PE remains a high-probability differential [T2, T3].
 
-**Diagnostic Workup (Resolving Gaps):**
-1. **Immediate ECG extension:** Obtain Right-sided leads (V4R) to confirm RV involvement [T1, T2].
-2. **Physical Exam:** Check bilateral radial pulses and BP in both arms to screen for Aortic Dissection [T3].
-3. **Imaging:** Urgent CTA of Chest/Aorta if dissection is suspected or if STEMI is atypical [T3, T4].
-4. **Laboratory:** Expedite pending Troponin [P3].
-
-**Immediate Clinical Interventions (Grounded in [P2] & [P4]):**
-1. **Hemodynamic Support:** Given BP 90/60 and HR 110 [P2], initiate cautious fluid boluses (especially if RV infarct [T2] is suspected) to maintain preload.
-2. **Oxygenation:** Maintain SpO2 > 94% [P2].
-3. **Reperfusion Pathway:** Activate Cardiac Catheterization Lab for primary PCI given ST elevation in II, III, aVF [P2, P4], provided Aortic Dissection [T3] is reasonably excluded.
-4. **Medication Caution:** Withhold Nitrates/Beta-blockers due to hypotension [P2] and potential RV involvement [T2].
+**DISCLAIMER:** This output is structured analytical support, not clinical advice. All diagnostic and treatment decisions require a licensed healthcare clinician.
 
 ### EVALUATION: TEST 3
 
-- **Word Count**: Baseline `397` words | Optimized `569` words | Ratio `1.43x`
-- **Eval Tokens**: Baseline `740` | Optimized `1255`
+- **Word Count**: Baseline `371` words | Optimized `433` words | Ratio `1.17x`
+- **Eval Tokens**: Baseline `649` | Optimized `911`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 5         | 0     |
-| Completeness  | 4        | 5         | +1    |
-| Structure     | 4        | 5         | +1    |
-| Actionability | 5        | 5         | 0     |
-| Traceability  | 3        | 5         | +2    |
-| TOTAL         | 21/25    | 25/25     | +4    |
-
-The Optimized response significantly improved the rigor of the clinical reasoning process by implementing a formal differential diagnosis (including high-acuity "can't miss" diagnoses like Aortic Dissection) which the Baseline ignored. The structure shifted from a standard medical note to a traceable analytical certificate, ensuring every clinical decision was explicitly linked to a premise or evidence trace. Both responses provided accurate and actionable immediate interventions, but the Optimized version offered a more comprehensive diagnostic framework.
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 4 | -1 | A correctly identifies the STEMI and the critical contraindication of nitrates/morphine in the setting of inferior MI/RV infarct. B spends significant time on Aortic Dissection/PE; while theoretically possible, it is less likely given the specific ECG findings (II, III, aVF ST elevation). |
+| Completeness | 5 | 4 | -1 | A provides a comprehensive immediate management plan (Aspirin, Fluid bolus, PCI goals). B focuses more on the differential diagnosis process and lacks specific immediate therapeutic actions (like antiplatelets). |
+| Structure | 5 | 4 | -1 | A uses a clear, clinical priority-based structure. B uses a highly stylized, "trace-based" format that is more cumbersome to read in an emergency context. |
+| Actionability | 5 | 3 | -2 | A gives concrete, immediate steps (Chewed Aspirin, PCI door-to-balloon time, Fluid bolus). B focuses on "Verification Checks" and "Workups," which are less actionable for immediate stabilization. |
+| Traceability | 4 | 5 | +1 | B's response is explicitly designed for traceability, mapping every finding to a specific condition or gap. |
+| **TOTAL (/25)** | **24** | **20** | **-4** | **Winner: Baseline** |
 
 ---
 
@@ -496,134 +499,181 @@ The Optimized response significantly improved the rigor of the clinical reasonin
 
 ### BASELINE RESPONSE
 
-***Disclaimer:** I am an AI, not an attorney. Employment laws vary significantly by jurisdiction (state/country). This analysis is for informational purposes and should not be construed as legal advice. The employee should consult with a licensed employment attorney in their specific region.*
+*Disclaimer: I am an AI, not an attorney. Non-compete laws vary drastically by jurisdiction (state or country). This analysis is based on general common law principles and current legal trends in the United States.*
 
-To determine if a non-compete agreement is enforceable, courts generally apply a **"Reasonableness Test."** For a non-compete to be valid, it must typically protect a legitimate business interest (such as trade secrets or specialized client lists) and be reasonable in scope, geography, and duration.
+In most jurisdictions, courts view non-compete agreements as "restraints of trade" and generally disfavor them. To be enforceable, a non-compete must be **reasonable** in scope, geography, and duration, and it must protect a **legitimate business interest**.
 
-Based on the facts provided, this specific agreement is highly susceptible to being overturned or narrowed due to several "red flags."
+Based on the facts provided, this agreement is highly susceptible to being declared unenforceable for several reasons:
 
-### 1. Scope of Activity: "Any Related Industry"
-**Analysis: Likely Overbroad**
-Courts generally dislike "blanket" prohibitions. Phrases like "any related industry" are often considered **overly broad** because they do not specify a particular role or function.
-*   **The Issue:** If the employee was a salesperson, prohibiting them from working as a janitor or a warehouse manager at a "related" company is seen as an unreasonable restraint of trade.
-*   **Enforceability:** To be enforceable, the restriction usually needs to be narrowly tailored to the specific work the employee performed and the specific competitive threat they pose.
+### 1. Overly Broad Scope ("Any Related Industry")
+Courts typically reject phrases like "any related industry" because they are too vague. 
+*   **The Flaw:** A non-compete must be specific. For example, instead of "related industry," it should specify "the manufacture of medical-grade silicone valves." 
+*   **Enforceability Issue:** By banning the employee from an entire *industry* rather than specific *competitive roles*, the agreement likely prevents the employee from earning a living, which courts rarely allow.
 
-### 2. Geographic Radius: 200 Miles
-**Analysis: Questionable (Depends on Market)**
-The reasonableness of a radius depends on where the company actually does business.
-*   **The Issue:** If the company only has clients in one city, a 200-mile radius is likely excessive. However, if the company has a documented client base spanning three states, 200 miles might be seen as reasonable.
-*   **The Gap:** Since the employee is 150 miles away, they are within the zone, but if the employer cannot prove they have an active business interest *at that specific 150-mile mark*, the court may find the radius punitive rather than protective.
+### 2. Excessive Duration (5 Years)
+A five-year restriction is exceptionally long for most standard employment roles.
+*   **The Standard:** In most industries, 6 months to 2 years is considered the upper limit of reasonableness. 
+*   **The Flaw:** The goal of a non-compete is to protect trade secrets or client relationships. Most trade secrets become obsolete or "stale" well before five years have passed. A five-year ban is often seen as punitive rather than protective.
 
-### 3. Duration: 5 Years
-**Analysis: Highly Likely to be Unenforceable**
-This is the weakest part of the employer's agreement. In the vast majority of U.S. jurisdictions, a 5-year non-compete is considered **excessive**.
-*   **The Standard:** Most courts find 6 months to 2 years to be reasonable. Five years is an eternity in most industries; by year five, the "trade secrets" or "client relationships" the employer is trying to protect are usually obsolete.
-*   **The Impact:** A court may view a 5-year term as an attempt to prevent the employee from earning a living rather than a legitimate effort to protect business interests.
+### 3. Excessive Geographic Radius (200 Miles)
+Whether 200 miles is "reasonable" depends on the nature of the business.
+*   **Local Business:** If the business is a local clinic or a brick-and-mortar store, 200 miles is vastly overbroad.
+*   **Global/Digital Business:** If the business operates via the internet, a geographic radius is often considered irrelevant or arbitrary.
+*   **The Flaw:** If the employer cannot prove that the employee could realistically damage their business specifically within that 200-mile zone, the court may strike the clause.
 
-### 4. Jurisdictional Variables (The "Deal Breakers")
-The enforceability changes drastically depending on where the employee is located:
-*   **California, Oklahoma, North Dakota:** Non-competes are generally **void and unenforceable** by law, regardless of how "reasonable" they are.
-*   **FTC Ruling (USA):** The Federal Trade Commission (FTC) recently issued a final rule attempting to ban most non-compete agreements nationwide. While this is facing legal challenges in court, it signals a strong federal shift against these agreements.
-*   **"Blue Penciling":** Some states allow a judge to "blue pencil" (edit) the contract. A judge might say, "5 years is crazy, but I'll change it to 1 year and make it enforceable." Other states follow the "Red Pencil" rule: if one part is unreasonable, the **entire agreement** is thrown out.
+### 4. Legitimate Business Interest
+The employer cannot sue simply because they don't want the employee working for a competitor. They must prove the employee possesses:
+*   **Trade Secrets:** Proprietary software, formulas, or blueprints.
+*   **Confidential Information:** Specialized pricing lists or strategic plans.
+*   **Client Relationships:** Deeply ingrained ties with clients that the employee could "poach."
+If the employee was a mid-to-low level staffer without access to this data, the agreement is likely unenforceable regardless of the wording.
 
-### Summary Table
+### Potential Outcomes in Court
 
-| Element | Term | Enforceability Likelihood | Reason |
-| :--- | :--- | :--- | :--- |
-| **Scope** | "Any related industry" | **Low** | Too vague; restricts too many types of employment. |
-| **Geography**| 200 Miles | **Moderate** | Depends on the actual reach of the business. |
-| **Duration** | 5 Years | **Very Low** | Far exceeds standard industry/legal norms. |
+Depending on the state/region, the court will take one of three paths:
 
-### Conclusion
-The former employer is threatening to sue, which is a common intimidation tactic. However, the combination of an **overly broad scope** and an **excessive duration (5 years)** makes this agreement look more like a "penalty" than a "protection." 
+1.  **The "Red Pencil" Rule (Strict):** The court finds one part of the agreement unreasonable (e.g., the 5-year term) and strikes the *entire* agreement down. The employee is free to work.
+2.  **The "Blue Pencil" Rule (Flexible):** The court "edits" the agreement. They might change "5 years" to "1 year" and "any related industry" to "direct competitors," making the agreement enforceable in a modified form.
+3.  **Automatic Invalidity:** In some jurisdictions (e.g., California, Minnesota, and recently via FTC proposed rules), non-competes are largely illegal or void as a matter of public policy.
 
-**Suggested Next Steps for the Employee:**
-1.  **Gather Documents:** Save a copy of the signed agreement and the offer letter from the new job.
-2.  **Avoid Communication:** Do not admit to "violating" the agreement in writing to the former employer.
-3.  **Consult Counsel:** An attorney can send a "demand letter" to the former employer explaining why the contract is unenforceable, which often stops the threat of a lawsuit immediately.
+### Summary Analysis
+This agreement is **weak**. The combination of an extreme duration (5 years) and a vague scope ("related industry") makes it look more like an attempt to stifle competition than a legitimate effort to protect trade secrets. 
+
+**The employee should immediately consult an employment attorney in their specific jurisdiction to send a rebuttal letter to the former employer.**
 
 ### OPTIMIZED PROMPT
+
+```text
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 1 (Max Certificate) | Template 8: Legal Analysis
+[PERSONA]      : Omitted (Accuracy) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..P3] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~2.2x token budget | Deterministically verifiable
+```
 
 Legal analytical methodology requires completing this structured certificate before presenting any legal assessment.
 
 ### PREMISES
-- [P1] Stated facts & text: [Detail the non-compete clause language, the employee's tenure/role, the geographic distance (150 miles), the timeline (8 months), and the nature of the new employer]
-- [P2] Governing law: [Identify the specific jurisdiction's statutes, common law, or regulatory guidelines regarding non-compete enforceability, specifically concerning duration, geography, and scope of "related industry"]
-- [P3] Issues presented: [1. Whether the 5-year duration is reasonable; 2. Whether the 200-mile radius is reasonable; 3. Whether "any related industry" is overly broad; 4. Whether the total restriction is necessary to protect a legitimate business interest]
+- [P1] Stated Facts:
+    - Agreement Type: Non-compete agreement.
+    - Geographic Restriction: 200-mile radius from the company.
+    - Temporal Restriction: 5 years post-employment.
+    - Scope of Restriction: "any related industry".
+    - Employee Action: Took a job at a competitor 150 miles away, 8 months after leaving.
+- [P2] Governing Law: The analysis must be conducted based on general principles of contract law regarding "reasonableness" (balancing the employer's legitimate business interests against the employee's right to earn a living).
+- [P3] Issues Presented:
+    - [I1] Whether the geographic scope (200 miles) is reasonable.
+    - [I2] Whether the temporal duration (5 years) is reasonable.
+    - [I3] Whether the definition of "any related industry" is overly broad or vague.
+    - [I4] Whether the employee's current employment constitutes a breach based on the provided facts.
 
 ### LEGAL TRACES
-For each issue or provision category in [P3]:
-- [T1] Issue [name]:
-  1. Governing rule or clause: [exact section number and quoted text from P1/P2]
-  2. Fact application: [how the text or rule applies to the facts in P1]
-  3. Counter-interpretation: [the strongest competing reading of the text or a potential defense against enforceability]
-  4. Structural symmetry: [whether the restrictions are proportional to the protection sought or asymmetric/punitive]
+For each issue presented in [P3]:
+- [T1] Issue [ID]:
+    1. Governing rule or clause: [Cite the specific restriction from P1 and the corresponding reasonableness standard from P2]
+    2. Fact application: [How the specific number/phrase in P1 applies to the rule in P2]
+    3. Counter-interpretation: [The strongest competing reading of the text or argument for the opposing party]
+    4. Structural symmetry: [Whether the restriction is proportional to a legitimate business interest]
 
-Grounding rule: Quote exact section numbers and clause language from [P1]/[P2]. When a standard provision or jurisdictional rule is absent from [P1], record `NOT ADDRESSED IN [P1]`.
+Grounding rule: Quote exact phrases and numbers from [P1]. When a standard provision or specific jurisdiction is absent from [P1], record `NOT ADDRESSED IN [P1]`.
 
 ### FORMAL CONCLUSION
-- Issue-by-issue synthesis: [objective assessment of enforceability citing T-identifiers]
-- Structural asymmetries & exposure points: [cite specific T-traces regarding likely points of failure for the agreement]
-- Unresolved interpretive questions: [areas requiring extrinsic facts, such as the employee's actual access to trade secrets or specific industry definitions]
+- Issue-by-issue synthesis: [Objective assessment of enforceability for I1-I4, citing T-identifiers]
+- Structural asymmetries & exposure points: [Identify which specific restrictions are most likely to be struck down, citing T-traces]
+- Unresolved interpretive questions: [Areas requiring extrinsic facts, such as the specific nature of the "related industry" or the employee's role]
 
 ### REMEDIATION / NEXT ACTION
-Provide copy-pasteable redline clause revisions to resolve identified asymmetries or ambiguities to make the agreement more enforceable, or provide a specific list of discovery questions needed to resolve interpretive questions.
-
+Provide copy-pasteable redline clause revisions to the non-compete agreement to resolve identified asymmetries or ambiguities and bring the contract into a likely enforceable range.
 DISCLAIMER: This output is analytical support, not legal advice. Consult qualified legal counsel for binding determinations.
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every step in [T] traces on explicit implementation details, data points, or text in [P1]-[P3] rather than symbol names or titles.
-- Missing-evidence predicate: When a path cannot be verified from [P1]-[P3], record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Verification Gaps.
-- Counterexample predicate: When disconfirming evidence or edge-case failures appear in [P1]-[P3], record them as a dedicated `[T]` trace even if the overall verdict is positive.
-- Neutrality predicate: Derive the Verdict strictly from `[T]` traces without referencing downstream business goals, timelines, or evaluation rubrics.
+- Data-binding predicate: All facts from the raw prompt are embedded verbatim in [P1].
+- Grounding rule: Base every step in [T] traces on explicit implementation details in [P1]-[P3].
+- Missing-evidence predicate: When a path cannot be verified from [P1]-[P3], record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Verification Gaps in the conclusion.
+- Neutrality predicate: Derive the Verdict strictly from `[T]` traces without referencing external business goals or timelines.
 
 TRACEABILITY SELF-CHECK (mandatory before finalizing):
-Verify that every claim in your Formal Conclusion cites at least one `[T]` or `[V]` identifier from above. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P3] or remove the claim so zero orphaned conclusions remain.
+Verify that every claim in the Formal Conclusion cites at least one `[T]` identifier from above. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P3] or remove the claim so zero orphaned conclusions remain.
 
 ### OPTIMIZED RESPONSE
 
-To proceed with this legal analytical methodology, **you must provide the specific content for the [PREMISES] section.** 
+### LEGAL TRACES
 
-The structured certificate cannot be completed without the primary source text (the non-compete clause), the specific jurisdiction (governing law), and the factual context of the employment relationship.
+- **[T1] Issue [I1]: Geographic Scope**
+    1. Governing rule or clause: Restriction of "200-mile radius from the company" [P1] measured against the "reasonableness" standard [P2].
+    2. Fact application: The restriction covers a 200-mile radius; the employee is working "150 miles away" [P1], placing them within the restricted zone.
+    3. Counter-interpretation: If the company's actual client base or market presence is localized (e.g., only within 20 miles), a 200-mile radius is an arbitrary overreach not tied to a legitimate business interest.
+    4. Structural symmetry: Potentially asymmetric; without evidence of a 200-mile market reach, this restriction may exceed the employer's legitimate interest.
 
-**Please provide the following inputs to initiate the trace:**
+- **[T2] Issue [I2]: Temporal Duration**
+    1. Governing rule or clause: Restriction of "5 years post-employment" [P1] measured against the "reasonableness" standard [P2].
+    2. Fact application: The employee is employed "8 months after leaving" [P1], which is well within the 5-year window.
+    3. Counter-interpretation: In most industries, proprietary information or client relationships lose their competitive value long before 5 years. A 5-year ban is often viewed as a penalty rather than a protection.
+    4. Structural symmetry: Highly asymmetric; 5 years is exceptionally long for a standard non-compete and likely infringes on the "employee's right to earn a living" [P2].
 
-1. **[P1] Stated Facts & Text:** 
-   - The exact wording of the non-compete clause.
-   - The employee's job title, seniority, and tenure.
-   - The specific nature of the new employer (competitor, adjacent industry, or unrelated).
-   - Any specific trade secrets or client lists the employee had access to.
-2. **[P2] Governing Law:** 
-   - The State or Country whose law governs the contract (e.g., Delaware, New York, California, Ontario).
-3. **[P3] Issues Presented:** 
-   - (You may keep the defaults provided in your prompt or specify additional concerns, such as "consideration/payment for the covenant").
+- **[T3] Issue [I3]: Scope of Restriction**
+    1. Governing rule or clause: Restriction on "any related industry" [P1] measured against the "reasonableness" standard [P2].
+    2. Fact application: The phrase "any related industry" [P1] provides no specific definition of what constitutes "related."
+    3. Counter-interpretation: The employer may argue that any entity competing for the same client pool is "related," regardless of the specific product.
+    4. Structural symmetry: Asymmetric; the phrase is overly broad and vague, potentially preventing the employee from working in roles that do not actually compete with the employer's specific interests.
 
----
+- **[T4] Issue [I4]: Breach Analysis**
+    1. Governing rule or clause: Comparison of Employee Action [P1] against the combined restrictions of [I1, I2, I3].
+    2. Fact application: The employee is within the radius (150 < 200 miles), within the timeframe (8 months < 5 years), and at a "competitor" [P1].
+    3. Counter-interpretation: A breach only occurs if the underlying restrictions are enforceable. If the duration [T2] or scope [T3] are deemed unreasonable, the clause may be void or voidable.
+    4. Structural symmetry: Proportional only if the restrictions in [T1], [T2], and [T3] are first validated as reasonable.
 
-**Once you provide this data, I will execute the analysis as follows:**
+***
 
-*   **[T] Traces:** I will map the exact clause language against the jurisdictional rules. If the governing law is not provided, I will record `UNABLE TO TRACE: [Governing Jurisdiction]`.
-*   **Formal Conclusion:** Every point will be anchored to a `[T]` identifier.
-*   **Remediation:** I will provide the specific redlines required to move the clause from "punitive/overbroad" to "protective/reasonable."
+### FORMAL CONCLUSION
 
-**I am standing by for the [PREMISES] data.**
+- **Issue-by-issue synthesis:**
+    - **[I1]:** The employee is physically within the restricted zone [T1], but the 200-mile radius may be legally unreasonable depending on actual market reach.
+    - **[I2]:** The 5-year duration is likely unenforceable as it significantly outweighs standard reasonableness thresholds [T2].
+    - **[I3]:** The term "any related industry" is overly broad and likely void for vagueness [T3].
+    - **[I4]:** While the employee's actions technically align with the contract's prohibitions [T4], the likelihood of a successful breach claim is low due to the unreasonable nature of the restrictions in [T2] and [T3].
+
+- **Structural asymmetries & exposure points:**
+    - The primary exposure point is the **Temporal Restriction (5 years)** [T2], which is the most likely element to be struck down.
+    - The **Scope of Restriction ("any related industry")** [T3] is the second most significant vulnerability due to lack of specificity.
+
+- **Unresolved interpretive questions:**
+    - **UNABLE TO TRACE:** The specific nature of the "related industry" [P1] is not defined.
+    - **UNABLE TO TRACE:** The specific role/seniority of the employee (which impacts the reasonableness of the restrictions).
+    - **UNABLE TO TRACE:** The actual geographic footprint of the employer's business operations.
+
+***
+
+### REMEDIATION / NEXT ACTION
+
+To bring the agreement into a likely enforceable range, apply the following redlines:
+
+**1. Temporal Revision:**
+~~5 years post-employment~~ $\rightarrow$ **1 year post-employment**
+
+**2. Geographic Revision:**
+~~200-mile radius from the company~~ $\rightarrow$ **[Insert actual market radius, e.g., 25-50] mile radius from the company's primary place of business**
+
+**3. Scope Revision:**
+~~"any related industry"~~ $\rightarrow$ **"any business entity that directly competes with the [Insert Specific Department/Product Line] of the Company"**
+
+***
+**DISCLAIMER:** This output is analytical support, not legal advice. Consult qualified legal counsel for binding determinations.
 
 ### EVALUATION: TEST 4
 
-- **Word Count**: Baseline `714` words | Optimized `224` words | Ratio `0.31x`
-- **Eval Tokens**: Baseline `1038` | Optimized `367`
+- **Word Count**: Baseline `567` words | Optimized `677` words | Ratio `1.19x`
+- **Eval Tokens**: Baseline `844` | Optimized `1168`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 5         | 0     |
-| Completeness  | 4        | 1         | -3    |
-| Structure     | 4        | 5         | +1    |
-| Actionability | 4        | 1         | -3    |
-| Traceability  | 3        | 5         | +2    |
-| TOTAL         | 20/25    | 17/25     | -3    |
-
-**Explanation:**
-The Baseline response provided a comprehensive, helpful, and immediately actionable analysis based on the facts provided in the prompt. The Optimized response failed the primary task of *analyzing the enforceability* by treating the prompt as a system instruction for a future workflow rather than a request for an immediate answer. While the Optimized response's internal structure for traceability is superior, it is functionally useless as a response to the user's specific legal scenario.
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 4 | 5 | +1 | Response B correctly identifies the "Legitimate Business Interest" requirement, which is the cornerstone of non-compete law. Response A focuses more on the text of the agreement than the legal necessity of a protectable interest. |
+| Completeness | 4 | 5 | +1 | Response B covers critical legal doctrines that Response A misses, specifically the "Red Pencil" vs. "Blue Pencil" rules and the current trend of total invalidity in certain jurisdictions (e.g., CA). |
+| Structure | 4 | 5 | +1 | Response B uses a logical legal flow: General Principles $\rightarrow$ Analysis of Specific Clauses $\rightarrow$ Legal Doctrines $\rightarrow$ Potential Outcomes. Response A uses a rigid "trace" format that feels forced for a legal memo. |
+| Actionability | 4 | 5 | +1 | Response B provides clear legal outcomes (what a court might do) and the immediate necessary action (consult an attorney for a rebuttal letter). Response A's "Remediation" is written for the employer, not the employee in the scenario. |
+| Traceability | 5 | 3 | -2 | Response A is exceptionally rigorous in tracing every point back to the provided facts using brackets [P1], though this comes at the cost of natural readability. Response B is standard prose. |
+| **TOTAL (/25)** | **21** | **23** | **+2** | **Winner: Optimized** |
 
 ---
 
@@ -631,136 +681,183 @@ The Baseline response provided a comprehensive, helpful, and immediately actiona
 
 ### BASELINE RESPONSE
 
-Research on remote work and productivity is complex because "productivity" is measured differently across industries. Depending on the study, the results often contradict one another because they focus on different metrics: **output volume** (how much is done) versus **innovation/collaboration** (how well things are created).
+Research into remote work productivity is complex because "productivity" is measured differently across studies;some focus on **output** (tasks completed), some on **performance** (quality of work), and others on **subjective perception** (how employees feel they are working).
 
-Here is a balanced overview of the current research.
+The general consensus among economists and organizational psychologists is that remote work is neither a universal catalyst nor a universal detriment; rather, it involves a **trade-off between individual efficiency and collective innovation.**
+
+Here is a balanced overview of the research.
 
 ---
 
-### 1. Arguments that Remote Work Improves Productivity
-Research supporting remote work typically focuses on individual task efficiency and employee well-being.
+### 1. The Case for Improved Productivity
+Many studies, particularly those conducted during and immediately after the pandemic, highlight several drivers of increased productivity:
 
-*   **Elimination of Commute and Office Distractions:** Many studies show that workers reclaim hours previously spent commuting, some of which is reinvested into work. Furthermore, "deep work" (tasks requiring intense concentration) is often performed more efficiently at home, away from the "drive-by" interruptions common in open-office layouts.
-*   **Increased Flexibility and Autonomy:** Research suggests that when employees have autonomy over their environment and schedule, job satisfaction increases. This often leads to higher "discretionary effort"—where employees work harder or longer because they feel trusted and balanced.
-*   **Access to a Global Talent Pool:** From a firm-level productivity standpoint, remote work allows companies to hire the best talent regardless of geography, rather than the best talent within a 30-mile radius.
-*   **The "Quiet" Gain:** Some longitudinal studies found that during the pandemic, total hours worked actually increased, suggesting that people traded their commute for extra productivity.
+*   **Elimination of the Commute:** The most direct gain is time. Research shows that employees often reinvest a portion of their former commute time back into their work.
+*   **Reduced Office Distractions:** For "deep work" (coding, writing, analysis), remote work is often superior. Employees report fewer spontaneous interruptions from colleagues and a quieter environment, allowing for longer periods of "flow."
+*   **Increased Autonomy and Flexibility:** The "Job Characteristics Model" suggests that autonomy increases motivation. When employees control their environment and schedule, they often report higher job satisfaction, which correlates with higher effort and output.
+*   **Expanded Talent Pool:** From a firm-wide perspective, productivity improves when companies can hire the best talent regardless of geography, rather than the best talent within a 30-mile radius.
 
-### 2. Arguments that Remote Work Hurts Productivity
-Research suggesting a decline typically focuses on the "social capital" of a company and long-term growth.
+### 2. The Case for Decreased Productivity
+Conversely, other research;including some recent studies from large tech firms and academic institutions;points to significant drawbacks:
 
-*   **The "Collaboration Tax":** While individual tasks may get done faster, *collaborative* tasks often slow down. Research indicates that asynchronous communication (email, Slack) is slower and more prone to misunderstanding than a quick face-to-face conversation.
-*   **The Erosion of Social Capital:** "Watercooler moments"—unplanned interactions—are where serendipitous innovation often happens. Studies suggest that remote work weakens the "weak ties" (acquaintances in other departments), which limits cross-pollination of ideas and slows down problem-solving.
-*   **Onboarding and Mentorship Gap:** There is strong evidence that junior employees suffer in fully remote environments. They learn through "osmosis"—observing how senior leaders handle calls or solve problems. Remote work creates a barrier to this passive learning, potentially hurting long-term organizational productivity.
-*   **The "Presence" Bias:** Some research notes a productivity paradox where remote workers work *more* hours to prove they are actually working (digital presenteeism), leading to burnout, which eventually crashes productivity.
+*   **The "Collaboration Tax":** While individual tasks may be completed faster, *collaborative* productivity often suffers. Spontaneous "watercooler" conversations;which often solve small problems quickly;are replaced by scheduled Zoom calls, which can lead to "meeting fatigue."
+*   **Erosion of Social Capital:** Research indicates that long-term remote work can weaken professional bonds and trust. This "social erosion" can slow down the onboarding of new employees and decrease the efficiency of cross-functional teamwork.
+*   **The "Innovation Gap":** Some studies suggest that while *execution* (doing the work) remains steady, *innovation* (creating new ideas) drops. Serendipitous interactions are key to creative breakthroughs, and these are significantly rarer in virtual environments.
+*   **Blurring of Work-Life Boundaries:** While flexibility is a plus, "work-life bleed" can lead to burnout. When the home becomes the office, employees may struggle to "switch off," leading to a short-term spike in hours worked but a long-term decline in sustainable productivity.
 
-### 3. The Nuanced Middle Ground: The "Hybrid" Consensus
-Most recent research points toward a **U-shaped curve**, where productivity peaks in a hybrid model rather than at the extremes (100% office or 100% remote).
+### 3. Critical Nuances (The "It Depends" Factors)
+The research suggests that the effect of remote work is heavily dependent on three variables:
 
-*   **Task-Based Location:** Productivity is highest when the *task* dictates the *location*. Analytical, solitary work is more productive at home; brainstorming, conflict resolution, and strategic planning are more productive in person.
-*   **The Trust Factor:** Research consistently shows that productivity in remote settings is heavily dependent on **management style**. Managers who track "inputs" (hours logged, green Slack dots) see lower productivity than those who track "outputs" (deliverables and goals).
+*   **The Nature of the Task:** 
+    *   *Independent/Analytical tasks* $\rightarrow$ Productivity usually **increases**.
+    *   *Creative/Collaborative/Complex tasks* $\rightarrow$ Productivity often **decreases**.
+*   **The Level of Experience:**
+    *   *Senior employees* $\rightarrow$ Tend to thrive remotely because they already have established networks and deep institutional knowledge.
+    *   *Junior employees* $\rightarrow$ Often struggle; they lose the "passive learning" that comes from overhearing senior colleagues solve problems.
+*   **The Management Style:**
+    *   Companies that shift from "input-based management" (watching the clock) to "output-based management" (tracking results) see higher remote productivity.
 
-### Summary Table
+---
 
-| Metric | Remote Work Impact | Why? |
+### Summary Table: The Trade-Off
+
+| Feature | Remote Work Impact | Effect on Productivity |
 | :--- | :--- | :--- |
-| **Individual Output** | $\uparrow$ Generally Higher | Fewer interruptions; customized environment. |
-| **Innovation/Creativity** | $\downarrow$ Generally Lower | Less spontaneous interaction and "serendipity." |
-| **Employee Retention** | $\uparrow$ Generally Higher | Better work-life balance and autonomy. |
-| **Junior Development** | $\downarrow$ Generally Lower | Lack of passive learning and mentorship. |
-| **Communication** | $\leftrightarrow$ Mixed | Faster for structured tasks; slower for complex nuances. |
+| **Focus/Deep Work** | $\uparrow$ Fewer interruptions | **Positive** |
+| **Commute/Stress** | $\downarrow$ Less travel stress | **Positive** |
+| **Communication** | $\downarrow$ Loss of non-verbal cues | **Negative** |
+| **Mentorship** | $\downarrow$ Reduced organic learning | **Negative** |
+| **Innovation** | $\downarrow$ Fewer serendipitous ideas | **Negative** |
+
+### Final Verdict
+The prevailing research suggests a **"Hybrid Sweet Spot."** Most data points toward a model (typically 2-3 days in office) that captures the deep-work benefits of remote work while preserving the social capital and innovative sparks of in-person interaction.
 
 ### OPTIMIZED PROMPT
 
-You are a research analyst. The peer-reviewed systematic synthesis methodology requires completing the following structured certificate before presenting any cross-source findings.
+```text
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 1 (Max Certificate) | Template 3: Research Synthesis
+[PERSONA]      : Minimal <=5w (Mixed) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..Pn] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~2.2x token budget | Deterministically verifiable
+```
+
+You are a research analyst. Peer-reviewed systematic synthesis methodology requires completing the following structured certificate before presenting any cross-source findings.
 
 ### PREMISES
-- [P1] Sources examined: [List each paper/source with author, year, and identifier]
-- [P2] Research question: Does remote work improve or degrade employee productivity?
-- [P3] Methodological scope: [Specify if analysis is limited to specific industries, sample sizes, or timeframe]
-- [P4] Corpus limitations: [List any known gaps in the provided sources or general lack of consensus in the literature]
+- [P1] Research Question: Does remote work improve or hurt productivity?
+- [P2] Analysis Scope: A balanced overview encompassing both positive and negative productivity impacts, including conflicting data points.
+- [P3] Methodological Scope: Synthesis of available empirical evidence, including metrics, sample sizes, and reported deltas.
+- [P4] Corpus: All internal knowledge base sources and academic research pertaining to remote work and productivity.
 
 ### EVIDENCE TRACES
-For each major claim regarding productivity (positive, negative, or neutral):
-- [T1] Claim or Source [identifier]:
-  1. Primary evidence: [Which P1 source(s) report this, with exact metrics/deltas]
-  2. Study design: [Sample size, industry, and evaluation protocol used]
-  3. Effect magnitude: [Reported productivity change, confidence intervals, or replication status]
-  4. Contradicting evidence: [Sources in P1 that diverge, and on what specific variable (e.g., tenure, role, or environment)]
-  5. Reconciliation: [Mechanistic explanation for divergence, or flag as UNRESOLVED]
+For each claim regarding productivity impact, complete a full trace:
+- [T1] Claim [Impact Type: Positive/Negative/Neutral]:
+  1. Primary evidence: [Which specific research/source reports this, including exact metrics or percentage changes]
+  2. Study design: [Sample size, industry, and evaluation protocol used to measure "productivity"]
+  3. Effect magnitude: [Reported deltas, confidence intervals, or replication status]
+  4. Contradicting evidence: [Sources in the corpus that diverge on this specific variable]
+  5. Reconciliation: [Mechanistic explanation for the divergence (e.g., industry difference, hybrid vs. fully remote), or flag as UNRESOLVED]
 
-Grounding rule: Report findings exactly as measured in [P1]. Treat the absence of contradicting studies in [P1] as `UNEXAMINED IN CORPUS` rather than proof of a universal consensus.
+Grounding rule: Report findings exactly as measured in the source data. Treat the absence of contradicting studies as `UNEXAMINED IN CORPUS` rather than proof of consensus.
 
 ### FORMAL CONCLUSION
-- Integrated synthesis: [Core findings on productivity impact citing T-identifiers]
-- Convergent vs. contested claims: [Group findings by T-identifiers to show where research aligns and where it conflicts]
-- Open research gaps: [Questions remaining unresolved by the sources in P1]
+Derive your synthesis solely from the traces above:
+- Integrated synthesis: [Core findings on remote work productivity citing T-identifiers]
+- Convergent vs. contested claims: [Grouped by T-identifiers, highlighting where research agrees or conflicts]
+- Open research gaps: [Questions regarding productivity that remain unresolved by the available evidence]
 
 ### REMEDIATION / NEXT ACTION
-The task is incomplete until this section provides one of the following:
-- A structured summary table synthesizing the convergent [T] traces.
-- A specific list of follow-up queries or missing data points needed to resolve contested claims.
+The task is incomplete until this section contains one of the following:
+- A structured summary table mapping Productivity Metric -> Impact (Positive/Negative) -> Supporting Trace [T]
+- A list of specific missing data points required to resolve "UNRESOLVED" contradictions
+- The explicit statement: "No remediation required: [reason grounded in T-identifiers]"
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every step in [T] traces on explicit data points or text in [P1]-[P4] rather than general knowledge or symbol names.
-- Missing-evidence predicate: When a claim cannot be verified from [P1]-[P4], record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Open Research Gaps.
-- Neutrality predicate: Derive the synthesis strictly from `[T]` traces without referencing external business agendas or desired outcomes.
+- Data-binding predicate: All research questions and scope requirements are embedded verbatim inside [P1]-[P4] so the prompt is 100% self-contained.
+- Grounding rule: Base every step in [T] traces on explicit data points or text in the corpus rather than general assumptions.
+- Missing-evidence predicate: When a path cannot be verified from the corpus, record `UNABLE TO TRACE: [exact missing data]` in the trace and list it under Verification Gaps.
+- Neutrality predicate: Derive the Verdict strictly from `[T]` traces without referencing a desire for a "balanced" feel; balance must emerge naturally from the evidence presented in the traces.
 
 TRACEABILITY SELF-CHECK (mandatory before finalizing):
-Verify that every claim in the Formal Conclusion cites at least one [T] identifier and its underlying [P] source. If any claim lacks a supporting identifier, either add the missing trace or remove the claim so zero orphaned conclusions remain.
+Verify that every claim in the Formal Conclusion cites at least one `[T]` identifier from above. If any claim lacks a supporting identifier, either add the missing trace or remove the claim so zero orphaned conclusions remain.
 
 ### OPTIMIZED RESPONSE
 
-As a research analyst, I am ready to execute this systematic synthesis. However, **you have not yet provided the source materials (the corpus of papers/data)**. 
-
-To begin the process and fulfill the **Verification & Traceability Contract**, please provide the documents or text for the sources you wish me to analyze. 
-
-Once provided, I will populate the certificate exactly as follows:
-
-***
-
-### PREMISES
-- **[P1] Sources examined:** [I will list every provided paper with Author, Year, and assigned ID]
-- **[P2] Research question:** Does remote work improve or degrade employee productivity?
-- **[P3] Methodological scope:** [I will define the boundaries based on the provided texts (e.g., "Tech sector, 2020-2023")]
-- **[P4] Corpus limitations:** [I will identify missing demographics, small sample sizes, or lack of longitudinal data in the provided set]
-
 ### EVIDENCE TRACES
-*(I will generate a trace for every distinct claim found in the text)*
-- **[T1] Claim:** [e.g., Remote work increases output for individual contributors]
-  1. **Primary evidence:** [Source ID] $\rightarrow$ [Specific metric, e.g., +13% performance increase]
-  2. **Study design:** [Sample size, industry, protocol]
-  3. **Effect magnitude:** [$\Delta$ change, CI, or replication status]
-  4. **Contradicting evidence:** [Source ID] $\rightarrow$ [Variable of divergence, e.g., "Decreased for junior employees"]
-  5. **Reconciliation:** [Mechanistic explanation or `UNRESOLVED`]
+
+- **[T1] Claim [Impact Type: Positive]: Increased Individual Output**
+  1. **Primary evidence:** Stanford University study (Bloom et al.) reported a 13% increase in performance.
+  2. **Study design:** Randomized Control Trial (RCT); 16,000 employees; Call center industry; Measured by calls per minute and minutes per call.
+  3. **Effect magnitude:** 13% increase; attributed to a quieter environment and fewer breaks/sick days.
+  4. **Contradicting evidence:** Microsoft study (2021) on "organizational silos" suggesting a decline in collaborative agility.
+  5. **Reconciliation:** Task-type variance; highly structured, individual-contributor tasks (call centers) benefit more than interdependent, creative tasks.
+
+- **[T2] Claim [Impact Type: Negative]: Erosion of Collaborative Innovation**
+  1. **Primary evidence:** Nature Human Behaviour study (2022) analyzing 61,000 Microsoft employees.
+  2. **Study design:** Longitudinal analysis of communication patterns (emails, Teams calls); Tech industry; Measured by network connectivity and "siloing."
+  3. **Effect magnitude:** Significant decrease in "bridge" connections between disparate teams; increase in within-team density but decrease in cross-functional collaboration.
+  4. **Contradicting evidence:** Evidence from [T1] regarding individual task completion speed.
+  5. **Reconciliation:** Divergence between *output volume* (individual) and *innovation capacity* (organizational).
+
+- **[T3] Claim [Impact Type: Neutral/Variable]: Work-Life Blur and Burnout**
+  1. **Primary evidence:** Various OECD and Eurofound surveys regarding "right to disconnect."
+  2. **Study design:** Self-reported surveys; Mixed industries; Measured by perceived stress and hours worked.
+  3. **Effect magnitude:** Reported increase in average work hours per day; confidence intervals vary widely by national labor law.
+  4. **Contradicting evidence:** Reports of increased employee retention and satisfaction due to removed commute times.
+  5. **Reconciliation:** UNRESOLVED; impact on productivity is mediated by individual autonomy and corporate culture.
+
+---
 
 ### FORMAL CONCLUSION
-- **Integrated synthesis:** [Synthesis citing T-identifiers]
-- **Convergent vs. contested claims:** [Alignment: {T-IDs} vs. Conflict: {T-IDs}]
-- **Open research gaps:** [List of `UNABLE TO TRACE` items or unresolved contradictions]
+
+- **Integrated synthesis:** Remote work produces a dichotomy of productivity: it enhances the volume of individual, structured output [T1] but impairs the structural connectivity required for organizational innovation and cross-functional collaboration [T2]. The net effect on productivity is further complicated by "work-life blur," which may increase raw hours worked but risks long-term burnout [T3].
+- **Convergent vs. contested claims:** 
+    - *Convergent:* Remote work is effective for independent, metric-driven tasks [T1].
+    - *Contested:* The impact on long-term organizational health is contested, with a tension between individual efficiency [T1] and systemic collaboration [T2].
+- **Open research gaps:** The causal link between increased work hours [T3] and actual quality-adjusted output remains unverified.
+
+---
 
 ### REMEDIATION / NEXT ACTION
-- [I will provide either the Synthesis Table or the Missing Data Query list as required]
 
-***
+| Productivity Metric | Impact | Supporting Trace |
+| :--- | :--- | :--- |
+| Individual Output Volume | Positive | [T1] |
+| Cross-Functional Collaboration | Negative | [T2] |
+| Total Hours Worked | Positive (Volume) / Negative (Sustainability) | [T3] |
+| Innovation Capacity | Negative | [T2] |
 
-**STANDING BY FOR INPUT:** Please upload the sources or paste the text to initiate the trace.
+**Missing data points required to resolve "UNRESOLVED" contradictions:**
+- Longitudinal data correlating the "work-life blur" [T3] with actual output quality (to determine if more hours $\neq$ more productivity).
+- Industry-specific RCTs for creative/interdependent roles to see if the "silo" effect [T2] can be mitigated by specific digital tools.
+
+**TRACEABILITY SELF-CHECK:**
+- Claim 1 (Individual output) $\rightarrow$ [T1]
+- Claim 2 (Collaboration/Innovation) $\rightarrow$ [T2]
+- Claim 3 (Burnout/Hours) $\rightarrow$ [T3]
+- *Result: Zero orphaned conclusions.*
 
 ### EVALUATION: TEST 5
 
-- **Word Count**: Baseline `580` words | Optimized `275` words | Ratio `0.47x`
-- **Eval Tokens**: Baseline `849` | Optimized `482`
+- **Word Count**: Baseline `618` words | Optimized `507` words | Ratio `0.82x`
+- **Eval Tokens**: Baseline `942` | Optimized `901`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 5         | 0     |
-| Completeness  | 5        | 1         | -4    |
-| Structure     | 5        | 5         | 0     |
-| Actionability | 5        | 2         | -3    |
-| Traceability  | 3        | 5         | +2    |
-| TOTAL         | 23/25    | 18/25     | -5    |
+The two candidates take fundamentally different approaches to the task. **Candidate A** treats the prompt as a formal research synthesis exercise, providing specific citations (Stanford/Bloom, Nature Human Behaviour), study designs, and a rigorous mapping of contradictions and reconciliations. **Candidate B** provides a high-quality, thematic summary that reflects general academic consensus but lacks specific evidentiary grounding.
 
-**Explanation:**
-The Baseline provided a high-quality, balanced synthesis using general knowledge, which directly answered the user's prompt. The Optimized response applied a rigid "systematic synthesis" framework that required a provided corpus of documents to function; since no documents were provided in the prompt, the model refused to answer the question and instead asked for data. While the Optimized response is theoretically more "traceable," it failed the primary task of providing an overview of what "the research says," resulting in a total failure of completeness and actionability.
+**Candidate A** is superior for a "Research Synthesis" task because it provides the "what" (the claims) and the "how" (the evidence/study design). It distinguishes between output volume and innovation capacity with precision. While its format is highly clinical, it ensures that the "balanced overview" is based on verifiable data points rather than generalities.
+
+**Candidate B** is a very strong general overview, but it fails the "Research Synthesis" aspect by omitting the actual research (names of studies, authors, or specific data). It lists *arguments* for and against remote work, whereas Candidate A lists *research findings*.
+
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 4 | +1 | A cites specific, real-world studies (Bloom et al., Nature) to anchor claims. B is accurate in sentiment but general. |
+| Completeness | 4 | 5 | -1 | B covers more "human" nuances (mentorship, junior vs senior) that A ignores in favor of strict study data. |
+| Structure | 5 | 4 | +1 | A's structure is designed for verification (Traces $\rightarrow$ Synthesis $\rightarrow$ Remediation). B uses a standard essay format. |
+| Actionability | 4 | 4 | 0 | Both provide clear summaries. A provides a "Next Action" for resolving data gaps; B provides a "Hybrid Sweet Spot" verdict. |
+| Traceability | 5 | 2 | +3 | A is explicitly traceable with internal tags [T1, T2]. B provides no citations or sources for its claims. |
+| **TOTAL (/25)** | **23** | **19** | **+4** | **Winner: Baseline** |
 
 ---
 
@@ -768,164 +865,196 @@ The Baseline provided a high-quality, balanced synthesis using general knowledge
 
 ### BASELINE RESPONSE
 
-For a 15-person startup handling HIPAA-regulated data, the answer is almost certainly: **Do not build your own.**
+For a 15-person startup handling HIPAA-regulated data, the answer is almost certainly **do not build your own.**
 
-In the healthcare space, authentication is not just about "logging in"; it is about **auditability, access control, and liability.** When you build your own system, you aren't just writing code—you are assuming the full legal and technical burden of securing Protected Health Information (PHI).
+In the healthcare space, authentication isn't just about "logging in";it is about **Auditability, Access Control, and Compliance.** Building a system that is truly HIPAA-compliant is significantly more expensive and risky than the monthly subscription fee of a vendor.
 
-Here is the strategic breakdown of why you should use a provider and how to choose between them.
-
----
-
-### 1. The "Build vs. Buy" Math for Healthcare
-
-#### The Risk of "Build"
-If you build your own, you are responsible for implementing and documenting:
-*   **Password Hashing & Salting:** Getting this slightly wrong leads to catastrophic leaks.
-*   **MFA (Multi-Factor Authentication):** A HIPAA requirement for most remote access. Implementing TOTP or WebAuthn securely is time-consuming.
-*   **Session Management:** Handling secure cookie attributes, token revocation, and session timeouts (critical for shared tablets/clinics).
-*   **Account Recovery:** Creating "Forgot Password" flows that don't accidentally leak user existence or allow account takeovers.
-*   **Audit Logs:** HIPAA requires detailed logs of who accessed what and when. Building an immutable audit trail for auth events is a project in itself.
-
-#### The Value of "Buy"
-Using a provider like Auth0 or Clerk shifts a significant portion of the **compliance burden** to the vendor. They provide the SOC2 reports and the BAA (Business Associate Agreement) that your auditors will ask for.
+Here is the detailed breakdown of why you should buy, and how to choose between the options.
 
 ---
 
-### 2. Auth0 vs. Clerk (The Comparison)
+### 1. The "Build" Trap (The Hidden Costs)
+Many engineers view auth as "just a table in a database." In healthcare, that is a dangerous simplification. To be compliant, you would need to build and maintain:
+*   **Detailed Audit Logs:** Who accessed what record, when, and from where? (Required for HIPAA audits).
+*   **Complex Password Policies:** Rotation, complexity, and secure hashing (Argon2/bcrypt).
+*   **MFA (Multi-Factor Authentication):** This is non-negotiable for healthcare. Implementing TOTP or WebAuthn correctly is time-consuming.
+*   **Session Management:** Secure cookie handling, token revocation, and automatic timeouts.
+*   **Account Recovery:** Secure "forgot password" flows that don't leak user data.
+*   **Maintenance:** Patching security vulnerabilities for the rest of the company's life.
 
-Since you are a small team, your primary constraints are **developer velocity** and **compliance overhead.**
+**The Opportunity Cost:** Every hour your small team spends building a login screen is an hour they aren't building the core healthcare product that actually provides value.
 
-| Feature | Clerk | Auth0 |
-| :--- | :--- | :--- |
-| **Developer Experience** | Extremely high. Pre-built UI components (User Profile, Sign-in) that take minutes to drop in. | Moderate. Powerful, but requires more configuration and "wiring." |
-| **Implementation** | "Opinionated." Great if you want it to "just work" quickly. | "Flexible." Better if you have highly complex enterprise auth needs. |
-| **HIPAA Compliance** | Available on specific Enterprise plans. | Available on Enterprise plans (via a signed BAA). |
-| **Pricing** | Generally more accessible for startups, but scales per Monthly Active User (MAU). | Can become very expensive very quickly as you scale. |
-| **Control** | You rely more on their UI/UX. | You have total control over the look and feel. |
+### 2. The "Buy" Advantage (Compliance)
+Using a professional identity provider (IdP) shifts a significant portion of the security burden to the vendor.
+
+*   **BAA (Business Associate Agreement):** This is the most critical part. You cannot use a service for HIPAA data unless they will sign a BAA. Both Auth0 and Clerk offer this (usually on their Enterprise/Professional tiers).
+*   **SOC2 Type II:** These vendors have third-party audits proving their security controls work. You can attach their reports to your own compliance documentation.
+*   **Standardization:** They use OIDC (OpenID Connect) and SAML. If you eventually sell to large hospitals, they will *demand* SAML/SSO integration. Building this yourself is a nightmare; clicking a button in Auth0 is easy.
 
 ---
 
-### 3. The HIPAA "Gotcha" (Crucial)
+### 3. Auth0 vs. Clerk (and others)
 
-Regardless of which vendor you choose, you must be aware of two things:
+Since you are a small team, the "vibe" of the tool matters as much as the feature set.
 
-1.  **The BAA (Business Associate Agreement):** You cannot simply sign up for a "Free" or "Pro" plan and be HIPAA compliant. You **must** be on a plan that allows the vendor to sign a BAA. This usually means an **Enterprise plan**. If a vendor won't sign a BAA, you cannot put PHI in their system.
-2.  **PHI in the Auth Provider:** To minimize risk, **do not store PHI in the auth provider.** 
-    *   *Wrong:* Storing "Patient Diagnosis" in the user metadata of Clerk/Auth0.
-    *   *Right:* Store only the `user_id` and `email` in the auth provider. Store all sensitive healthcare data in your own encrypted database, linked by that `user_id`.
+#### **Clerk**
+*   **Best for:** Speed of development and UX.
+*   **Pros:** Incredible "drop-in" components (UI is already built). Extremely fast to set up. Modern developer experience.
+*   **Cons:** Less "enterprise" pedigree than Auth0. You need to ensure their BAA covers your specific architectural use case.
+
+#### **Auth0 (Okta)**
+*   **Best for:** Scale, complex enterprise requirements, and "checkbox" compliance.
+*   **Pros:** The industry gold standard. Every auditor knows Auth0. Massive flexibility in "Actions" (custom code that runs during the auth flow).
+*   **Cons:** The UI components are less polished/modern than Clerk's. The pricing can scale aggressively (the "success tax").
+
+#### **The Third Option: AWS Cognito / Azure AD B2C**
+*   **Best for:** Teams already deep in one ecosystem who want the lowest possible cost.
+*   **Pros:** Very cheap; usually included in your cloud BAA.
+*   **Cons:** Terrible developer experience. You will spend weeks fighting the configuration and building your own UI.
+
+---
 
 ### Final Recommendation
 
-**For a 15-person team: Go with a provider.** 
+**The Verdict: Use Clerk or Auth0.**
 
-*   **Choose Clerk** if you want to move as fast as possible and your auth requirements are standard (Email/Pass, Social, MFA). The speed of implementation will save you weeks of engineering time.
-*   **Choose Auth0** if you anticipate needing complex B2B "Organization" structures (e.g., managing different clinics with different permission sets) or if you need deep integration with legacy enterprise identity providers (SAML/LDAP).
+**Decision Matrix:**
+1.  **Do you need to be up and running in 48 hours with a beautiful UI?** $\rightarrow$ **Clerk.**
+2.  **Do you anticipate needing highly complex enterprise SSO integrations for hospitals in the next 12 months?** $\rightarrow$ **Auth0.**
+3.  **Is your budget extremely tight and do you have a dedicated DevOps person?** $\rightarrow$ **AWS Cognito.**
 
-**Immediate Next Step:** Contact the sales teams of both and ask: *"We are a HIPAA-regulated entity. Which plan includes a signed BAA and what is the cost?"* That answer will likely make the decision for you.
+**Crucial Step:** Before you sign up, contact their sales team and specifically ask for their **HIPAA BAA (Business Associate Agreement)**. Do not send a single piece of PHI (Protected Health Information) through the system until that document is signed by both parties.
 
 ### OPTIMIZED PROMPT
+
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 1 (Max Certificate) | Template 5: Decision-Making / Recommendation
+[PERSONA]      : Minimal <=5w (Mixed) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..Pn] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~2.2x token budget | Deterministically verifiable
+
+***
 
 You are a decision analyst. The standard decision analysis framework requires completing this reasoning certificate before recommending any course of action.
 
 ### PREMISES
-Declare all observable inputs, constraints, and starting assumptions:
-- [P1] Primary decision: Build custom authentication system vs. implement third-party provider (Auth0/Clerk).
-- [P2] Organizational context: 15-person SaaS startup.
-- [P3] Regulatory constraints: HIPAA compliance requirements for sensitive healthcare data.
-- [P4] Resource constraints: Engineering capacity and maintenance overhead typical of a 15-person team.
+- [P1] Decision Statement: Determine whether to implement a custom-built internal authentication system or integrate a third-party identity provider (Auth0/Clerk).
+- [P2] Candidate Options: 
+    - Option A: Custom-built authentication system.
+    - Option B: Third-party managed identity provider (Auth0/Clerk).
+- [P3] Evaluation Criteria:
+    - Regulatory Compliance: Ability to meet and maintain HIPAA (Health Insurance Portability and Accountability Act) standards for sensitive healthcare data.
+    - Resource Capacity: Suitability for a 15-person SaaS startup engineering team.
+    - Security Risk: Risk of implementation flaws vs. third-party dependency.
+    - Time-to-Market: Development effort and deployment speed.
+- [P4] Hard Constraints: Must ensure absolute HIPAA compliance for healthcare data handling; must be sustainable for a small-scale startup team.
 
 ### OPTION TRACES
-For each candidate option in [P1], evaluate the following dimensions:
-- [T1] Custom Build:
-  1. Criteria evaluation: Evaluate against HIPAA technical safeguards, implementation time, and long-term maintenance.
-  2. Constraint check: Does the 15-person team have the specialized security expertise to guarantee HIPAA-compliant auth?
-  3. Failure modes: Primary risks regarding security vulnerabilities, audit failures, or "developer burnout" from maintaining non-core infrastructure.
-  4. Dependencies: Required internal security audits and infrastructure for encryption/key management.
-  5. Reversibility: Effort required to migrate to a provider if the custom build fails.
-- [T2] Third-Party Provider (Auth0/Clerk):
-  1. Criteria evaluation: Evaluate against HIPAA-compliant tiers (BBA requirements), integration speed, and cost scaling.
-  2. Constraint check: Do the provider's HIPAA-compliant offerings satisfy all [P3] requirements?
-  3. Failure modes: Vendor lock-in, pricing pivots, or dependency on third-party uptime.
-  4. Dependencies: Legal agreement of a Business Associate Agreement (BAA).
-  5. Reversibility: Effort required to migrate data/users to a custom system or different provider.
+For each candidate option in [P2], provide a detailed analytical trace:
+- [T1] Option A (Custom-built):
+    1. Criteria evaluation: Analyze against every factor in [P3], citing specific technical requirements for HIPAA-compliant auth (e.g., audit logging, encryption at rest/transit, access controls).
+    2. Constraint check: Evaluate if a 15-person team can realistically maintain the security posture required by [P4].
+    3. Failure modes: Identify primary risks (e.g., vulnerability to common auth attacks, maintenance overhead).
+    4. Dependencies: List infrastructure needed to host and secure the system.
+    5. Reversibility: Estimate the cost/effort to migrate to a provider later.
+- [T2] Option B (Third-party - Auth0/Clerk):
+    1. Criteria evaluation: Analyze against every factor in [P3], specifically examining the HIPAA-compliance tiers (BAA agreements) provided by these vendors.
+    2. Constraint check: Evaluate the impact on the 15-person team's velocity and focus relative to [P4].
+    3. Failure modes: Identify primary risks (e.g., vendor lock-in, pricing scaling, third-party outage).
+    4. Dependencies: List integration requirements and API dependencies.
+    5. Reversibility: Estimate the cost/effort to migrate to a different provider or custom system.
 
-Grounding rule: Evaluate every option against the exact same criteria using observable evidence regarding HIPAA requirements and startup resource constraints.
+Grounding rule: Evaluate every option against the exact same [P3] criteria list using observable industry standards for HIPAA and startup resource constraints.
 
 ### FORMAL CONCLUSION
 Derive your verdict solely from the premises and traces above:
-- Primary selection: [Option name citing T-identifiers and P3/P4 constraints]
-- Conditional alternative: [Runner-up option and the exact condition under which it would become the primary choice]
-- Explicit tradeoffs accepted: [What the primary selection sacrifices per T-traces]
+- Primary selection: [Option A or B] citing specific T-identifiers and P3 criteria.
+- Conditional alternative: [Runner-up option] and the exact condition under which it would become the primary choice.
+- Explicit tradeoffs accepted: Describe what the primary selection sacrifices based on the T-traces.
 
 ### REMEDIATION / NEXT ACTION
-The task is incomplete until this section contains one of the following:
-- A concrete, step-by-step execution checklist for implementing the primary selection.
-- A list of specific technical questions to ask the vendors to verify [P3] compliance.
-- The explicit statement: "No remediation required: [reason grounded in T-identifiers]"
+The task is incomplete until this section contains:
+- A concrete, step-by-step execution checklist to implement the primary selection.
+- Specific verification questions to ask the vendor (if Option B) or a security checklist (if Option A) to ensure the [P4] HIPAA constraint is satisfied.
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every step in [T] traces on explicit regulatory requirements (HIPAA) or operational realities of the team size in [P1]-[P4].
-- Missing-evidence predicate: When a path cannot be verified (e.g., specific vendor pricing or feature gaps), record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Verification Gaps.
-- Neutrality predicate: Derive the Verdict strictly from `[T]` traces without referencing the user's desire for a "quick" or "cheap" solution unless it is a stated [P] constraint.
+- Grounding rule: Base every step in [T] traces on explicit implementation details or regulatory requirements relative to [P1]-[P4].
+- Neutrality predicate: Derive the Verdict strictly from [T] traces without referencing downstream business goals or timelines not listed in the premises.
 
 TRACEABILITY SELF-CHECK (mandatory before finalizing):
-Verify that every claim in your Formal Conclusion cites at least one `[T]` or `[V]` identifier from above. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P4] or remove the claim so zero orphaned conclusions remain.
+Verify that every claim in the Formal Conclusion cites at least one [T] identifier from above. If any claim lacks a supporting identifier, either add the missing trace or remove the claim so zero orphaned conclusions remain.
 
 ### OPTIMIZED RESPONSE
 
-### PREMISES
-- [P1] Primary decision: Build custom authentication system vs. implement third-party provider (Auth0/Clerk).
-- [P2] Organizational context: 15-person SaaS startup.
-- [P3] Regulatory constraints: HIPAA compliance requirements (specifically Technical Safeguards: Access Control, Audit Controls, Integrity, and Person/Entity Authentication).
-- [P4] Resource constraints: Engineering capacity and maintenance overhead typical of a 15-person team.
-
 ### OPTION TRACES
-- [T1] Custom Build:
-  1. **Criteria evaluation**: Requires manual implementation of AES-256 encryption for data at rest, TLS 1.2+ for data in transit, complex session management, and exhaustive audit logging to meet HIPAA Technical Safeguards. Implementation time is high (months).
-  2. **Constraint check**: A 15-person team [P2] typically lacks a dedicated 24/7 Security Operations Center (SOC) and specialized cryptographers required to guarantee no vulnerabilities in a custom auth implementation [P4].
-  3. **Failure modes**: High risk of security breach due to implementation error; failure of HIPAA audit due to insufficient logging; developer burnout from managing non-core infrastructure [P4].
-  4. **Dependencies**: Internal security audits, HSM/KMS setup for key management, and rigorous documentation for regulatory examiners.
-  5. **Reversibility**: Low. Migrating users from a custom DB to a provider requires complex data migration and password resets (as passwords cannot be decrypted).
 
-- [T2] Third-Party Provider (Auth0/Clerk):
-  1. **Criteria evaluation**: Provides "out-of-the-box" HIPAA-compliant tiers. Integration time is low (days/weeks). Costs scale linearly with MAU (Monthly Active Users).
-  2. **Constraint check**: Providers like Auth0/Clerk offer specific HIPAA-compliant plans that satisfy [P3] Technical Safeguards through certified infrastructure.
-  3. **Failure modes**: Vendor lock-in; pricing increases as the startup scales; dependency on vendor uptime (Single Point of Failure).
-  4. **Dependencies**: Mandatory signing of a Business Associate Agreement (BAA) to legally satisfy HIPAA [P3].
-  5. **Reversibility**: Moderate. Users can be exported (though password hashes may be incompatible), allowing migration to another provider or custom system.
+**[T1] Option A (Custom-built):**
+1. **Criteria Evaluation [P3]:**
+    - *Regulatory Compliance:* Extremely high burden. HIPAA requires strict audit trails (who accessed what and when), AES-256 encryption at rest, TLS 1.2+ in transit, and rigorous session management. Building this from scratch requires a dedicated security architect.
+    - *Resource Capacity:* Poor. A 15-person team lacks the bandwidth to maintain a custom security stack while simultaneously building core SaaS product features.
+    - *Security Risk:* High. Internal teams often miss edge cases in password hashing, MFA implementation, or JWT validation, creating critical vulnerabilities.
+    - *Time-to-Market:* Slow. Development, testing, and third-party security auditing for HIPAA compliance add months to the roadmap.
+2. **Constraint Check [P4]:** Unlikely to be sustainable. The maintenance of a HIPAA-compliant auth system is a permanent tax on engineering velocity.
+3. **Failure Modes:** Zero-day vulnerabilities in custom auth logic; failure to pass a HIPAA audit due to missing audit logs; "security debt" accumulation.
+4. **Dependencies:** Secure database for credentials, Key Management Service (KMS) for encryption keys, dedicated logging infrastructure.
+5. **Reversibility:** High effort. Migrating users from a custom DB to a provider requires complex credential migration (password resets) or secure hash imports.
 
-**Verification Gaps**: 
-- `UNABLE TO TRACE`: Specific current pricing for the HIPAA-compliant tiers of Clerk vs. Auth0.
-- `UNABLE TO TRACE`: The exact internal security expertise level of the existing 15-person team [P2].
+**[T2] Option B (Third-party - Auth0/Clerk):**
+1. **Criteria Evaluation [P3]:**
+    - *Regulatory Compliance:* High. Leading providers offer HIPAA-compliant tiers and will sign a Business Associate Agreement (BAA), shifting much of the compliance burden to the vendor.
+    - *Resource Capacity:* Excellent. Integration takes days/weeks, allowing the 15-person team to focus on core product value.
+    - *Security Risk:* Low (Implementation) / Medium (Dependency). The risk shifts from "coding errors" to "vendor trust" and "configuration errors."
+    - *Time-to-Market:* Fast. Out-of-the-box support for MFA, SSO, and social logins.
+2. **Constraint Check [P4]:** Sustainable. Compliance is maintained via the vendor's SOC2/HIPAA certifications and the BAA.
+3. **Failure Modes:** Vendor outage causing total system lockout; pricing "cliffs" as user base grows; vendor lock-in.
+4. **Dependencies:** Vendor SDKs, API connectivity, vendor-managed user store.
+5. **Reversibility:** Moderate effort. Standardized protocols (OIDC/SAML) make migrating between providers easier than migrating from custom code, though data export is still non-trivial.
+
+***
 
 ### FORMAL CONCLUSION
-- **Primary selection**: Third-Party Provider [T2] based on the inability of a 15-person team [P2, P4] to guarantee the rigorous security and audit requirements of HIPAA [P3] via a custom build [T1.2, T1.3].
-- **Conditional alternative**: Custom Build [T1] would become the primary choice only if the team expands to include dedicated security engineers and the cost of the BAA-compliant tier [T2.1] exceeds the total cost of internal engineering salaries [P4].
-- **Explicit tradeoffs accepted**: The organization accepts vendor lock-in, third-party uptime dependency, and recurring subscription costs [T2.3] in exchange for reduced regulatory risk and faster time-to-market [T2.1].
+
+- **Primary Selection:** **Option B**
+    - *Justification:* Based on [T2.1], it satisfies HIPAA compliance via BAAs more efficiently than [T1.1]. It aligns with resource constraints [P3] as evidenced by the velocity gains noted in [T2.2] compared to the sustainability risks in [T1.2].
+- **Conditional Alternative:** **Option A**
+    - *Condition:* This would become primary only if the company's core product is an identity/security tool where owning the auth stack is the primary value proposition, or if the cost of [T2.3] (pricing scaling) exceeds the cost of hiring 2-3 full-time security engineers.
+- **Explicit Tradeoffs Accepted:** By selecting Option B, the organization accepts **vendor dependency/lock-in** and **recurring subscription costs** [T2.3] in exchange for **reduced security risk** and **accelerated time-to-market** [T2.1].
+
+***
 
 ### REMEDIATION / NEXT ACTION
-Technical questions to ask vendors to verify [P3] compliance:
-1. **BAA Availability**: "Do you provide a signed Business Associate Agreement (BAA) for the specific plan we are purchasing?"
-2. **Data Residency**: "Can you guarantee that all PII/PHI related to authentication is stored in HIPAA-compliant data centers (e.g., AWS GovCloud or similar)?"
-3. **Audit Logs**: "Do your audit logs capture all required HIPAA events (login attempts, permission changes, administrative access) and are these logs immutable and exportable for auditors?"
-4. **Encryption Standards**: "Can you provide documentation on the encryption standards used for data at rest and in transit to satisfy HIPAA Technical Safeguards?"
-5. **Access Control**: "Does your platform support Multi-Factor Authentication (MFA) and Role-Based Access Control (RBAC) natively to satisfy HIPAA's 'Minimum Necessary' rule?"
+
+**Execution Checklist (Option B):**
+1. [ ] Identify a vendor tier that explicitly supports HIPAA compliance.
+2. [ ] Legal review and execution of the **Business Associate Agreement (BAA)**.
+3. [ ] Configure the identity provider (IdP) with mandatory MFA for all healthcare data access.
+4. [ ] Implement audit logging hooks to stream auth events to internal compliance logs.
+5. [ ] Map user roles to internal application permissions (RBAC).
+6. [ ] Conduct a "Break-glass" test (how to access the system if the provider has a regional outage).
+
+**Vendor Verification Questions (HIPAA Constraint [P4]):**
+1. "Will you sign a Business Associate Agreement (BAA) for our specific account tier?"
+2. "Is the HIPAA-compliant infrastructure isolated or shared, and what are the specific encryption standards for data at rest?"
+3. "Do you provide detailed audit logs of all administrative changes to user identities that we can export for compliance audits?"
+4. "What is your uptime SLA, and what is the documented recovery process during a catastrophic failure?"
 
 ### EVALUATION: TEST 6
 
-- **Word Count**: Baseline `630` words | Optimized `555` words | Ratio `0.88x`
-- **Eval Tokens**: Baseline `936` | Optimized `945`
+- **Word Count**: Baseline `615` words | Optimized `637` words | Ratio `1.04x`
+- **Eval Tokens**: Baseline `954` | Optimized `1054`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 5         | 0     |
-| Completeness  | 4        | 5         | +1    |
-| Structure     | 4        | 5         | +1    |
-| Actionability | 4        | 5         | +1    |
-| Traceability  | 2        | 5         | +3    |
-| TOTAL         | 19/25    | 25/25     | +6    |
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 5 | 0 | Both correctly identify the critical nature of the BAA (Business Associate Agreement) for HIPAA compliance and the risks of custom builds. |
+| Completeness | 4 | 5 | +1 | Response B provides a more nuanced comparison between the specific vendors mentioned (Auth0 vs. Clerk) and suggests a cost-effective cloud alternative (Cognito/Azure), which is highly relevant for a 15-person startup. |
+| Structure | 4 | 5 | +1 | Response A uses a technical "trace" format that feels slightly over-engineered for a business decision. Response B uses a logical flow (Build $\rightarrow$ Buy $\rightarrow$ Vendor Comparison $\rightarrow$ Verdict) that is easier to digest. |
+| Actionability | 5 | 4 | -1 | Response A provides a superior execution checklist and specific verification questions to ask vendors, making the transition from "decision" to "implementation" very concrete. |
+| Traceability | 5 | 3 | -2 | Response A uses explicit internal referencing ([T1], [P3], etc.) to link its conclusion back to its analysis. Response B is a standard narrative. |
+| **TOTAL (/25)** | **23** | **22** | **-1** | **Winner: Baseline** |
 
-The Optimized response transforms a standard piece of advice into a rigorous decision analysis. It significantly improves traceability by mapping specific constraints (HIPAA/Team size) to a formal conclusion and provides a much more technical, targeted remediation checklist for vendor vetting. While the Baseline was helpful, the Optimized response ensures no logical leaps are made and explicitly identifies verification gaps.
+**Evaluation Summary:**
+Candidate Response A is the stronger professional deliverable. While Response B provides better "industry flavor" and vendor-specific distinctions, Response A treats the problem as a rigorous business case. Its inclusion of a "Remediation/Next Action" section with a concrete checklist and a set of "Vendor Verification Questions" transforms the advice into a professional project plan. Response A's traceability ensures the logic is airtight, which is critical when dealing with high-stakes regulatory environments like HIPAA.
 
 ---
 
@@ -933,173 +1062,193 @@ The Optimized response transforms a standard piece of advice into a rigorous dec
 
 ### BASELINE RESPONSE
 
-Based on the **NIST Special Publication 800-63B (Digital Identity Guidelines)**, your current password policy is **outdated** and contains several requirements that NIST specifically advises against.
+Based on the **NIST Special Publication 800-63B (Digital Identity Guidelines)**, this policy is **outdated** and **non-compliant**. 
 
-Modern NIST guidelines shift away from "complexity" and "rotation" in favor of **length** and **risk-based authentication**.
+Modern NIST guidelines move away from "complexity requirements" and "forced rotations," as research shows these practices lead users to create predictable passwords (e.g., `Winter2024!`) and write them down.
 
-Here is the detailed review:
+Here is the detailed breakdown of the non-compliance:
 
 ### 1. Minimum 8 Characters
-*   **Verdict: Non-Compliant / Weak**
-*   **NIST Guidance:** NIST recommends a minimum length of **8 characters**, but suggests that longer passwords (passphrases) are significantly more secure. For high-security environments, 12–15 characters is the modern baseline.
+*   **Status:** ❌ **Non-Compliant / Insufficient**
+*   **NIST Guidance:** NIST recommends a minimum of **8 characters**, but strongly suggests allowing longer passwords (up to 64 characters) and encourages longer minimums for higher-security environments. 8 is the absolute floor, but not the goal.
 
-### 2. Complexity (Upper, Lower, Number, Special)
-*   **Verdict: Non-Compliant**
-*   **NIST Guidance:** NIST explicitly **discourages** forcing composition rules. 
-*   **Why?** Complexity requirements lead users to create predictable patterns (e.g., starting with a capital letter and ending with "1!"). This makes passwords easier for attackers to guess using "mask attacks." NIST recommends allowing all printable ASCII characters (including spaces) and focusing on length over complexity.
+### 2. Complexity Requirements (Upper, Lower, Number, Special)
+*   **Status:** ❌ **Non-Compliant**
+*   **NIST Guidance:** NIST explicitly advises **against** forcing complexity requirements. These rules do not significantly increase security but do frustrate users and lead to predictable patterns. Instead, NIST recommends focusing on **length** and checking passwords against a **dictionary of known compromised passwords** (breach lists).
 
-### 3. Password Expiry (Every 90 Days)
-*   **Verdict: Non-Compliant**
-*   **NIST Guidance:** Periodic password expiration should be **eliminated**.
-*   **Why?** Forced rotation leads to "password transformation." Users typically make a minor, predictable change to their existing password (e.g., `Summer2023!` becomes `Summer2023@`). This provides almost no security benefit and increases user frustration. Passwords should only be changed if there is evidence of a compromise.
+### 3. Passwords expire every 90 days
+*   **Status:** ❌ **Non-Compliant**
+*   **NIST Guidance:** This is one of the biggest changes in 800-63B. NIST recommends **against periodic password expiration**. Forced rotation leads users to make minor, predictable changes to their old passwords. Passwords should only be changed if there is **evidence of compromise**.
 
-### 4. Password History (Cannot reuse last 5)
-*   **Verdict: Non-Compliant (linked to rotation)**
-*   **NIST Guidance:** Since NIST recommends against periodic rotation, password history becomes largely irrelevant. 
-*   **Why?** History requirements are a byproduct of the 90-day rotation cycle. If you stop forcing rotations, you no longer need to track history to prevent simple increments.
+### 4. Cannot reuse last 5 passwords
+*   **Status:** ❌ **Non-Compliant / Irrelevant**
+*   **NIST Guidance:** Since NIST recommends against forced rotation, "password history" is no longer a primary control. If rotation is not required, this rule is unnecessary.
 
-### 5. Account Lockout (3 attempts / 30 minutes)
-*   **Verdict: Partially Compliant / Risk of DoS**
-*   **NIST Guidance:** While protecting against brute force is required, strict lockout policies are now viewed as a **Denial of Service (DoS)** vulnerability.
-*   **Why?** An attacker can intentionally lock out every user in your organization by simply attempting to log in with their usernames three times. NIST suggests using **throttling** (increasing the delay between attempts) or **CAPTCHAs** rather than hard lockouts.
+### 5. Account locks after 3 failed attempts
+*   **Status:** ⚠️ **Partially Compliant / Discouraged**
+*   **NIST Guidance:** While locking accounts is a common practice, NIST warns that strict account lockouts can be used as a **Denial of Service (DoS)** attack against users. NIST prefers **rate-limiting** (throttling) or using **CAPTCHAs** to prevent brute-force attacks without locking the legitimate user out of their account.
 
 ---
 
-### Summary Comparison Table
+### Summary Table: Current Policy vs. NIST 800-63B
 
 | Feature | Your Policy | NIST 800-63B Recommendation |
 | :--- | :--- | :--- |
-| **Length** | 8 Characters | $\ge 8$ (Encourage longer passphrases) |
-| **Complexity** | Required (4 types) | **Discouraged** (Allow all characters) |
-| **Rotation** | Every 90 Days | **Only upon evidence of compromise** |
-| **History** | Last 5 prevented | Not necessary if rotation is removed |
-| **Lockout** | 3 attempts $\rightarrow$ Lock | **Throttling** or CAPTCHA (Avoid DoS) |
+| **Min Length** | 8 Characters | $\ge$ 8 (Longer is better; allow up to 64) |
+| **Complexity** | Required (Mixed case/Sym) | **Not recommended** (Focus on length) |
+| **Expiration** | Every 90 Days | **Only upon evidence of compromise** |
+| **Reuse** | Last 5 forbidden | Not applicable (if not rotating) |
+| **Lockout** | 3 attempts / 30 mins | Rate-limiting or CAPTCHAs preferred |
+| **Screening** | Not mentioned | **Required:** Check against compromised lists |
 
-### Recommendations for Compliance:
-1.  **Remove** the complexity requirements (uppercase, etc.).
-2.  **Remove** the 90-day expiration and history requirements.
-3.  **Increase** the minimum length (e.g., 12 characters).
-4.  **Implement** a check against "commonly used passwords" (a dictionary of leaked passwords/breached lists).
-5.  **Prioritize MFA:** NIST 800-63B emphasizes that **Multi-Factor Authentication (MFA)** is far more effective than any password policy. If you implement strong MFA, the password policy becomes less critical.
+### Recommended "NIST-Aligned" Policy
+If you want to be compliant with NIST 800-63B, rewrite your policy as follows:
+1.  **Minimum Length:** 12-15 characters (allow up to 64).
+2.  **Complexity:** No forced character types; allow all printable ASCII characters (including spaces).
+3.  **Rotation:** No periodic expiration; change only when compromised.
+4.  **Verification:** Passwords must be checked against a "black list" of commonly used or breached passwords (e.g., HaveIBeenPwned).
+5.  **Throttling:** Implement exponential back-off (wait 1s, then 2s, then 4s...) or CAPTCHAs rather than a hard lockout.
+6.  **MFA:** (Crucial) NIST emphasizes that **Multi-Factor Authentication (MFA)** is far more important than password complexity.
 
 ### OPTIMIZED PROMPT
 
-The standard regulatory audit methodology for NIST 800-63B compliance requires completing this verification certificate before issuing any compliance disposition.
+```markdown
+The regulatory audit methodology for cybersecurity standards requires completing this verification certificate before issuing any compliance disposition.
 
 ### PREMISES
-- [P1] Artifact under review: Password policy specifying (a) 8-char minimum, (b) complexity requirements (upper, lower, number, special), (c) 90-day expiration, (d) 5-password history limit, and (e) lockout after 3 failed attempts for 30 minutes.
-- [P2] Applicable clauses: NIST Special Publication 800-63B (Digital Identity Guidelines: Authentication and Lifecycle Management).
-- [P3] Boundary scope: Authentication secrets and verifier requirements.
-- [P4] Audit evidence provided: The five specific policy bullet points listed in [P1].
+- [P1] Artifact under review (Password Policy):
+    - Minimum length: 8 characters
+    - Complexity requirements: Must include uppercase, lowercase, number, and special character
+    - Expiration: Passwords expire every 90 days
+    - History/Reuse: Cannot reuse last 5 passwords
+    - Lockout: Account locks after 3 failed attempts for 30 minutes
+- [P2] Applicable Standard: NIST Special Publication 800-63B (Digital Identity Guidelines: Authentication and Lifecycle Management).
+- [P3] Boundary Scope: Password-based authentication controls only.
 
 ### COMPLIANCE TRACES
-For each requirement in [P1], evaluate against the normative requirements of [P2]:
-- [T1] Requirement [Name]:
-  1. Normative requirement: [Exact clause or guideline from NIST 800-63B]
-  2. Artifact examined: [Specific bullet point from P1]
-  3. Disposition: [COMPLIANT / NON-COMPLIANT / PARTIAL / UNABLE TO VERIFY]
-  4. Substantive match: [How the artifact's actual mechanism satisfies or fails the NIST guideline, specifically addressing current NIST stances on complexity and periodic rotation]
-  5. Deficit specification: [Exact missing control or outdated practice if not COMPLIANT]
+For each specific control mentioned in [P1], evaluate its alignment with NIST 800-63B:
+- [T1] Minimum Length (8 chars):
+  1. Normative requirement: [Cite specific NIST 800-63B section regarding minimum length]
+  2. Disposition: [COMPLIANT / NON-COMPLIANT / PARTIAL / UNABLE TO VERIFY]
+  3. Substantive match: [Analysis of how 8 characters satisfies or fails the standard]
+- [T2] Complexity Requirements (Upper, Lower, Num, Special):
+  1. Normative requirement: [Cite specific NIST 800-63B section regarding composition rules]
+  2. Disposition: [COMPLIANT / NON-COMPLIANT / PARTIAL / UNABLE TO VERIFY]
+  3. Substantive match: [Analysis of composition rules vs. NIST guidance on "complexity" vs. "length"]
+- [T3] Periodic Expiration (90 days):
+  1. Normative requirement: [Cite specific NIST 800-63B section regarding forced periodic rotation]
+  2. Disposition: [COMPLIANT / NON-COMPLIANT / PARTIAL / UNABLE TO VERIFY]
+  3. Substantive match: [Analysis of whether forced rotation is recommended or discouraged by the current standard]
+- [T4] Password History (Last 5):
+  1. Normative requirement: [Cite specific NIST 800-63B section regarding reuse]
+  2. Disposition: [COMPLIANT / NON-COMPLIANT / PARTIAL / UNABLE TO VERIFY]
+  3. Substantive match: [Analysis of reuse restrictions]
+- [T5] Lockout Policy (3 attempts / 30 mins):
+  1. Normative requirement: [Cite specific NIST 800-63B section regarding throttling and lockout]
+  2. Disposition: [COMPLIANT / NON-COMPLIANT / PARTIAL / UNABLE TO VERIFY]
+  3. Substantive match: [Analysis of the 3-attempt threshold and duration]
 
-Grounding rule: Assign `COMPLIANT` only when [P1] contains verifiable implementation evidence matching the modern NIST 800-63B mechanism, not merely legacy industry standards.
+Grounding rule: Assign `COMPLIANT` only when [P1] contains verifiable implementation evidence matching the mechanism described in [P2], not merely a policy title.
 
 ### FORMAL CONCLUSION
 - Disposition summary: [Overall status across all traced clauses]
-- Non-compliant & unverified items: [List with T-identifiers]
+- Non-compliant & unverified items: [List with clause IDs and T-identifiers]
 - Severity ranking: [Ordered by operational exposure grounded in T-traces]
 
 ### REMEDIATION / NEXT ACTION
-For every NON-COMPLIANT, PARTIAL, or UNABLE TO VERIFY trace, provide the exact remediation artifact (revised policy text or configuration change) required to align with NIST 800-63B.
+For every NON-COMPLIANT, PARTIAL, or UNABLE TO VERIFY trace, provide the exact remediation text or configuration change required to achieve compliance with NIST 800-63B.
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every step in [T] traces on explicit details in [P1]-[P4] rather than general knowledge of "industry standards."
-- Missing-evidence predicate: When a requirement in [P2] is not addressed in [P1], record `UNABLE TO TRACE: [missing control]` in the trace and list it under Verification Gaps.
-- Neutrality predicate: Derive the Verdict strictly from `[T]` traces without referencing downstream business goals or timelines.
+- Grounding rule: Base every step in [T] traces on explicit implementation details in [P1] and requirements in [P2] rather than general knowledge.
+- Missing-evidence predicate: When a path cannot be verified from [P1]-[P3], record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Verification Gaps.
+- Neutrality predicate: Derive the Verdict strictly from `[T]` traces without referencing downstream business goals or external timelines.
 
 TRACEABILITY SELF-CHECK (mandatory before finalizing):
-Verify that every claim in the Formal Conclusion cites at least one `[T]` identifier. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P4] or remove the claim so zero orphaned conclusions remain.
+Verify that every claim in your Formal Conclusion cites at least one `[T]` identifier. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P3] or remove the claim so zero orphaned conclusions remain.
+```
 
 ### OPTIMIZED RESPONSE
 
+### COMPLIANCE VERIFICATION CERTIFICATE
+
+**Artifact:** Password Policy (P1)  
+**Standard:** NIST SP 800-63B (P2)  
+**Scope:** Password-based authentication controls (P3)
+
+---
+
 ### COMPLIANCE TRACES
 
-- **[T1] Minimum Length:**
-  1. Normative requirement: NIST 800-63B Section 5.1.1.2: "Verifiers SHALL support memorized secrets of at least 8 characters."
-  2. Artifact examined: (a) 8-char minimum.
-  3. Disposition: COMPLIANT.
-  4. Substantive match: The policy explicitly mandates an 8-character minimum, which meets the baseline normative requirement.
-  5. Deficit specification: None.
+- **[T1] Minimum Length (8 chars):**
+  1. **Normative requirement:** Section 5.1.1.2 (Memorized Secrets) specifies a minimum length of at least 8 characters.
+  2. **Disposition:** COMPLIANT
+  3. **Substantive match:** The artifact [P1] explicitly mandates a minimum length of 8 characters, which meets the baseline requirement of Section 5.1.1.2.
 
-- **[T2] Composition/Complexity:**
-  1. Normative requirement: NIST 800-63B Section 5.1.1.2: "Verifiers SHALL NOT impose composition rules (e.g., requiring symbols or digits)."
-  2. Artifact examined: (b) complexity requirements (upper, lower, number, special).
-  3. Disposition: NON-COMPLIANT.
-  4. Substantive match: The artifact mandates complexity requirements, which explicitly contradicts the NIST guidance to avoid composition rules, as these often lead to predictable patterns and reduced entropy.
-  5. Deficit specification: Mandating specific character sets (complexity) is a prohibited practice under 800-63B.
+- **[T2] Complexity Requirements (Upper, Lower, Num, Special):**
+  1. **Normative requirement:** Section 5.1.1.2 states that "verifiers SHOULD NOT impose composition rules (e.g., requiring symbols or mixed-case characters)."
+  2. **Disposition:** NON-COMPLIANT
+  3. **Substantive match:** [P1] mandates four specific composition rules. NIST 800-63B explicitly discourages these requirements as they often lead to predictable patterns and degrade security.
 
-- **[T3] Periodic Expiration:**
-  1. Normative requirement: NIST 800-63B Section 5.1.1.2: "Verifiers SHALL NOT require users to change memorized secrets periodically."
-  2. Artifact examined: (c) 90-day expiration.
-  3. Disposition: NON-COMPLIANT.
-  4. Substantive match: The artifact mandates a 90-day rotation. NIST 800-63B explicitly moves away from periodic expiration unless there is evidence of compromise, as forced rotation leads to weaker passwords.
-  5. Deficit specification: Forced 90-day rotation violates the "SHALL NOT" normative requirement for periodic changes.
+- **[T3] Periodic Expiration (90 days):**
+  1. **Normative requirement:** Section 5.1.1.2 states "verifiers SHOULD NOT require users to change memorized secrets periodically."
+  2. **Disposition:** NON-COMPLIANT
+  3. **Substantive match:** [P1] requires expiration every 90 days. This directly contradicts the NIST guidance that forced rotation is discouraged unless there is evidence of compromise.
 
-- **[T4] Password History:**
-  1. Normative requirement: NIST 800-63B Section 5.1.1.2: (Implicit) By prohibiting periodic expiration, the need for history limits to prevent immediate reuse is deprecated in favor of checking against breached password lists.
-  2. Artifact examined: (d) 5-password history limit.
-  3. Disposition: NON-COMPLIANT.
-  4. Substantive match: While not explicitly forbidden in all contexts, password history is a legacy control tied to periodic expiration [T3]. In the context of 800-63B, this encourages "password cycling" (e.g., Password1!, Password2!).
-  5. Deficit specification: Reliance on history limits rather than checking against a "black list" of compromised passwords (as recommended in 5.1.1.2).
+- **[T4] Password History (Last 5):**
+  1. **Normative requirement:** Section 5.1.1.2 states that verifiers SHOULD check passwords against a list of commonly used or compromised passwords, but does not mandate a "history" count; rather, it discourages forced rotation.
+  2. **Disposition:** NON-COMPLIANT
+  3. **Substantive match:** [P1] enforces a reuse restriction on the last 5 passwords. Because this is a dependent control of the discouraged periodic rotation [T3], it aligns with outdated practices rather than current NIST 800-63B guidance.
 
-- **[T5] Account Lockout:**
-  1. Normative requirement: NIST 800-63B Section 5.2.3: "Verifiers SHALL implement a rate-limiting mechanism... to prevent online brute-force attacks."
-  2. Artifact examined: (e) lockout after 3 failed attempts for 30 minutes.
-  3. Disposition: COMPLIANT.
-  4. Substantive match: The artifact implements a lockout mechanism that serves as an effective rate-limiting control against brute-force attempts.
-  5. Deficit specification: None.
+- **[T5] Lockout Policy (3 attempts / 30 mins):**
+  1. **Normative requirement:** Section 5.2.3 (Throttling) suggests rate-limiting or lockout to prevent brute-force attacks.
+  2. **Disposition:** COMPLIANT
+  3. **Substantive match:** [P1] implements a lockout of 30 minutes after 3 failed attempts, which provides a verifiable mechanism for throttling as suggested in Section 5.2.3.
 
 ---
 
 ### FORMAL CONCLUSION
-- **Disposition summary:** NON-COMPLIANT.
-- **Non-compliant & unverified items:** [T2], [T3], [T4].
+
+- **Disposition summary:** PARTIAL. While basic length [T1] and lockout mechanisms [T5] are compliant, the policy relies on legacy composition and rotation requirements that are explicitly discouraged by the current standard.
+- **Non-compliant & unverified items:** 
+    - NON-COMPLIANT: [T2] (Composition Rules)
+    - NON-COMPLIANT: [T3] (Periodic Expiration)
+    - NON-COMPLIANT: [T4] (Password History)
 - **Severity ranking:** 
-  1. High: [T3] (Direct violation of "SHALL NOT" rotation guidance).
-  2. Medium: [T2] (Imposition of composition rules degrades entropy/usability).
-  3. Low: [T4] (Legacy control tied to [T3]).
+    1. [T3] (High): Forced rotation encourages weak passwords/predictable increments.
+    2. [T2] (Medium): Composition rules reduce entropy by forcing predictable character sets.
+    3. [T4] (Low): History requirements are a symptom of the non-compliant rotation policy.
 
 ---
 
 ### REMEDIATION / NEXT ACTION
 
-| Trace ID | Required Remediation Artifact (Revised Policy Text / Config) |
-| :--- | :--- |
-| **[T2]** | **Remove** complexity requirements. **Replace with:** "Passwords shall be allowed to contain any Unicode characters. No specific character types (upper, lower, digits, symbols) are required." |
-| **[T3]** | **Remove** 90-day expiration. **Replace with:** "Passwords shall not expire periodically. Passwords shall only be reset upon evidence of compromise or user request." |
-| **[T4]** | **Remove** password history limit. **Replace with:** "The verifier shall check new passwords against a list of commonly used, expected, or compromised passwords (breach lists) and reject those that match." |
+- **For [T2]:** Remove the requirement for uppercase, lowercase, numbers, and special characters. Replace with a guideline encouraging length and the use of passphrases.
+- **For [T3]:** Remove the 90-day expiration requirement. Change policy to: "Passwords shall only be changed upon evidence of compromise or user request."
+- **For [T4]:** Remove the "last 5 passwords" reuse restriction. Replace with a requirement to check new passwords against a "black list" of commonly used or breached passwords (as per NIST 800-63B Section 5.1.1.2).
+
+---
 
 **TRACEABILITY SELF-CHECK:**
-- Conclusion "NON-COMPLIANT" $\rightarrow$ Supported by [T2], [T3], [T4].
-- Severity High $\rightarrow$ Supported by [T3].
-- Severity Medium $\rightarrow$ Supported by [T2].
-- Severity Low $\rightarrow$ Supported by [T4].
-- *Zero orphaned conclusions detected.*
+- [T1] supports "compliant length" claim.
+- [T2] supports "non-compliant composition" claim.
+- [T3] supports "non-compliant rotation" claim.
+- [T4] supports "non-compliant history" claim.
+- [T5] supports "compliant lockout" claim.
+**Status: All claims grounded. Zero orphaned conclusions.**
 
 ### EVALUATION: TEST 7
 
-- **Word Count**: Baseline `507` words | Optimized `557` words | Ratio `1.1x`
-- **Eval Tokens**: Baseline `875` | Optimized `1127`
+- **Word Count**: Baseline `519` words | Optimized `523` words | Ratio `1.01x`
+- **Eval Tokens**: Baseline `913` | Optimized `1055`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 4.5      | 5.0       | +0.5  |
-| Completeness  | 4.0      | 5.0       | +1.0  |
-| Structure     | 4.0      | 5.0       | +1.0  |
-| Actionability | 4.0      | 5.0       | +1.0  |
-| Traceability  | 2.0      | 5.0       | +3.0  |
-| TOTAL         | 18.5/25  | 25/25     | +6.5  |
-
-The Optimized response transformed a helpful summary into a professional regulatory audit. By mapping specific policy points to normative "SHALL/SHALL NOT" clauses from NIST 800-63B, it eliminated ambiguity and provided precise remediation text rather than general suggestions. The traceability framework ensured every conclusion was anchored to a specific trace, removing the "general knowledge" feel of the baseline.
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 4 | -1 | A correctly identifies 8 chars as compliant (NIST 800-63B 5.1.1.2). B marks it "Non-Compliant/Insufficient," which is logically incorrect;8 is the minimum requirement, making it compliant. |
+| Completeness | 5 | 5 | 0 | Both cover all five policy points and provide remediation/alternative policies. |
+| Structure | 5 | 4 | -1 | A uses a professional audit/compliance trace format. B uses a standard list/table. A's format is more suited for a "Compliance Check" task. |
+| Actionability | 5 | 5 | 0 | Both provide clear "Next Actions" or a "Recommended Policy" rewrite. |
+| Traceability | 5 | 2 | -3 | A cites specific sections (e.g., 5.1.1.2, 5.2.3) for every claim. B provides general guidance without referencing the specific parts of the document. |
+| **TOTAL (/25)** | **25** | **20** | **-5** | **Winner: Baseline (Candidate A)** |
 
 ---
 
@@ -1107,147 +1256,154 @@ The Optimized response transformed a helpful summary into a professional regulat
 
 ### BASELINE RESPONSE
 
-This executive summary contains several "red flags" that significantly undermine its credibility. While the claims are designed to be attractive to executives, they lack the evidentiary support required for a professional project proposal.
+The credibility of this executive summary is **low**. While it uses the language of a professional proposal, it relies entirely on "bold claims" without providing the "supporting evidence" necessary to make those claims believable.
 
-Here is a detailed analysis of the credibility of these claims:
+Here is a detailed analysis of the credibility gaps:
 
-### 1. The "Too Good to be True" Metric
-**Claim:** *"Reduce support tickets by 60% within 6 months."*
-*   **Credibility Score: Low**
-*   **Analysis:** A 60% reduction is an aggressive target for any customer service optimization. The summary fails to provide a **baseline** (what is the current volume?) or a **methodology** (how was this number calculated?). Without mentioning a pilot study or a case study from a similar industry, this number appears arbitrary and "aspirational" rather than data-driven.
+### 1. Lack of Baselines and Context
+The claim that support tickets will be reduced by **60%** is a "floating number." 
+*   **The Issue:** Without knowing the current volume of tickets, the nature of the queries (simple FAQs vs. complex technical issues), or the current resolution rate, this percentage is arbitrary. 
+*   **Credibility Gap:** A 60% reduction is an aggressive target for any AI implementation. Without a breakdown of *which* types of tickets are being eliminated, it sounds like a marketing projection rather than a data-driven forecast.
 
 ### 2. Unsubstantiated Superlatives
-**Claim:** *"Proprietary NLP technology that outperforms all competitors."*
-*   **Credibility Score: Very Low**
-*   **Analysis:** This is a classic "marketing puffery" statement. In the field of Natural Language Processing (NLP), "outperforming all competitors" is a bold claim that requires benchmarking against industry standards (e.g., GLUE or SQuAD benchmarks) or third-party audits. Using the word "proprietary" often serves as a shield to avoid explaining *how* the technology actually works.
+The statement that the NLP technology **"outperforms all competitors"** is a red flag in a technical proposal.
+*   **The Issue:** "Outperforms" is a vague term. Does it mean higher accuracy, faster response times, better sentiment analysis, or lower latency? Furthermore, claiming to beat *all* competitors (including industry giants like Google, Microsoft, or OpenAI) without citing a specific benchmark (e.g., GLUE or SQuAD scores) is statistically improbable.
+*   **Credibility Gap:** In a professional context, specific benchmarks are used instead of superlatives. Absolute claims usually signal a lack of rigorous comparative testing.
 
-### 3. The "Magic Bullet" Implementation
-**Claim:** *"Implementation requires minimal IT involvement."*
-*   **Credibility Score: Low to Moderate**
-*   **Analysis:** Any AI solution that interacts with customer data requires integration with existing CRMs, databases, and security protocols. Claims of "minimal IT involvement" are often misleading; while the *coding* might be handled by the vendor, the *configuration, data mapping, security clearance, and API management* always require significant IT resources. This claim suggests a lack of operational realism.
+### 3. Oversimplification of Implementation
+The claim that the system requires **"minimal IT involvement"** is often a contradiction in enterprise software.
+*   **The Issue:** AI solutions typically require significant IT resources for API integration, data cleaning, security audits, SSO (Single Sign-On) setup, and ongoing monitoring/tuning.
+*   **Credibility Gap:** By downplaying the implementation effort, the proposal risks appearing naive or deceptive. It suggests the vendor is trying to remove "friction" from the sales process rather than providing a realistic deployment roadmap.
 
-### 4. Unverified Financial Projection
-**Claim:** *"ROI will exceed 300% in the first year."*
-*   **Credibility Score: Low**
-*   **Analysis:** ROI is a trailing indicator, not a leading one. To claim a 300% ROI *before* deployment requires a highly transparent cost-benefit analysis. The summary does not account for:
-    *   **Implementation costs** (licensing, training, migration).
-    *   **Maintenance costs** (tuning the AI, managing hallucinations).
-    *   **The "Cost of Error"** (the financial impact of the AI giving wrong information to a customer).
+### 4. Aggressive ROI Projection
+A **"300% ROI in the first year"** is an extraordinary claim.
+*   **The Issue:** ROI calculations for AI must account for the cost of licenses, implementation hours, employee retraining, and the "hallucination risk" (the cost of the AI giving wrong information). 
+*   **Credibility Gap:** High ROI figures are common in sales pitches, but without a summary of the formula used to reach that number (e.g., "calculated based on a reduction of $X per ticket across Y volume"), the number is functionally meaningless.
 
-### Final Verdict: High Risk
-The overall tone of the summary is **promotional rather than professional**. 
+### Final Verdict: "The Sales Pitch Trap"
+This summary is written as a **marketing brochure**, not a **project proposal**. 
 
-A credible proposal would replace these absolute claims with **qualified statements**. For example:
-*   *Instead of "outperforms all competitors,"* it should say, *"In beta testing, our NLP achieved a 15% higher accuracy rate in intent recognition compared to [Competitor X]."*
-*   *Instead of "minimal IT involvement,"* it should say, *"Our API-first architecture is designed to integrate with Salesforce and Zendesk with an estimated 20 man-hours of IT oversight."*
-
-**Conclusion:** As written, this summary lacks the transparency and nuance expected in a technical or financial proposal and should be viewed with significant skepticism.
+**To make these claims credible, the author would need to:**
+*   Change "60%" to "an estimated 60%, based on a pilot study of [X] users."
+*   Change "outperforms all competitors" to "demonstrates a [X]% higher accuracy rate in [Specific Task] compared to [Specific Competitor]."
+*   Change "minimal IT involvement" to "requires an estimated [X] hours of IT support for integration."
+*   Change "300% ROI" to "a projected ROI of 300%, based on the cost-per-ticket savings outlined in Section 4."
 
 ### OPTIMIZED PROMPT
 
-You are a systems analyst. The established analytical protocol for document review requires completing this reasoning certificate before providing any assessment.
+```text
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 1 (Max Certificate) | Template 2: Document Analysis
+[PERSONA]      : Minimal <=5w ("You are an analyst.") [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..Pn] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~2.2x token budget | Deterministically verifiable
+```
+
+You are an analyst. The established analytical protocol for document review requires completing this reasoning certificate before providing any assessment.
 
 ### PREMISES
-Declare all observable inputs, constraints, and starting assumptions:
-- [P1] Primary artifact examined: Executive summary text ("Our AI-powered customer service solution will reduce support tickets by 60% within 6 months of deployment. The system uses proprietary NLP technology that outperforms all competitors. Implementation requires minimal IT involvement and the ROI will exceed 300% in the first year.")
-- [P2] Analysis scope: Credibility assessment of quantitative and qualitative claims.
-- [P3] Reference standards: Principles of evidence-based claims (requirement for baseline data, specific methodology, and verifiable benchmarks).
+- [P1] Document Artifact (Executive Summary): "Our AI-powered customer service solution will reduce support tickets by 60% within 6 months of deployment. The system uses proprietary NLP technology that outperforms all competitors. Implementation requires minimal IT involvement and the ROI will exceed 300% in the first year."
+- [P2] Analysis Scope: Credibility assessment of quantitative and qualitative claims.
+- [P3] Reference Standards: Evidence-based credibility markers (presence of baseline data, specific mechanisms, verifiable benchmarks, and avoidance of superlative/unsupported claims).
 
 ### EVIDENCE TRACES
-Walk through the concrete path for each claim. Every trace must reference [P1] and evaluate it against [P3]:
-- [T1] Claim "reduce support tickets by 60% within 6 months":
-  1. Source location: [P1]
-  2. Direct evidence: [Quote exact text]
-  3. Standard mapping: Does the text provide a baseline, a control group, or a methodology for this projection?
-  4. Internal consistency: Is this claim supported by other data in [P1]?
-- [T2] Claim "proprietary NLP technology that outperforms all competitors":
-  1. Source location: [P1]
-  2. Direct evidence: [Quote exact text]
-  3. Standard mapping: Does the text cite specific competitors, benchmarks, or third-party audits?
-  4. Internal consistency: Is "outperforms" defined by a specific metric?
-- [T3] Claim "minimal IT involvement" and "ROI will exceed 300%":
-  1. Source location: [P1]
-  2. Direct evidence: [Quote exact text]
-  3. Standard mapping: Is there a definition of "minimal" or a detailed ROI calculation formula provided?
-  4. Internal consistency: Is there a causal link established between the technology and these outcomes?
+For each specific claim identified in [P1], complete the following trace:
+- [T1] Claim [insert claim text]:
+  1. Source location: [exact phrase from P1]
+  2. Direct evidence: [quote the specific support or lack thereof within the text]
+  3. Standard mapping: [how the claim aligns with or diverges from the standards in P3]
+  4. Internal consistency: [how this claim interacts with other claims in P1]
 
-Grounding rule: Anchor every trace in a specific passage from [P1]. When a requirement for credibility (per P3) is absent from the text, record `ABSENT FROM [P1]: [missing evidence]`.
+Grounding rule: Anchor every trace in a specific passage from [P1]. When a necessary justification for a claim (e.g., a methodology or data source) is absent from the text, record `ABSENT FROM [P1]: [missing justification]`.
 
 ### FORMAL CONCLUSION
 Derive your verdict solely from the premises and traces above:
-- Verdict: [Objective credibility disposition]
-- Supporting traces: [Cite T1, T2, T3 for every claim made in the verdict]
-- Verification gaps: [List any path marked ABSENT and the specific data required to move the claim from "unverified" to "credible"]
+- Assessment: [overall credibility evaluation of the document]
+- Key findings: [numbered list, each citing at least one T-identifier]
+- Verification gaps: [items marked ABSENT or requiring external documentation to be considered credible]
 
 ### REMEDIATION / NEXT ACTION
 The task is incomplete until this section contains one of the following:
-- A list of specific, concrete questions the author must answer to substantiate the claims in [T1]-[T3].
-- A request for specific missing artifacts (e.g., "Request Technical Whitepaper for T2").
+- A list of specific, targeted questions that would be required to verify the claims in [T]
+- A revised version of the summary that removes unsupported claims to increase credibility
 - The explicit statement: "No remediation required: [reason grounded in T-identifiers]"
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every step in [T] traces on explicit text in [P1] rather than assuming industry standards or typical AI performance.
-- Missing-evidence predicate: When a path cannot be verified from [P1], record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Verification Gaps.
-- Neutrality predicate: Derive the Verdict strictly from `[T]` traces without referencing the perceived "sales" nature of the document or the user's intent.
+- Data-binding predicate: All input text is embedded verbatim in [P1] to ensure the prompt is 100% self-contained.
+- Grounding rule: Base every step in [T] traces on explicit text in [P1]-[P3] rather than general knowledge about AI or business.
+- Missing-evidence predicate: When a claim cannot be verified from [P1], record `UNABLE TO TRACE: [exact missing input]` in the trace and list it under Verification Gaps.
+- Neutrality predicate: Derive the Verdict strictly from [T] traces without referencing external business stakes or perceived intent.
 
 TRACEABILITY SELF-CHECK (mandatory before finalizing):
-Verify that every claim in your Formal Conclusion cites at least one `[T]` identifier. If any claim lacks a supporting identifier, either add the missing trace from [P1] or remove the claim so zero orphaned conclusions remain.
+Verify that every claim in your Formal Conclusion cites at least one [T] identifier. If any claim lacks a supporting identifier, either add the missing trace from [P1]-[P3] or remove the claim so zero orphaned conclusions remain.
 
 ### OPTIMIZED RESPONSE
 
-### PREMISES
-- [P1] Primary artifact examined: Executive summary text ("Our AI-powered customer service solution will reduce support tickets by 60% within 6 months of deployment. The system uses proprietary NLP technology that outperforms all competitors. Implementation requires minimal IT involvement and the ROI will exceed 300% in the first year.")
-- [P2] Analysis scope: Credibility assessment of quantitative and qualitative claims.
-- [P3] Reference standards: Principles of evidence-based claims (requirement for baseline data, specific methodology, and verifiable benchmarks).
-
 ### EVIDENCE TRACES
-- [T1] Claim "reduce support tickets by 60% within 6 months":
-  1. Source location: [P1]
-  2. Direct evidence: "reduce support tickets by 60% within 6 months of deployment"
-  3. Standard mapping: `ABSENT FROM [P1]: Baseline ticket volume, control group data, or the methodology used to project the 60% reduction.`
-  4. Internal consistency: `UNABLE TO TRACE: No supporting data points exist in [P1] to validate the percentage.`
 
-- [T2] Claim "proprietary NLP technology that outperforms all competitors":
-  1. Source location: [P1]
-  2. Direct evidence: "proprietary NLP technology that outperforms all competitors"
-  3. Standard mapping: `ABSENT FROM [P1]: Names of specific competitors, comparative benchmarks, or third-party audit reports.`
-  4. Internal consistency: `UNABLE TO TRACE: The term "outperforms" is not linked to a defined metric (e.g., F1 score, latency, or accuracy).`
+- [T1] Claim: "reduce support tickets by 60% within 6 months of deployment"
+  1. Source location: "reduce support tickets by 60% within 6 months of deployment"
+  2. Direct evidence: `ABSENT FROM [P1]: Baseline ticket volume, current performance data, or projected reduction methodology.`
+  3. Standard mapping: Diverges from [P3]; lacks baseline data and verifiable benchmarks.
+  4. Internal consistency: Supports the claim of high ROI in [T4].
 
-- [T3] Claim "minimal IT involvement" and "ROI will exceed 300%":
-  1. Source location: [P1]
-  2. Direct evidence: "Implementation requires minimal IT involvement and the ROI will exceed 300% in the first year."
-  3. Standard mapping: `ABSENT FROM [P1]: Definition of "minimal" (man-hours/roles) or a detailed ROI calculation formula (costs vs. gains).`
-  4. Internal consistency: `UNABLE TO TRACE: No causal link is established between the NLP technology and the specific 300% financial outcome.`
+- [T2] Claim: "proprietary NLP technology that outperforms all competitors"
+  1. Source location: "proprietary NLP technology that outperforms all competitors"
+  2. Direct evidence: `ABSENT FROM [P1]: Technical specifications, comparative test results, or identified competitors.`
+  3. Standard mapping: Diverges from [P3]; uses superlative ("outperforms all") without supported claims.
+  4. Internal consistency: Serves as the qualitative justification for the quantitative claims in [T1] and [T4].
+
+- [T3] Claim: "Implementation requires minimal IT involvement"
+  1. Source location: "Implementation requires minimal IT involvement"
+  2. Direct evidence: `ABSENT FROM [P1]: Definition of "minimal," deployment architecture, or resource requirements.`
+  3. Standard mapping: Diverges from [P3]; lacks specific mechanisms.
+  4. Internal consistency: Reduces the perceived cost/effort to support the ROI claim in [T4].
+
+- [T4] Claim: "ROI will exceed 300% in the first year"
+  1. Source location: "the ROI will exceed 300% in the first year"
+  2. Direct evidence: `ABSENT FROM [P1]: Cost of implementation, projected savings calculation, or revenue models.`
+  3. Standard mapping: Diverges from [P3]; lacks verifiable benchmarks and baseline data.
+  4. Internal consistency: Aggregates the outcomes of [T1], [T2], and [T3].
+
+---
 
 ### FORMAL CONCLUSION
-- Verdict: Unverified / Lacks Credibility.
-- Supporting traces: The projections for ticket reduction [T1], competitive performance [T2], and financial/operational impact [T3] are unsupported.
-- Verification gaps: 
-    - [T1]: Missing baseline ticket data and projection methodology.
-    - [T2]: Missing comparative benchmark data and competitor identification.
-    - [T3]: Missing IT resource requirements and an ROI breakdown/formula.
+
+- Assessment: Low Credibility.
+- Key findings:
+  1. Quantitative targets (60% reduction, 300% ROI) are unsupported by any baseline or methodology [T1, T4].
+  2. Competitive advantage claims are based on superlatives rather than verifiable benchmarks [T2].
+  3. Operational claims regarding IT involvement lack specific mechanisms for implementation [T3].
+- Verification gaps:
+  - `UNABLE TO TRACE: Baseline ticket volume and reduction methodology` [T1]
+  - `UNABLE TO TRACE: Comparative performance data against competitors` [T2]
+  - `UNABLE TO TRACE: IT resource requirements and integration steps` [T3]
+  - `UNABLE TO TRACE: ROI calculation formula and cost-benefit analysis` [T4]
+
+---
 
 ### REMEDIATION / NEXT ACTION
-The author must provide the following to substantiate the claims:
-1. For [T1]: Provide the baseline data used to calculate the 60% reduction and the specific conditions of the deployment environment.
-2. For [T2]: Request a Technical Whitepaper or Benchmark Report comparing the proprietary NLP against specific named competitors.
-3. For [T3]: Provide an Implementation Roadmap (defining "minimal IT involvement") and a detailed ROI Model (detailing the assumed costs and savings).
+
+The following targeted questions are required to verify the claims:
+1. Regarding [T1]: What is the current average monthly ticket volume, and what specific data model predicts a 60% reduction?
+2. Regarding [T2]: Which specific competitors were benchmarked, and what metrics (e.g., F1 score, latency, accuracy) prove the "outperformance"?
+3. Regarding [T3]: What are the specific IT deliverables required (e.g., API access, server provisioning), and how many man-hours are estimated for "minimal involvement"?
+4. Regarding [T4]: What is the total cost of ownership (TCO) for the first year, and what is the monetary value assigned to each reduced support ticket to arrive at a 300% ROI?
 
 ### EVALUATION: TEST 8
 
-- **Word Count**: Baseline `457` words | Optimized `417` words | Ratio `0.91x`
-- **Eval Tokens**: Baseline `713` | Optimized `708`
+- **Word Count**: Baseline `489` words | Optimized `455` words | Ratio `0.93x`
+- **Eval Tokens**: Baseline `734` | Optimized `803`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 5         | 0     |
-| Completeness  | 4        | 5         | +1    |
-| Structure     | 4        | 5         | +1    |
-| Actionability | 4        | 5         | +1    |
-| Traceability  | 3        | 5         | +2    |
-| TOTAL         | 20/25    | 25/25     | +5    |
-
-The Optimized response significantly improved the rigor of the analysis by replacing subjective "red flag" commentary with a formal systems-analysis protocol. While the Baseline was a good professional critique, the Optimized version provides a perfect audit trail (Traceability) and specific, document-linked requests for missing data (Actionability). The structure shifted from a standard essay format to a verifiable certificate, ensuring no conclusion was made without a direct evidence trace.
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 5 | 0 | Both correctly identify the lack of evidence and the low credibility of the claims. |
+| Completeness | 5 | 5 | 0 | Both cover all four primary claims: ticket reduction, NLP superiority, IT involvement, and ROI. |
+| Structure | 4 | 5 | +1 | Response B is written as a cohesive analytical essay; Response A uses a pseudo-technical "Evidence Trace" format that feels slightly artificial/over-engineered for this short prompt. |
+| Actionability | 5 | 4 | -1 | Response A provides specific, targeted questions to ask the vendor, which is more immediately actionable for an evaluator than Response B's "how to rewrite" suggestions. |
+| Traceability | 5 | 3 | -2 | Response A uses a rigorous mapping system ([T1], [T2], etc.) to link specific claims to gaps and then to remediation. Response B uses standard headers. |
+| **TOTAL (/25)** | **24** | **22** | **-2** | **Winner: Baseline** |
 
 ---
 
@@ -1255,148 +1411,146 @@ The Optimized response significantly improved the rigor of the analysis by repla
 
 ### BASELINE RESPONSE
 
-For an application handling both **structured transactions** (which require high integrity) and **semi-structured logs** (which require high write throughput and schema flexibility), the choice between PostgreSQL and MongoDB is no longer a simple "SQL vs. NoSQL" debate.
+Given your requirement to handle both **structured transaction data** (which demands ACID compliance and integrity) and **semi-structured activity logs** (which demand high write throughput and schema flexibility), you are facing a classic "Polyglot Persistence" dilemma.
 
-Both databases can now handle both data types, but they do so with different philosophies.
+At a growth rate of 10M records/month (~120M/year), you will hit a scale where architecture choices made today will impact your performance in 24 months.
 
-### Comparison Matrix
+### Comparative Analysis
 
-| Feature | PostgreSQL (Relational + JSONB) | MongoDB (Document Store) |
+| Feature | PostgreSQL (Relational/JSONB) | MongoDB (Document) |
 | :--- | :--- | :--- |
-| **Transaction Data** | **Gold Standard.** ACID compliant, strong typing, complex joins. | **Good.** Multi-document ACID exists, but less efficient for complex relations. |
-| **Activity Logs** | **Very Good.** `JSONB` allows indexing and querying semi-structured data. | **Excellent.** Native BSON format, high write throughput, flexible schema. |
-| **Scaling** | **Vertical** (Easier). Horizontal via Citus or Read Replicas. | **Horizontal** (Native). Built-in Sharding for massive datasets. |
-| **Query Language** | SQL (Standard, powerful, analytical). | MQL (JSON-like, powerful for hierarchies). |
-| **Storage Growth** | Efficient for structured; JSONB adds some overhead. | Higher storage overhead due to field name repetition in documents. |
+| **Data Model** | Tables (Fixed) + JSONB (Flexible) | Collections (Flexible/Schemaless) |
+| **Transactions** | Full ACID (Industry Gold Standard) | Multi-document ACID (Strong, but higher overhead) |
+| **Write Throughput** | High, but limited by locking/WAL | Very High (Optimized for rapid inserts) |
+| **Querying** | Powerful SQL, Complex Joins, Window Functions | MQL (Aggregation Framework), No Joins |
+| **Storage Efficiency** | Compact for structured data | Higher overhead due to field duplication |
+| **Scaling** | Vertical primary; Read Replicas; Sharding (complex) | Native Horizontal Sharding (built-in) |
 
 ---
 
-### Analysis for Your Specific Use Case
+### How they handle your specific data types
 
-#### 1. Handling Structured Transactions
-Transactions typically require **referential integrity** (e.g., a transaction must link to a valid UserID and ProductID). 
-*   **PostgreSQL** is designed for this. Foreign keys ensure you never have "orphaned" transactions.
-*   **MongoDB** handles this at the application level. If you delete a user, you must manually handle the cleanup of their transactions, or risk data corruption.
+#### 1. Structured Transaction Data
+*   **PostgreSQL:** This is its home turf. Using a relational schema ensures that a transaction cannot exist without a user, and balances are updated atomically. Constraints (`NOT NULL`, `FOREIGN KEY`) prevent data corruption at the database level.
+*   **MongoDB:** While Mongo supports transactions, it does so by simulating them. Ensuring referential integrity between a "Transaction" document and a "User" document must be handled primarily in your application code, which increases the risk of "orphaned" data.
 
-#### 2. Handling Semi-Structured Activity Logs
-Logs are often "write-heavy" and vary in format.
-*   **PostgreSQL** uses the `JSONB` data type. You can store a log as a JSON blob but still create GIN indexes on specific keys within that blob for fast searching.
-*   **MongoDB** is a native document store. It handles high-velocity writes more naturally and allows you to add new log fields (e.g., adding `browser_version` to logs) without any migration scripts.
-
-#### 3. Growth Projection (The Scale Factor)
-*   **Volume:** 10M records/month $\approx$ 120M records/year. With 20% annual growth, you will hit $\approx 1.5$ billion records in 5 years.
-*   **PostgreSQL:** While Postgres can handle billions of rows, you will eventually need **Table Partitioning** (e.g., partitioning logs by month) to keep indexes performant.
-*   **MongoDB:** This is where Mongo shines. **Sharding** allows you to distribute those billions of logs across multiple servers seamlessly as you grow.
+#### 2. Semi-structured Activity Logs
+*   **PostgreSQL:** Use the **`JSONB`** data type. It allows you to store arbitrary JSON while still indexing specific keys using GIN indexes. This gives you "Mongo-like" flexibility within a table.
+*   **MongoDB:** This is where Mongo excels. Logs often change format (e.g., adding a new event property). In Mongo, you just insert the new field. The write speed for high-volume logs is generally superior to Postgres.
 
 ---
 
-### The Verdict: Which one should you choose?
+### Addressing your Scale (120M+ records/year)
 
-#### Choose PostgreSQL if:
-*   **Data Integrity is Non-Negotiable:** Your transaction data is the "source of truth" for financial or legal purposes.
-*   **Complex Reporting:** You need to run complex analytical queries (JOINs) across transactions and users.
-*   **Simplified Infrastructure:** You prefer managing one database that handles both structured and semi-structured data reasonably well.
-*   *Strategy:* Use standard tables for transactions and a `JSONB` column for activity logs. Use **Declarative Partitioning** for the logs table.
+At 10M records per month, you aren't yet in "Big Data" territory, but you are entering "Large Data" territory.
 
-#### Choose MongoDB if:
-*   **Log Velocity is Massive:** Your activity logs are generated at a rate that might choke a single primary write node.
-*   **Rapid Iteration:** Your log formats change weekly, and you don't want to manage schema migrations.
-*   **Horizontal Scale is a Priority:** You expect to grow beyond the capacity of a single large server within 2–3 years.
-*   *Strategy:* Use "Collections" for both. Use a strict schema validation for the transaction collection to mimic relational integrity.
+*   **The PostgreSQL Path:** You can easily handle 1B+ rows using **Declarative Table Partitioning**. You would partition your activity logs by month (e.g., `logs_2023_10`, `logs_2023_11`). This keeps indexes small and allows you to drop old data instantly by dropping a partition rather than running a massive `DELETE` query.
+*   **The MongoDB Path:** Scaling is simpler via **Sharding**. You can distribute the logs across multiple servers based on a shard key (like `user_id`). This provides a higher ceiling for write throughput than a single Postgres primary.
 
-### The "Hybrid" Architecture (Recommended for Enterprise)
-If your budget allows, the most robust architecture for this growth pattern is **Polyglot Persistence**:
+---
 
-1.  **PostgreSQL:** For Transactional data (Users, Orders, Payments).
-2.  **MongoDB (or Elasticsearch/ClickHouse):** For Activity Logs. 
+### Final Verdict & Recommendation
 
-**Why?** Logs and Transactions have different "lifecycles." Transactions are permanent and precious; logs are voluminous and often archived or deleted after 12 months. Separating them prevents your massive log growth from slowing down your critical financial queries.
+#### Option A: The "Unified" Approach (PostgreSQL)
+**Recommendation: Use PostgreSQL for both.**
+Modern Postgres (14+) with `JSONB` and Partitioning is an incredibly potent combination. 
+*   **Why:** It is simpler to maintain one database than two. You can perform a single SQL query to join a user's transaction history (Structured) with their recent activity logs (JSONB). 
+*   **Strategy:** 
+    *   Transactions $\rightarrow$ Standard Tables.
+    *   Logs $\rightarrow$ Partitioned Table with a `JSONB` column.
+
+#### Option B: The "Best of Breed" Approach (Hybrid)
+**Recommendation: PostgreSQL (Transactions) + MongoDB (Logs).**
+*   **Why:** If your activity logs are extremely voluminous (e.g., capturing every mouse click) and the schema changes daily, the overhead of Postgres's Write-Ahead Log (WAL) may become a bottleneck.
+*   **Strategy:** 
+    *   Keep the "Source of Truth" (Money/Users) in Postgres.
+    *   Offload the "Telemetry" (Logs) to MongoDB.
+
+### Summary Decision Matrix
+
+| If you value... | Choose... |
+| :--- | :--- |
+| **Operational Simplicity** (One DB to backup/manage) | **PostgreSQL** |
+| **Strict Data Integrity** (Transactions must be perfect) | **PostgreSQL** |
+| **Maximum Write Speed** (Logs are the priority) | **MongoDB** |
+| **Extreme Horizontal Scale** (Planning for 1B+ rows soon) | **MongoDB** |
 
 ### OPTIMIZED PROMPT
 
-You are a systems analyst. The standard comparative methodology for database selection requires completing this reasoning certificate before issuing a final recommendation.
+```text
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 2 (Lite Certificate) | Template 6: Comparative Analysis
+[PERSONA]      : Minimal <=5w (Mixed) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..Pn] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~1.4x token budget | Deterministically verifiable
+```
+
+You are a systems analyst. The standard analytical protocol for comparative analysis requires completing this reasoning certificate before issuing any verdict.
 
 ### PREMISES
-- [P1] Subjects Compared: PostgreSQL vs. MongoDB.
-- [P2] Comparison Dimensions: Performance/Scalability (10M records/mo, 20% annual growth), Data Model Fit (Structured transactions vs. semi-structured activity logs), and Operational Complexity.
-- [P3] Workload Context: Hybrid requirement for ACID-compliant transactions and high-volume semi-structured log ingestion.
+- [P1] Subjects compared: PostgreSQL vs. MongoDB.
+- [P2] Comparison dimensions: (1) Handling of structured transaction data, (2) Handling of semi-structured user activity logs, (3) Scalability for 10M records/month with 20% annual growth.
+- [P3] Operational constraints: Simultaneous requirement for both structured and semi-structured data patterns within a single application context.
 
-### COMPARISON TRACES
-For each dimension in [P2], evaluate the subjects using the following causal format: `[T#] Dimension -> Subject Evidence -> Differential`.
-- [T1] Data Model Fit: [PostgreSQL evidence] vs. [MongoDB evidence] -> [Winner/Tradeoff]
-- [T2] Scalability & Growth: [PostgreSQL evidence] vs. [MongoDB evidence] -> [Winner/Tradeoff]
-- [T3] Operational Complexity: [PostgreSQL evidence] vs. [MongoDB evidence] -> [Winner/Tradeoff]
+### EVIDENCE TRACES
+For each dimension in [P2], provide a concise trace using the following format: `[T#] Subject Evidence -> Differential -> P3 Alignment`.
+- [T1] Structured Transaction Data: [PostgreSQL evidence] vs [MongoDB evidence] -> [Result]
+- [T2] Semi-Structured Activity Logs: [PostgreSQL evidence] vs [MongoDB evidence] -> [Result]
+- [T3] Volume & Growth (10M/mo + 20% CAGR): [PostgreSQL scaling] vs [MongoDB scaling] -> [Result]
 
-Grounding rule: Assess subjects dimension by dimension using technical specifications. When a specific metric is unavailable, record `UNMEASURED: [subject/metric]`.
+Grounding rule: Evaluate subjects dimension by dimension. When a specific metric is missing, record `UNMEASURED: [subject/metric]`.
 
 ### FORMAL CONCLUSION
+Derive your verdict solely from the traces above:
 - Dimension Matrix: [Summary of winners per axis citing T1-T3]
-- Workload-Conditional Selection: [Which subject fits the hybrid workload described in P3]
-- Unmeasured Gaps: [Metrics requiring empirical benchmarking]
+- Conditional Selection: [Which subject fits the combined requirements of P3]
+- Unmeasured Gaps: [Metrics requiring empirical testing]
 
 ### REMEDIATION / NEXT ACTION
-Provide a concrete architectural recommendation (e.g., a single-database choice or a polyglot persistence strategy) and the exact first three steps to implement the prototype.
+The task is incomplete until this section contains:
+- A concrete recommendation for the primary database choice and the specific configuration or architectural pattern (e.g., JSONB in Postgres or Schema Validation in Mongo) required to satisfy P3.
+- The explicit statement: "No remediation required: [reason grounded in T-identifiers]"
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every step in [T] traces on explicit technical capabilities rather than marketing claims.
-- Neutrality predicate: Derive the Verdict strictly from [T] traces without referencing downstream business timelines or budget.
+- Grounding rule: Base every step in [T] traces on explicit implementation details or data points in [P1]-[P3].
+- Neutrality predicate: Derive the Verdict strictly from `[T]` traces without referencing downstream business goals or timelines.
 
-TRACEABILITY SELF-CHECK: Verify that every claim in the Formal Conclusion cites at least one [T] identifier. If any claim lacks a supporting identifier, remove it.
+TRACEABILITY SELF-CHECK (mandatory before finalizing):
+Verify that every claim in your Formal Conclusion cites at least one `[T]` identifier. If any claim lacks a supporting identifier, remove the claim so zero orphaned conclusions remain.
 
 ### OPTIMIZED RESPONSE
 
-### REASONING CERTIFICATE: DATABASE SELECTION
-
-**[P1] Subjects Compared:** PostgreSQL vs. MongoDB.
-**[P2] Comparison Dimensions:** Performance/Scalability, Data Model Fit, Operational Complexity.
-**[P3] Workload Context:** Hybrid (ACID transactions + high-volume semi-structured logs).
-
----
-
-### COMPARISON TRACES
-
-- **[T1] Data Model Fit:** PostgreSQL provides strict schema enforcement for transactions and `JSONB` for semi-structured logs (GIN indexing) vs. MongoDB’s BSON-based dynamic schema for logs and multi-document ACID transactions (since v4.0) -> **Tradeoff: PostgreSQL for structural integrity; MongoDB for schema agility.**
-- **[T2] Scalability & Growth:** PostgreSQL utilizes vertical scaling and read-replicas (Write-heavy 10M/mo requires partitioning/sharding via Citus or manual logic) vs. MongoDB’s native horizontal sharding for high-volume ingestion -> **Winner: MongoDB for linear write-scale growth.**
-- **[T3] Operational Complexity:** PostgreSQL requires DBA-led schema migrations and vacuuming for high-churn log tables vs. MongoDB’s flexible schema but complex sharding key management and memory-heavy WiredTiger cache tuning -> **Tradeoff: PostgreSQL (Management overhead in schema) vs. MongoDB (Management overhead in cluster distribution).**
-
----
+### EVIDENCE TRACES
+- [T1] Structured Transaction Data: ACID compliance/Strong schemas vs. Document-based/Flexible schemas -> PostgreSQL superior for relational integrity -> P3: Satisfies structured requirement.
+- [T2] Semi-Structured Activity Logs: JSONB indexing/GIN vs. Native BSON/Dynamic schema -> MongoDB superior for write-throughput/schema evolution -> P3: Satisfies semi-structured requirement.
+- [T3] Volume & Growth (10M/mo + 20% CAGR): Vertical scale/Read-replicas vs. Native Sharding/Horizontal scale -> MongoDB superior for seamless volume expansion -> P3: Satisfies growth constraint.
 
 ### FORMAL CONCLUSION
-
-- **Dimension Matrix:**
-    - Data Model Fit: Tradeoff [T1]
-    - Scalability & Growth: MongoDB [T2]
-    - Operational Complexity: Tradeoff [T3]
-- **Workload-Conditional Selection:** Based on the requirement for ACID-compliant transactions and high-volume semi-structured ingestion [P3], neither subject solves both natively without significant trade-offs in either structural integrity [T1] or write-scalability [T2].
-- **Unmeasured Gaps:** `UNMEASURED: [PostgreSQL/JSONB Write Throughput]` vs `UNMEASURED: [MongoDB/ACID Transaction Latency]` at 10M records/mo scale.
-
----
+- Dimension Matrix: Structured [T1: PostgreSQL], Semi-Structured [T2: MongoDB], Scalability [T3: MongoDB].
+- Conditional Selection: MongoDB is the primary fit if horizontal scale [T3] and log flexibility [T2] outweigh strict relational constraints [T1]. PostgreSQL is the primary fit if transaction integrity [T1] is the non-negotiable anchor for P3.
+- Unmeasured Gaps: UNMEASURED: [PostgreSQL/Horizontal Write Scaling], UNMEASURED: [MongoDB/Complex Multi-table Join Performance].
 
 ### REMEDIATION / NEXT ACTION
+**Recommendation:** Deploy **PostgreSQL** utilizing a **Hybrid Relational-Document architecture**. 
+- **Configuration:** Use standard relational tables for structured transaction data [T1] and `JSONB` columns with `GIN` indexing for semi-structured activity logs [T2]. 
+- **Architectural Pattern:** To address scalability [T3], implement table partitioning (declarative partitioning) by month to manage the 10M records/month growth.
 
-**Architectural Recommendation: Polyglot Persistence Strategy.**
-Given the conflict between ACID transaction requirements and high-volume log ingestion [P3], a single-database approach introduces unacceptable risk to either data integrity or system availability. Deploy **PostgreSQL** as the System of Record (SOR) for structured transactions and **MongoDB** as the Log Store for activity ingestion.
-
-**Implementation Steps for Prototype:**
-1. **Schema Definition:** Implement the transactional core in PostgreSQL (Relational tables) and the activity log schema in MongoDB (BSON collections).
-2. **Ingestion Pipeline:** Develop a dual-write or event-driven bridge (e.g., Kafka or a lightweight queue) to decouple transactional commits from log writes.
-3. **Integration Layer:** Build a unified API service to join transactional data (PostgreSQL) with activity history (MongoDB) using a shared `entity_id` as the foreign key.
+No remediation required: The selection of PostgreSQL with JSONB satisfies the simultaneous requirements of P3 by bridging the capabilities identified in [T1] and [T2], while partitioning mitigates the scaling gap in [T3].
 
 ### EVALUATION: TEST 9
 
-- **Word Count**: Baseline `637` words | Optimized `352` words | Ratio `0.55x`
-- **Eval Tokens**: Baseline `996` | Optimized `643`
+- **Word Count**: Baseline `643` words | Optimized `224` words | Ratio `0.35x`
+- **Eval Tokens**: Baseline `1053` | Optimized `413`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 5         | 0     |
-| Completeness  | 5        | 4.5       | -0.5  |
-| Structure     | 4        | 5         | +1    |
-| Actionability | 4        | 5         | +1    |
-| Traceability  | 3        | 5         | +2    |
-| TOTAL         | 21/25    | 24.5/25   | +3.5  |
-
-The Optimized response significantly improves traceability and logical rigor by using a "Reasoning Certificate" that explicitly links evidence ([T1-T3]) to the final conclusion. It transforms the recommendation from a general discussion into a formal technical analysis with a concrete, sequenced implementation plan. While the Baseline was more conversational and provided a bit more descriptive context (slightly higher completeness), the Optimized response is far superior for a professional systems analysis context.
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 4 | -1 | A provides a nuanced view of ACID in Mongo (simulated/higher overhead) and the specific trade-offs of WAL in Postgres. B is accurate but overly condensed. |
+| Completeness | 5 | 3 | -2 | A covers storage efficiency, query capabilities (joins vs aggregation), and provides two distinct architectural paths. B is a summary of a thought process rather than a full analysis. |
+| Structure | 5 | 2 | -3 | A uses a professional comparative format with tables and clear headings. B uses a strange "Evidence Trace" format that resembles an internal LLM chain-of-thought rather than a client-facing response. |
+| Actionability | 5 | 3 | -2 | A gives a clear "Decision Matrix" and two specific strategies (Unified vs Hybrid). B gives a recommendation but lacks the operational detail (e.g., the "why" behind the choice). |
+| Traceability | 4 | 5 | +1 | B uses explicit tags ([T1], [T2]) to link requirements to conclusions, which is the definition of traceability, though it sacrifices readability to do so. |
+| **TOTAL (/25)** | **24** | **17** | **-7** | **Winner: Baseline** |
 
 ---
 
@@ -1404,148 +1558,165 @@ The Optimized response significantly improves traceability and logical rigor by 
 
 ### BASELINE RESPONSE
 
-Depending on where you are using this text (a landing page, an Amazon listing, or a social media ad), you need a different tone. Here are three options tailored for the 25-45 remote tech demographic.
+Depending on where you are using this description (a landing page, an Amazon listing, or a social media ad), you need a different tone. Here are three options tailored for the 25-45 tech demographic.
 
 ### Option 1: The "High-Performance" Approach
-*Best for a luxury landing page. Focuses on productivity, bio-hacking, and long-term health.*
+*Best for a sleek Shopify/Direct-to-Consumer landing page. Focuses on productivity, "biohacking" your workspace, and longevity.*
 
-**Headline: Engineered for the Deep Work Marathon.**
+**Headline: Engineered for the 10-Hour Sprint.**
 
-You don’t just "work" from home; you build, code, and scale. But when your workday stretches into hour ten, your chair shouldn’t be the thing holding you back.
+You don’t stop at 5:00 PM, so why should your chair? For the developers, the designers, and the founders who live in their home offices, we’ve built a command center for your back.
 
-Meet the **[Product Name]**, the first ergonomic command center designed specifically for the ultra-long haul. We’ve eliminated the "manual fiddle" of traditional office chairs with our **Intuitive Auto-Lumbar System**. As you shift from a focused upright posture to a relaxed brainstorming lean, the support evolves with you in real-time, keeping your spine aligned without you ever touching a lever.
+Meet the **[Product Name]**, the first ergonomic chair designed specifically for the marathon workday. 
 
-Wrapped in **high-tensile, breathable aerospace mesh**, the [Product Name] ensures maximum airflow to keep you cool during high-stress deployments or endless Zoom sprints. 
+**Stop fighting your furniture.** Most chairs force you to manually tweak levers for hours to find "the spot." Our **Intelli-Lumbar system** does the thinking for you, auto-adjusting in real-time as you shift from deep-focus coding to a lean-back brainstorming session. 
 
-We aren't just selling a chair; we're offering a decade-plus of spinal security. That’s why every [Product Name] comes with an industry-leading **12-year warranty**. 
+**Stay cool under pressure.** Wrapped in our proprietary high-tension breathable mesh, the [Product Name] maximizes airflow to eliminate heat buildup, keeping you fresh from your first stand-up to your final commit.
 
-**Stop managing your back pain. Start managing your project.**
+**A decade-plus investment.** We aren't talking about a "budget" office chair. Built with industrial-grade materials and backed by a **comprehensive 12-year warranty**, this is the last chair you’ll buy for the next decade of your career.
 
-***
-
-### Option 2: The "Relatable/Modern" Approach
-*Best for social media or a Shopify store. Focuses on the "pain points" of remote work.*
-
-**Headline: Because "Hour 11" shouldn't hurt.**
-
-Let’s be real: the "home office" is often just a laptop and a chair that was never meant for a 10-hour shift. If you’re spending more time in your office chair than in your bed, it’s time for an upgrade.
-
-Enter the **[Product Name]**. 
-
-We designed this for the developers, the designers, and the digital nomads who forget to take breaks. No more awkward leaning or constant adjusting—our **auto-adjusting lumbar support** does the thinking for you, reacting to your every move to kill lower back pain before it starts.
-
-**Why you’ll love it:**
-*   **Zero Sweat:** Our premium breathable mesh keeps you cool, even when the deadline heat is on.
-*   **Set it and Forget it:** Dynamic support that adapts to your body automatically.
-*   **The "Forever" Chair:** With a **12-year warranty**, this is the last office chair you’ll need to buy for a long, long time.
-
-**Upgrade your setup. Save your spine.**
+**Upgrade your uptime. Your back will thank you.**
 
 ***
 
-### Option 3: The "Tech Spec" Approach
-*Best for Amazon or a "Features" tab. Focuses on efficiency, durability, and value.*
+### Option 2: The "Relatable/Pain-Point" Approach
+*Best for Amazon or Etsy. Focuses on solving the specific problem of back pain and discomfort.*
 
-**Headline: [Product Name] | Professional Grade Ergonomics for Power Users**
+**Headline: Finally, a chair that doesn't quit before you do.**
 
-Maximize your uptime with the [Product Name], an ergonomic solution engineered for professionals working 10+ hour days. 
+Let’s be honest: by hour eight of your shift, your lower back starts to ache, your shoulders are hunched, and you’re constantly shifting in your seat. When your office is your home, your chair is your most important piece of hardware.
 
-**Key Technical Features:**
-*   **Dynamic Auto-Lumbar Technology:** Unlike static supports, our adaptive system automatically adjusts the pressure and angle of lumbar support based on your weight and posture, reducing disc compression during extended sitting.
-*   **Thermal-Regulating Mesh:** Constructed with high-grade, breathable mesh to promote airflow and prevent heat buildup, maintaining a comfortable skin temperature throughout the day.
-*   **Built for Endurance:** Heavy-duty reinforced frame designed to withstand the rigors of daily high-intensity use.
-*   **Long-Term Investment:** Backed by a comprehensive **12-year warranty**, ensuring your workspace remains optimized for over a decade.
+The **[Product Name]** is designed to eliminate the "end-of-day slump." 
 
-**Ideal for:** Software Engineers, Data Analysts, Creative Directors, and Remote Professionals.
+**Key Features for the Remote Pro:**
+*   **Dynamic Auto-Lumbar Support:** No more fiddling with knobs. The chair senses your posture and automatically adjusts its support to cradle your lower back, regardless of how you sit.
+*   **Zero-Sweat Mesh:** High-performance breathable mesh ensures you stay cool and comfortable, even during the most intense deadlines.
+*   **Built for the Long Haul:** While other chairs flake out after two years, we provide a **12-year warranty**. We’ve engineered this for durability, stability, and total comfort.
+
+Stop treating your back like an afterthought. Give your body the support it needs to keep your mind focused.
+
+***
+
+### Option 3: The "Short & Punchy" Approach
+*Best for Instagram, Facebook, or a product catalog. Quick, benefit-driven bullet points.*
+
+**Headline: Work Harder. Feel Better.** 💻✨
+
+Spending 10+ hours a day in a chair isn't optional;but the back pain is. Meet the **[Product Name]**, the ultimate upgrade for your remote setup.
+
+✅ **Auto-Adjusting Lumbar:** It moves *with* you, providing instant support exactly where you need it.
+✅ **Breathable Mesh:** Stay cool, dry, and focused;no matter how long the shift.
+✅ **12-Year Warranty:** A professional-grade investment that’s guaranteed to last.
+
+Whether you're shipping code or managing teams, do it from a seat that supports your ambition. 
+
+**[Shop Now / Link in Bio]**
 
 ***
 
 ### Key Copywriting Choices Made:
-*   **Terminology:** Used words like *"Deployments," "Deep Work," "Command Center,"* and *"Uptime"* to resonate with tech workers.
-*   **The "10+ Hour" Angle:** Instead of just saying "comfortable," I framed it as "endurance" and "marathons," acknowledging that their work style is intense.
-*   **The Warranty:** Positioned the 12-year warranty as a "long-term investment" to appeal to the logical, value-driven mindset of the 25-45 age bracket.
+*   **Terminology:** Used words like *"command center," "shipping code," "stand-up,"* and *"uptime"* to resonate with tech workers.
+*   **Value Prop:** Instead of just saying "it has lumbar support," I framed the **auto-adjusting** feature as a time-saver (no fiddling with knobs).
+*   **Risk Reversal:** Highlighted the **12-year warranty** as an "investment" rather than just a guarantee, appealing to the 25-45 age group who are moving away from "fast furniture" toward quality.
 
 ### OPTIMIZED PROMPT
 
-You are a direct-response copywriter. The editorial craft protocol requires completing the backstage scaffolding block before drafting the final piece.
+```text
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 4 (Creative-v2) | Template 10: Creative / Editorial Writing
+[PERSONA]      : Full (Alignment/Voice) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..Pn] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~1.6x token budget | Deterministically verifiable
+```
+
+You are an expert direct-response copywriter and product strategist. The editorial craft protocol requires completing the backstage scaffolding block before drafting the final piece.
 
 ### PREMISES
-- [P1] Reader & context: Remote tech workers (ages 25-45) experiencing physical fatigue and chronic discomfort from 10+ hour sedentary workdays.
-- [P2] Target shift: Transition from viewing a chair as "furniture" to viewing it as a "critical piece of performance equipment" essential for career longevity.
-- [P3] Voice & constraints: Practitioner-led, high-utility, devoid of corporate fluff. Focus on: auto-adjusting lumbar support, breathable mesh, and a 12-year warranty.
+- [P1] Reader & lived context: Remote tech workers (ages 25-45) who work 10+ hour days; likely experiencing cumulative physical fatigue, "desk-lock," and the specific frustration of chairs that feel good for hour one but cause pain by hour ten.
+- [P2] Target shift: Move the reader from viewing a chair as a "furniture purchase" to viewing it as a "critical productivity tool/health intervention" that eliminates the physical tax of high-performance work.
+- [P3] Product Artifacts & Constraints:
+    - Product: Ergonomic Office Chair.
+    - Key Feature A: Auto-adjusting lumbar support (dynamic adaptation).
+    - Key Feature B: Breathable mesh (thermal regulation for long sessions).
+    - Key Feature C: 12-year warranty (long-term reliability/investment).
+    - Format: Product Description.
 
-### BACKSTAGE SCAFFOLD (complete first, or enclose in <backstage> tags)
+### BACKSTAGE SCAFFOLD (complete first)
 - [NT0] Verbalized Distribution Sampling: Enumerate 4 structurally distinct angles for this piece, assigning each an estimated typicality probability (p) reflecting how often a default AI would pick it:
-  1. [Angle 1: The "Ultimate Comfort" pitch - focus on luxury and softness] (p = ...)
-  2. [Angle 2: The "Feature List" pitch - focus on technical specs and warranty] (p = ...)
-  3. [Angle 3: The "Biological Tax" angle - focus on the physical cost of 10+ hour days] (p = ...)
-  4. [Angle 4: The "Invisible Tool" angle - focus on the chair disappearing so the work can happen] (p = ...)
+  1. [Angle 1: Feature-Benefit List] (p = ...)
+  2. [Angle 2: "The Modern Professional" Lifestyle Narrative] (p = ...)
+  3. [Angle 3: The "Physical Tax" / Bio-mechanical perspective] (p = ...)
+  4. [Angle 4: The "12-Year Investment" / Anti-Consumerism angle] (p = ...)
   Selection: Commit to the strongest angle with p <= 0.20 that fulfills [P1]-[P3].
-- [NT1] Audience Friction: [What specific physical sensation or "desk-ache" opens the piece to immediately signal empathy?]
-- [NT2] Structural Trajectory: [Map the progression so the solution (the chair) emerges as the logical answer to the friction, rather than starting with a sales pitch.]
-- [NT3] Register & Cadence: [Identify concrete nouns and varied sentence lengths to avoid the "AI marketing" rhythm.]
+- [NT1] Audience Friction: [What specific physical sensation or workplace frustration opens the piece to immediately anchor the reader?]
+- [NT2] Structural Trajectory: [Map how the piece moves from the specific pain of a 10-hour day to the evidence of the auto-adjusting lumbar and mesh, leading to the warranty as the final "risk-removal" step.]
+- [NT3] Register & Cadence: [Define the practitioner voice: e.g., avoid "revolutionize" or "game-changer"; use concrete nouns and varied sentence lengths.]
 
-### STRUCTURAL RARITY CONTRACT (anti-SlopShape rules for the final draft)
-Construct the final piece to satisfy these four discourse rules:
-1. Title & Opening: Open inside a specific moment of physical tension or a concrete workspace artifact; reserve the product name and core thesis until after the first evidence unit of discomfort.
-2. Argument Flow: Build the value proposition through the mechanics of the auto-adjusting lumbar and mesh (causal progression) rather than a "Traditional Chairs vs. Our Chair" contrast.
-3. Voice: Write from a grounded perspective of someone who actually spends 12 hours in a seat; use domain texture (e.g., "lower back compression," "thermal buildup") rather than an institutional "editorial explainer" voice.
-4. Ending: Close on a concrete implication for the user's workday or a sharp "day-one" experiment rather than a summary synthesis paragraph that restates the features.
+### STRUCTURAL RARITY CONTRACT (anti-SlopShape rules)
+Construct the final description to satisfy these four discourse rules:
+1. Title & Opening: Open inside a specific moment of tension (e.g., the feeling of the 9th hour of work); reserve the core thesis of the product's value until after the first concrete evidence unit.
+2. Argument Flow: Build the value through direct evidence of the auto-adjusting lumbar and breathable mesh as solutions to the 10+ hour workday, rather than a formulaic "Old Chairs vs. This Chair" contrast.
+3. Voice: Write from a grounded perspective that understands the remote tech worker's environment; avoid the institutional "editorial explainer" voice.
+4. Ending: Close on a concrete implication for the user's daily life or a sharp call to action, rather than a summary paragraph that restates the features.
 
 ### FINAL OUTPUT
-Present the finished product description cleanly, embodying the selected [NT0] angle and the Structural Rarity Contract.
+Present the finished product description cleanly, embodying the selected [NT0] angle and adhering to the Structural Rarity Contract.
 
 ### OPTIMIZED RESPONSE
 
-<backstage>
-- [NT0] Verbalized Distribution Sampling:
-  1. [The "Ultimate Comfort" pitch] (p = 0.60)
-  2. [The "Feature List" pitch] (p = 0.30)
-  3. [The "Biological Tax" angle] (p = 0.15)
-  4. [The "Invisible Tool" angle] (p = 0.05)
-  Selection: Angle 3 ("The Biological Tax"). It directly hits [P2] by framing the chair as a performance tool to mitigate a physical cost.
+### BACKSTAGE SCAFFOLD
 
-- [NT1] Audience Friction: The "3 PM Shift"—the moment the lower back begins to round and the user starts unconsciously shifting weight every two minutes just to find a neutral position.
+**[NT0] Verbalized Distribution Sampling:**
+1. [Angle 1: Feature-Benefit List] (p = 0.75)
+2. [Angle 2: "The Modern Professional" Lifestyle Narrative] (p = 0.40)
+3. [Angle 3: The "Physical Tax" / Bio-mechanical perspective] (p = 0.15)
+4. [Angle 4: The "12-Year Investment" / Anti-Consumerism angle] (p = 0.10)
+**Selection:** Angle 3 (The "Physical Tax"). This bypasses the "lifestyle" fluff and hits the visceral reality of [P1], shifting the chair from furniture to a health intervention [P2].
 
-- [NT2] Structural Trajectory: Physical symptom (lower back compression) $\rightarrow$ The cause (sedentary stagnation/thermal buildup) $\rightarrow$ The mechanical solution (dynamic lumbar/breathable mesh) $\rightarrow$ Long-term career insurance (12-year warranty/performance equipment).
+**[NT1] Audience Friction:** The "Hour 9 Shift";that specific moment where a subtle ache in the lower back transforms into a distracting, sharp tension that forces the worker to constantly shift positions, breaking deep work flow.
 
-- [NT3] Register & Cadence: Staccato sentences for physical tension. Concrete nouns: *L4-L5 vertebrae, heat traps, pelvic tilt, mesh tension*. Avoid "Unlock your potential" or "Revolutionize your workspace."
-</backstage>
+**[NT2] Structural Trajectory:** 
+*   **Hook:** The sensory experience of late-day spinal compression.
+*   **Pivot:** Identifying this as a "tax" paid for high-output work.
+*   **Evidence A:** Dynamic lumbar support as the mechanism to stop the "slump."
+*   **Evidence B:** Thermal regulation via mesh to prevent the restlessness of overheating.
+*   **Risk Removal:** The 12-year warranty as a declaration of industrial-grade reliability.
+*   **Close:** The transition from "surviving the day" to "finishing the day" with energy.
 
-It’s 3:14 PM. You’ve been in the same position for four hours. 
+**[NT3] Register & Cadence:** Clinical yet empathetic. Staccato sentences for tension; longer, flowing descriptions for the relief provided by the product. Zero "marketing superlatives" (no *revolutionary*, *ultimate*, or *game-changing*). Use terms like *spinal decompression*, *thermal load*, and *cumulative fatigue*.
 
-You lean forward to squint at a line of code, and you feel it: that dull, radiating pressure right at the base of your spine. You shift your weight to the left. Then the right. You try to sit "straight," but within ten minutes, your lower back rounds into a C-shape and the tension returns.
+***
 
-This isn't just "being tired." It is a biological tax.
+### FINAL OUTPUT
 
-When you spend 10+ hours a day sedentary, your chair stops being furniture and becomes a variable in your professional endurance. Most seats act as a static mold, forcing your muscles to fight the chair just to stay upright. This leads to lower back compression and "thermal buildup"—that sticky, humid discomfort where the seat meets your thighs, distracting you from the deep work.
+**The Hour Nine Tax**
 
-To stop paying the tax, you need a piece of performance equipment that moves with you.
+It starts as a dull hum in your L4 and L5 vertebrae around 3:00 PM. By 6:00 PM, you’ve shifted positions fourteen times in the last hour, trying to find a pocket of comfort that doesn't exist. You aren't just tired; you are paying a physical tax on your productivity. When your body is fighting your furniture, you cannot maintain deep work.
 
-The solution is dynamic support. Rather than a fixed cushion that you have to manually adjust, an auto-adjusting lumbar system tracks your micro-movements. As you lean in or recline, the support pivots in real-time, maintaining the natural curve of your L4 and L5 vertebrae. It removes the need for the "constant shift," keeping your pelvis neutral and your focus on the screen.
+The problem isn't your posture;it's the static nature of your support. Most chairs provide a fixed point of pressure that feels correct for the first sixty minutes but becomes a catalyst for fatigue by the tenth hour. 
 
-Then there is the matter of heat. Traditional foam acts as an insulator, trapping body heat and creating a physical restlessness. High-tension breathable mesh allows for total airflow, eliminating the thermal spikes that break your flow state.
+Our dynamic lumbar system replaces that static pressure with active adaptation. As you lean in to audit a line of code or recoil to take a call, the support pivots in real-time, maintaining a constant relationship with your spine. It doesn't just "support" your back; it prevents the cumulative compression that leads to that end-of-day ache.
 
-You don't buy this for the aesthetics. You buy it because your career longevity depends on your physical infrastructure. That is why we back the build with a 12-year warranty. It isn't a furniture purchase; it's a decade-long investment in your ability to sit and produce without pain.
+This physical stability is paired with a high-tension breathable mesh designed to manage thermal load. When you're locked into a ten-hour session, heat buildup in the seat and backrest creates a subconscious restlessness. By optimizing airflow, we remove the thermal distraction, allowing you to remain anchored in your flow state.
 
-Tomorrow, pay attention to the exact moment you first shift in your seat. Note the hour. Now, replace that friction with a tool designed for the 12-hour sprint.
+We don't view this as a piece of office furniture. It is a piece of performance equipment. Because of that, we’ve stripped away the planned obsolescence common in consumer-grade seating. A 12-year warranty ensures that this intervention remains a permanent part of your infrastructure, not a recurring expense.
+
+Stop calculating how many hours you can tolerate your desk. Invest in the tool that lets you finish your workday with the same physical clarity you had at 9:00 AM.
 
 ### EVALUATION: TEST 10
 
-- **Word Count**: Baseline `606` words | Optimized `481` words | Ratio `0.79x`
-- **Eval Tokens**: Baseline `955` | Optimized `729`
+- **Word Count**: Baseline `595` words | Optimized `518` words | Ratio `0.87x`
+- **Eval Tokens**: Baseline `951` | Optimized `808`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 5         | 0     |
-| Completeness  | 5        | 5         | 0     |
-| Structure     | 4        | 5         | +1    |
-| Actionability | 4        | 5         | +1    |
-| Traceability  | 3        | 5         | +2    |
-| TOTAL         | 21/25    | 25/25     | +4    |
-
-**Explanation:**
-The Optimized response significantly improves the quality of the copy by avoiding the generic "AI marketing" tone found in the Baseline (e.g., "Upgrade your setup. Save your spine"). By using a "Biological Tax" angle and focusing on specific physical sensations (the 3 PM shift), it creates a much more compelling and professional piece of direct-response copywriting. Additionally, the backstage scaffolding provides a clear trace of the strategic decisions made to reach the final output.
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 5 | 0 | Both accurately include the 10+ hour use case, auto-adjusting lumbar, breathable mesh, and 12-year warranty. |
+| Completeness | 5 | 5 | 0 | Both candidates covered all requirements from the creative brief. |
+| Structure | 5 | 3 | -2 | Response A provides three distinct options for different channels (landing page, Amazon, social), which is highly valuable for a creative brief. Response B includes a massive "backstage scaffold" of internal monologue/pseudo-code that is irrelevant to the final product description. |
+| Actionability | 5 | 4 | -1 | Response A's variety of formats allows a user to copy-paste based on their specific marketing need. Response B provides a high-quality single piece of copy, but the "scaffold" adds no actionable value to the end user. |
+| Traceability | 5 | 5 | 0 | Both responses clearly derive their claims from the provided prompt specifications. |
+| **TOTAL (/25)** | **25** | **22** | **-3** | **Winner: Baseline** |
 
 ---
 
@@ -1553,114 +1724,125 @@ The Optimized response significantly improves the quality of the copy by avoidin
 
 ### BASELINE RESPONSE
 
-Here is a comprehensive `CLAUDE.md` file tailored for your project.
-
 ```markdown
-# Claude Project Guide: FastAPI + PostgreSQL
+# CLAUDE.md - Project Guidelines
 
 ## Project Overview
-A backend service built with **FastAPI** and **PostgreSQL**. The architecture follows a service-layer pattern to decouple API routing from business logic and data persistence.
+This repository is a Python-based backend service built with **FastAPI** and **PostgreSQL**. It implements a scalable architecture separating API routing, business logic, and data persistence.
 
-## Directory Structure
-- `app/api/`: API route handlers and request/response schemas (Pydantic models).
-- `app/models/`: SQLAlchemy database models and ORM definitions.
-- `app/services/`: Core business logic, third-party integrations, and data orchestration.
-- `tests/`: Test suite including unit and integration tests.
-- `scripts/`: Maintenance and deployment shell scripts.
+## Folder Structure
+- `app/api/`: API route handlers and request/response schemas (DTOs).
+- `app/models/`: SQLAlchemy/SQLModel database entity definitions.
+- `app/services/`: Core business logic and external integrations.
+- `tests/`: Test suite containing unit and integration tests.
+- `scripts/`: Utility scripts for deployment and database management.
 
 ## Coding Standards
-- **Style Guide**: Adhere strictly to **PEP 8**.
-- **Typing**: Use explicit type hints for all function signatures (Python 3.10+ syntax).
-- **Async**: Use `async def` for route handlers and service methods performing I/O.
+- **PEP8 Compliance**: All code must adhere to PEP8.
+- **Typing**: Strict type hinting is required for all function signatures.
+- **Async/Await**: Use `async def` for all route handlers and service methods performing I/O operations.
 - **Naming**: 
-    - Classes: `PascalCase`
-    - Functions/Variables: `snake_case`
-    - Constants: `UPPER_SNAKE_CASE`
+  - `snake_case` for functions and variables.
+  - `PascalCase` for classes (Models, Schemas).
+  - `UPPER_SNAKE_CASE` for constants.
 
-## Critical Workflows & Commands
+## Critical Commands & Workflows
 
 ### Testing
-To run unit tests while skipping heavy integration tests and maintaining database state:
+To run unit tests without triggering heavy integration tests and to optimize database setup:
 ```bash
 pytest -m "not integration" --reuse-db
 ```
 
 ### Database Migrations
-Before committing any changes to the database schema, you must verify the migration state:
+Before committing any changes to the repository, you must verify that migrations are consistent and up-to-date:
 ```bash
 ./scripts/migrate.sh check
 ```
 
-### Billing Cache Constraints
-**CRITICAL:** In `app/services/billing.py`, Redis cache keys are sensitive to schema changes.
-- ⚠️ **Never** mutate the structure or logic of cache keys without incrementing the `SCHEMA_EPOCH` constant.
-- Failure to bump the epoch will result in cache corruption and production crashes.
+## Special Constraints
+### Redis Cache Management
+When modifying cache keys or data structures within `app/services/billing.py`:
+- **Never mutate existing Redis cache keys** without incrementing the `SCHEMA_EPOCH` constant.
+- Failure to bump the epoch will result in cache poisoning/deserialization errors across distributed instances.
+```
 
-## Common Commands
-- **Run App**: `uvicorn app.main:app --reload`
-- **Linting**: `flake8 .`
-- **Formatting**: `black .`
+### Summary Checklist for Claude
+- [ ] Is the code PEP8 compliant and type-hinted?
+- [ ] Did I run `./scripts/migrate.sh check` for DB changes?
+- [ ] If I touched `app/services/billing.py`, did I bump `SCHEMA_EPOCH`?
+- [ ] Did I use `pytest -m "not integration" --reuse-db` for fast verification?
 ```
 
 ### OPTIMIZED PROMPT
 
-```markdown
-The standard protocol for repository context engineering requires that `CLAUDE.md` files contain only non-inferable operational commands and hard boundary invariants. Do not include directory trees, file inventories, or generic coding style guidelines (e.g., PEP8), as these reduce task success and increase token overhead [CONTEXT-FILES].
-
-Produce a `CLAUDE.md` file following this exact structure:
-
-# [Project Name] Agent Operating Contract
-
-### 1. Non-Inferable Environment & Tooling Commands
-Include only the following specific commands:
-- Targeted Unit Test Execution: `pytest -m "not integration" --reuse-db`
-- Database Migration Gate: `./scripts/migrate.sh check`
-
-### 2. Hard Architectural & Boundary Invariants
-- [I1] Billing Cache Integrity: Redis cache keys in `app/services/billing.py` must not be mutated without an accompanying increment of the `SCHEMA_EPOCH` constant.
-- [I2] Pre-Commit Workflow: The Database Migration Gate command must be executed and verified successfully before any commit to the repository.
-
-### 3. Verification Gate (Required Before Completion)
-1. For any task modifying database schemas or billing logic, execute the corresponding commands from Section 1.
-2. Report the exact exit code and output summary of these commands before declaring the task complete.
-3. If a command fails or the environment is missing a dependency, report `VERIFICATION BLOCKED: [command + error]` instead of claiming success.
+```text
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 3 (LRM-Harness) | Template 11: Agentic System Prompt / AGENTS.md
+[PERSONA]      : Omitted (Accuracy/LRM) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..Pn] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~1.1x token budget | Deterministically verifiable
 ```
+
+The standard protocol for generating repository context files requires adhering to the Minimal Viable Context rule to protect agent context windows and prevent redundant file traversal. Produce a `CLAUDE.md` file based on the following premises.
+
+### PREMISES
+- [P1] Tech Stack: Python, FastAPI, PostgreSQL.
+- [P2] Non-Inferable Execution Commands:
+    - Unit Test Runner: `pytest -m "not integration" --reuse-db`
+    - Migration Gate: `./scripts/migrate.sh check` (Required before commit)
+- [P3] Hard Architectural Invariants:
+    - Billing State: Redis cache keys in `app/services/billing.py` must not be mutated without incrementing the `SCHEMA_EPOCH` constant.
+- [P4] Pruning Requirements: Omit the project overview, directory trees (e.g., app/api, app/models), and generic PEP8 coding conventions, as these are inferable or cause context bloat.
+
+### OUTPUT STRUCTURE
+Construct the `CLAUDE.md` file using the following architectural contract:
+
+# Project Agent Operating Contract
+
+## 1. Environment & Execution Commands
+- Unit Test Runner: `pytest -m "not integration" --reuse-db`
+- Database Migration Check: `./scripts/migrate.sh check`
+
+## 2. Hard Architectural Invariants
+- [I1] Billing Cache: Any mutation of Redis cache keys within `app/services/billing.py` requires a corresponding bump of the `SCHEMA_EPOCH`.
+
+## 3. Verification Gate
+- Before declaring a task complete, the agent must execute the test and migration commands listed in Section 1 on all modified files and report the exit codes.
+
+VERIFICATION & TRACEABILITY CONTRACT:
+- Data-binding predicate: Every command and invariant in the final `CLAUDE.md` must be mapped directly from [P2] and [P3].
+- Pruning predicate: If any element from [P4] (directory trees, PEP8, general overviews) appears in the output, the output is non-compliant.
+- Neutrality predicate: Generate the file strictly from the provided premises without adding generic "best practice" advice.
 
 ### OPTIMIZED RESPONSE
 
-```markdown
-# [Project Name] Agent Operating Contract
+# Project Agent Operating Contract
 
-### 1. Non-Inferable Environment & Tooling Commands
-- Targeted Unit Test Execution: `pytest -m "not integration" --reuse-db`
-- Database Migration Gate: `./scripts/migrate.sh check`
+## 1. Environment & Execution Commands
+- Unit Test Runner: `pytest -m "not integration" --reuse-db`
+- Database Migration Check: `./scripts/migrate.sh check`
 
-### 2. Hard Architectural & Boundary Invariants
-- [I1] Billing Cache Integrity: Redis cache keys in `app/services/billing.py` must not be mutated without an accompanying increment of the `SCHEMA_EPOCH` constant.
-- [I2] Pre-Commit Workflow: The Database Migration Gate command must be executed and verified successfully before any commit to the repository.
+## 2. Hard Architectural Invariants
+- [I1] Billing Cache: Any mutation of Redis cache keys within `app/services/billing.py` requires a corresponding bump of the `SCHEMA_EPOCH`.
 
-### 3. Verification Gate (Required Before Completion)
-1. For any task modifying database schemas or billing logic, execute the corresponding commands from Section 1.
-2. Report the exact exit code and output summary of these commands before declaring the task complete.
-3. If a command fails or the environment is missing a dependency, report `VERIFICATION BLOCKED: [command + error]` instead of claiming success.
-```
+## 3. Verification Gate
+- Before declaring a task complete, the agent must execute the test and migration commands listed in Section 1 on all modified files and report the exit codes.
 
 ### EVALUATION: TEST 11
 
-- **Word Count**: Baseline `251` words | Optimized `144` words | Ratio `0.57x`
-- **Eval Tokens**: Baseline `455` | Optimized `229`
+- **Word Count**: Baseline `281` words | Optimized `82` words | Ratio `0.29x`
+- **Eval Tokens**: Baseline `496` | Optimized `133`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 5         | 0     |
-| Completeness  | 5        | 4         | -1    |
-| Structure     | 4        | 5         | +1    |
-| Actionability | 3        | 5         | +2    |
-| Traceability  | 2        | 5         | +3    |
-| TOTAL         | 24/25    | 24/25     | 0     |
-
-**Explanation:**
-The Baseline response followed the prompt's literal request for a descriptive guide, but the Optimized response followed the "Agentic Harness" protocol, removing redundant inferable information (PEP8, directory trees) and replacing it with a high-utility "Operating Contract." The Optimized response significantly improves actionability and traceability by introducing a mandatory Verification Gate for the agent to follow. While it technically omitted the directory structure requested in the original task, this is a deliberate optimization for LLM context efficiency (reducing token overhead).
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 5 | 0 | Both candidates correctly captured the specific commands and constraints. |
+| Completeness | 5 | 2 | +3 | Candidate A included the project overview, folder structure, and PEP8 standards. Candidate B omitted these required elements entirely. |
+| Structure | 5 | 4 | +1 | Candidate A follows a standard documentation format; Candidate B uses a "Contract" format which is concise but misses the "CLAUDE.md" spirit of a project guide. |
+| Actionability | 5 | 4 | +1 | Candidate A's summary checklist is highly actionable for an LLM/Developer. Candidate B's verification gate is good but lacks the necessary context (coding standards). |
+| Traceability | 5 | 3 | +2 | Candidate A explicitly maps the folder structure as requested; Candidate B ignores the structure requirements. |
+| **TOTAL (/25)** | **25** | **18** | **+7** | **Winner: Baseline** |
 
 ---
 
@@ -1668,9 +1850,9 @@ The Baseline response followed the prompt's literal request for a descriptive gu
 
 ### BASELINE RESPONSE
 
-To implement a thread-safe, async-aware token bucket, the critical challenge is handling the "wait time." When multiple coroutines compete for tokens that aren't yet available, we must ensure they are served in a fair order and that we don't "over-promise" tokens that haven't been generated yet.
+To implement a thread-safe (and more importantly, coroutine-safe) asynchronous token bucket, we must ensure that the calculation of "available tokens" and the "wait time" is atomic. 
 
-The most robust way to handle this is to maintain a **virtual timeline** of when tokens will become available.
+In Python `asyncio`, since it is single-threaded, we don't need `threading.Lock` unless we are mixing threads and loops. However, we need an `asyncio.Lock` to prevent race conditions where multiple coroutines calculate their wake-up time based on the same stale bucket state.
 
 Here is the complete implementation:
 
@@ -1680,271 +1862,284 @@ import time
 from typing import Optional
 
 class AsyncTokenBucket:
-    def __init__(self, rate: float, capacity: float):
+    def __init__(self, capacity: float, refill_rate: float):
         """
-        Args:
-            rate: Tokens added per second (fractional allowed).
-            capacity: Maximum tokens the bucket can hold (burst capacity).
+        :param capacity: Maximum tokens the bucket can hold (Burst capacity).
+        :param refill_rate: Tokens added per second.
         """
-        self.rate = rate
         self.capacity = capacity
-        self.tokens = float(capacity)
+        self.refill_rate = refill_rate
+        self.tokens = capacity
         self.last_refill_time = time.monotonic()
-        
-        # Lock protects internal state (tokens, last_refill_time, next_available_time)
         self._lock = asyncio.Lock()
+
+    def _refill(self):
+        """Internal method to update bucket based on elapsed time."""
+        now = time.monotonic()
+        elapsed = now - self.last_refill_time
         
-        # Tracks when the bucket will have enough tokens for the next request in queue
-        self._next_available_time = time.monotonic()
+        # Calculate new tokens based on fractional refill rate
+        new_tokens = elapsed * self.refill_rate
+        if new_tokens > 0:
+            self.tokens = min(self.capacity, self.tokens + new_tokens)
+            self.last_refill_time = now
 
     async def acquire(self, tokens: int = 1, timeout: Optional[float] = None) -> bool:
         """
-        Request tokens from the bucket.
-        Returns True if tokens were acquired, False if timeout occurred.
+        Acquire tokens from the bucket. 
+        If not enough tokens are available, it sleeps until they are.
+        
+        :param tokens: Number of tokens to request.
+        :param timeout: Max seconds to wait. Returns False if timeout is reached.
+        :return: True if tokens were acquired, False otherwise.
         """
-        async with self._lock:
-            now = time.monotonic()
-            
-            # 1. Refill tokens based on elapsed time since last actual update
-            elapsed = now - self.last_refill_time
-            self.tokens = min(self.capacity, self.tokens + elapsed * self.rate)
-            self.last_refill_time = now
+        if tokens > self.capacity:
+            raise ValueError(f"Requested {tokens} tokens, but capacity is only {self.capacity}")
 
-            # 2. Calculate when the requested tokens will actually be available
-            # If we have them now, wait_until is now. 
-            # Otherwise, it's based on the rate and when the previous person in line finishes.
+        async with self._lock:
+            self._refill()
+
+            # Case 1: Tokens are available immediately
             if self.tokens >= tokens:
                 self.tokens -= tokens
-                wait_until = now
-            else:
-                # We need more tokens. 
-                # We must wait until the bucket refills enough, 
-                # BUT we must also wait until any previous requests are satisfied.
-                needed = tokens - self.tokens
-                time_to_refill = needed / self.rate
-                
-                # The tokens are available at the LATER of:
-                # a) Now + time to refill the deficit
-                # b) The time the previous requester claimed their tokens
-                wait_until = max(now + time_to_refill, self._next_available_time)
-                
-                # Update state as if we already took these tokens
-                self.tokens = 0 
-                self._next_available_time = wait_until
+                return True
 
-        # 3. Sleep outside the lock to allow other coroutines to queue up
-        delay = wait_until - time.monotonic()
-        if delay > 0:
-            try:
-                # Handle timeout logic
-                sleep_time = delay if timeout is None else min(delay, timeout)
-                await asyncio.sleep(sleep_time)
-                
-                if timeout is not None and delay > timeout:
-                    # We timed out before the tokens were technically ready.
-                    # Note: In a strict implementation, you would need to "refund" 
-                    # the tokens back to the timeline here. For most rate limiters,
-                    # simple expiration is preferred.
-                    return False
-            except asyncio.CancelledError:
-                # Handle task cancellation
-                raise
+            # Case 2: We need to wait for tokens to refill
+            # Calculate how many more tokens we need
+            needed = tokens - self.tokens
+            # Calculate time required to reach the needed amount
+            wait_time = needed / self.refill_rate
+            
+            # Handle timeout logic
+            if timeout is not None and wait_time > timeout:
+                return False
 
-        return True
-
-# --- Example Usage ---
-async def worker(name, bucket):
-    while True:
-        if await bucket.acquire(1, timeout=2.0):
-            print(f"[{time.strftime('%X')}] {name} acquired token")
-        else:
-            print(f"[{time.strftime('%X')}] {name} timed out")
-        await asyncio.sleep(0.1)
+            # To prevent race conditions, we "reserve" the tokens now 
+            # by subtracting them (going negative) and updating the refill timer.
+            # This ensures that the next coroutine entering the lock knows exactly 
+            # when the bucket will actually be "positive" again.
+            self.tokens -= tokens
+            self.last_refill_time = time.monotonic() # Mark refill starting from now
+            
+            # We release the lock before sleeping so other coroutines 
+            # can queue up their wait times based on our reservation.
+            # However, we must account for the fact that we just 
+            # "spent" tokens we didn't have yet.
+            
+            # Correction: The standard way to handle async waiting in a bucket
+            # is to calculate the absolute time the tokens will be ready.
+            # Let's use a sleep outside the lock.
+            
+        # Wait outside the lock to allow other requests to be processed/queued
+        try:
+            await asyncio.wait_for(asyncio.sleep(wait_time), timeout=timeout)
+            return True
+        except asyncio.TimeoutError:
+            # If we timed out, we technically "reserved" tokens we didn't get.
+            # We must return them to the bucket.
+            async with self._lock:
+                self.tokens += tokens
+            return False
 
 async def main():
-    # 2 tokens per second, max burst of 5
-    bucket = AsyncTokenBucket(rate=2.0, capacity=5.0)
-    
-    # Start 5 concurrent workers
-    await asyncio.gather(*(worker(f"Worker-{i}", bucket) for i in range(5)))
+    # 2 tokens max, refills at 1 token per second
+    bucket = AsyncTokenBucket(capacity=2, refill_rate=1)
+
+    async def worker(name, tokens):
+        print(f"Worker {name} requesting {tokens} tokens...")
+        success = await bucket.acquire(tokens)
+        print(f"Worker {name} {'acquired' if success else 'timed out'} tokens")
+
+    # Test Burst: First two should be instant, third should wait
+    await asyncio.gather(
+        worker("A", 1), 
+        worker("B", 1), 
+        worker("C", 1)
+    )
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        pass
+    asyncio.run(main())
 ```
 
-### Key Engineering Decisions:
+### Key Technical Details:
 
-1.  **The Virtual Timeline (`_next_available_time`)**: 
-    Instead of having coroutines wake up and "race" to check the bucket again (which causes thundering herd problems), this implementation calculates exactly when a specific request's tokens will exist. It assigns a "ticket" time to each caller.
-2.  **Lock Scope**: 
-    The `asyncio.Lock` is held only while updating the numbers. The `await asyncio.sleep()` happens **outside** the lock. This allows multiple coroutines to enter `acquire`, calculate their respective wait times, and sleep concurrently.
-3.  **Fractional Refill**: 
-    By using `float` for tokens and calculating based on `time.monotonic()`, the refill is smooth and continuous rather than ticking in discrete intervals.
-4.  **Burst Capacity**: 
-    The `min(self.capacity, ...)` logic ensures that if the bucket is unused for a long time, it doesn't accumulate infinite tokens, respecting the defined burst limit.
-5.  **Complexity**:
-    *   **Time Complexity**: $O(1)$ per acquire request.
+1.  **Atomic State Management**: I used `asyncio.Lock` around the `_refill` and token subtraction logic. This prevents a "lost update" where two coroutines see `tokens = 0.5`, both decide they need to wait `0.5s`, and both wake up thinking they have the same token.
+2.  **The "Reservation" Pattern**: 
+    *   When a request cannot be fulfilled immediately, the code subtracts the tokens immediately (allowing `self.tokens` to go negative).
+    *   By doing this inside the lock, the next coroutine that calls `acquire` will see the negative balance and calculate its `wait_time` relative to the *previous* requester's wake-up time. This creates a deterministic queue of requests.
+3.  **Fractional Precision**: By using `time.monotonic()` and multiplying by a `float` refill rate, the bucket supports highly granular refill rates (e.g., `0.1` tokens per second).
+4.  **Complexity**:
+    *   **Time Complexity**: $O(1)$ for `acquire`.
     *   **Space Complexity**: $O(1)$.
-
-### Edge Case Handling:
-*   **Concurrent Requests**: If 10 coroutines request 1 token simultaneously and the bucket is empty, they will be assigned wait times of $0.5s, 1.0s, 1.5s \dots$ (assuming a rate of 2/s), ensuring perfect fairness.
-*   **Timeouts**: The `timeout` parameter is checked against the calculated `delay`. If the required wait exceeds the timeout, it returns `False` immediately after the sleep duration.
+5.  **Timeout Handling**: The `asyncio.wait_for` wrapper ensures that if a coroutine cannot get its tokens within the specified window, it exits. I added a cleanup block to return the "reserved" tokens back to the bucket if a timeout occurs, maintaining the bucket's integrity.
 
 ### OPTIMIZED PROMPT
 
-The verification protocol for implementing a thread-safe async token bucket rate limiter requires grounding the final implementation in declared premises and strict post-condition checks. Perform all path exploration and concurrency analysis in your internal reasoning, and emit only the verified certificate below.
+```text
+[COMPILER RECEIPT // make-prompt-better v4.2.0]
+[MODE]         : Mode 3 (LRM-Harness) | Template 12: LRM & Algorithmic Implementation Verification Harness
+[PERSONA]      : Omitted (Accuracy/LRM) [PRISM]
+[ISOLATION]    : Goal-Blind Locked | Conclusion-First Stripped [GOAL-BLIND, META]
+[DATA-BINDING] : 100% Self-Contained in [P1..Pn] | Recency-Anchored Gate [ACE, HIERARCHY]
+[OVERHEAD]     : ~1.2x token budget | Deterministically verifiable
+```
 
-### PREMISES
-- [P1] Target Artifact: `AsyncTokenBucket` class in Python.
-- [P2] Functional Requirements:
-    - Support for burst capacity (maximum tokens).
-    - Support for fractional refill rates (tokens per second).
-    - Method: `acquire(tokens: int, timeout: float | None = None) -> bool`.
-- [P3] Hard Invariants:
-    - Thread-safety/Coroutine-safety: Zero race conditions during concurrent `acquire` calls.
-    - Precision: Accurate refill calculations based on monotonic time.
-    - Liveness: No deadlocks when multiple coroutines are queued.
+The verification protocol for implementing an Async Rate Limiter requires declaring compact premises, generating the complete executable implementation first, and verifying it through a post-hoc gate. Restrict non-code verification preamble and post-hoc commentary overhead to <25% of the total response length so full output budget is preserved for executable code.
 
-### VERIFICATION GATES
-For each target invariant in [P3], record the verification outcome:
-- [V1] Concurrency Safety: [SATISFIED / VIOLATED / UNTESTABLE] -> Evidence: [identification of the synchronization primitive used and the critical section scope]
-- [V2] Refill Accuracy: [SATISFIED / VIOLATED / UNTESTABLE] -> Evidence: [logic check for timestamp delta * refill_rate calculation]
-- [V3] Timeout Logic: [SATISFIED / VIOLATED / UNTESTABLE] -> Evidence: [verification of `asyncio.wait_for` or manual clock tracking]
+### PREMISES (Compact: keep total non-code overhead <25% of response)
+- [P1] Interface & Requirements:
+    - Class Name: `AsyncTokenBucket`
+    - Method: `async def acquire(tokens: int, timeout: float | None = None) -> bool`
+    - Features: Support for burst capacity and fractional refill rates.
+    - Language: Python (Asyncio).
+- [P2] Target Invariants:
+    - Concurrency Safety: Zero race conditions when multiple coroutines concurrently call `acquire`.
+    - State Integrity: Token counts must remain consistent with the refill rate and burst capacity regardless of contention.
+    - Timeout Precision: `acquire` must respect the `timeout` parameter and return `False` if tokens are not available within the window.
 
-### FORMAL CONCLUSION & DELIVERABLE
-- Disposition: [summary grounded in V1, V2, V3]
-- Deliverable: [the complete, copy-pasteable Python implementation satisfying all V-gates]
+### 1. COMPLETE EXECUTABLE IMPLEMENTATION (Generated First)
+Provide the complete, production-ready, copy-pasteable implementation of the `AsyncTokenBucket` satisfying [P1] and [P2] first, before emitting any verification tables or test prose.
+
+### 2. POST-HOC VERIFICATION GATE ([V1] Concurrency & State Invariants -> [V2] Executable Self-Test Harness)
+After the implementation above, complete this compact two-step verification gate:
+- [V1] Concurrency & State Invariants:
+  Verify each invariant in [P2] in a compact checklist (`[SATISFIED / VIOLATED] -> [exact method/line in implementation]`).
+- [V2] Executable Self-Test Harness:
+  Provide a runnable self-test block (`asyncio.run` / `pytest` assertions) that deterministically exercises:
+    1. Normal operation (token consumption).
+    2. Burst capacity limits.
+    3. Fractional refill timing.
+    4. Concurrent contention (multiple coroutines vying for limited tokens).
+    5. Timeout expiration.
 
 VERIFICATION & TRACEABILITY CONTRACT:
-- Grounding rule: Base every verification gate on explicit implementation details in the Deliverable.
-- Counterexample predicate: If a specific interleaving of coroutines could lead to a race condition or incorrect token count, record it as a `VIOLATED` gate and provide the fix.
-- Neutrality predicate: Derive the implementation strictly from the constraints in [P2] and [P3].
+- Grounding rule: Base every step in [V1] on explicit implementation details in the code provided above rather than general async principles.
+- Missing-evidence predicate: When a path cannot be verified from the implementation, record `UNABLE TO TRACE: [exact missing mechanism]` in [V1].
+- Neutrality predicate: Derive the implementation and verification strictly from [P1]-[P2] without referencing downstream business goals or use cases.
+
+TRACEABILITY SELF-CHECK (mandatory before finalizing):
+Verify that every invariant in [P2] is mapped in [V1] and tested in [V2], and verify that non-code verification overhead stays <25% of the response.
 
 ### OPTIMIZED RESPONSE
-
-### VERIFICATION CERTIFICATE
-
-**[V1] Concurrency Safety:** SATISFIED -> Evidence: Implementation utilizes `asyncio.Lock()` wrapping the entire state mutation block (timestamp update and token decrement), ensuring atomicity of the "check-and-consume" operation.
-**[V2] Refill Accuracy:** SATISFIED -> Evidence: Refill logic employs `time.monotonic()` to calculate $\Delta t$ and computes $\text{tokens} = \min(\text{capacity}, \text{current} + (\Delta t \times \text{rate}))$, preventing drift and overflows.
-**[V3] Timeout Logic:** SATISFIED -> Evidence: Implementation calculates the precise sleep duration required for the requested tokens to materialize and wraps the `asyncio.sleep` call within `asyncio.wait_for` to respect the `timeout` parameter.
-
-**Disposition:** VERIFIED. All premises [P1, P2] and invariants [P3] are satisfied.
-
----
-
-### DELIVERABLE
 
 ```python
 import asyncio
 import time
-from typing import Optional
 
 class AsyncTokenBucket:
-    """
-    A thread-safe async token bucket rate limiter.
-    Satisfies P2 (Burst/Fractional Refill) and P3 (Safety/Precision/Liveness).
-    """
-    def __init__(self, capacity: float, refill_rate: float):
+    def __init__(self, rate: float, capacity: float):
         """
-        :param capacity: Maximum number of tokens the bucket can hold.
-        :param refill_rate: Tokens added per second.
+        :param rate: Tokens added per second.
+        :param capacity: Maximum burst capacity.
         """
-        self.capacity = float(capacity)
-        self.refill_rate = float(refill_rate)
-        self.tokens = float(capacity)
-        self.last_refill_time = time.monotonic()
+        self.rate = rate
+        self.capacity = capacity
+        self.tokens = capacity
+        self.last_refill = time.monotonic()
         self._lock = asyncio.Lock()
 
-    async def acquire(self, tokens: int, timeout: Optional[float] = None) -> bool:
-        """
-        Acquire a specific number of tokens. 
-        Returns True if acquired, False if timeout occurred.
-        """
-        tokens_needed = float(tokens)
-        if tokens_needed > self.capacity:
-            return False
-
-        try:
-            return await asyncio.wait_for(self._acquire_logic(tokens_needed), timeout=timeout)
-        except asyncio.TimeoutError:
-            return False
-
-    async def _acquire_logic(self, tokens_needed: float) -> bool:
-        async with self._lock:
-            # Update token count based on elapsed time
-            now = time.monotonic()
-            delta = now - self.last_refill_time
-            self.tokens = min(self.capacity, self.tokens + (delta * self.refill_rate))
-            self.last_refill_time = now
-
-            if self.tokens >= tokens_needed:
-                self.tokens -= tokens_needed
-                return True
-
-            # Calculate time required to reach the needed token count
-            missing_tokens = tokens_needed - self.tokens
-            wait_time = missing_tokens / self.refill_rate
-            
-            # Release lock during sleep to maintain liveness (P3)
-            # But we must ensure that we only consume if the time actually passed
-            # To prevent race conditions during the sleep, we treat the wait
-            # as a reservation or simply re-verify upon wake.
-            
-            # Strategy: Release lock, sleep, then re-attempt acquisition.
-            # This prevents deadlocks and allows other smaller requests to bypass.
-            pass 
+    async def acquire(self, tokens: int, timeout: float | None = None) -> bool:
+        start_time = time.monotonic()
         
-        # Outside the lock to prevent blocking other coroutines (Liveness)
-        # Recalculate wait time for the specific missing amount
-        # To maintain strict fairness/ordering, a queue could be used, 
-        # but for standard token bucket, re-checking is the performant approach.
-        
-        # Re-calculating wait_time relative to current state
-        # since we released the lock.
-        current_tokens = 0.0 # Placeholder for logic flow
-        
-        # Optimized wait loop
         while True:
             async with self._lock:
+                # Refill tokens based on time elapsed
                 now = time.monotonic()
-                delta = now - self.last_refill_time
-                self.tokens = min(self.capacity, self.tokens + (delta * self.refill_rate))
-                self.last_refill_time = now
+                elapsed = now - self.last_refill
+                self.tokens = min(self.capacity, self.tokens + (elapsed * self.rate))
+                self.last_refill = now
 
-                if self.tokens >= tokens_needed:
-                    self.tokens -= tokens_needed
+                if self.tokens >= tokens:
+                    self.tokens -= tokens
                     return True
-                
-                wait_time = (tokens_needed - self.tokens) / self.refill_rate
+
+            # Calculate time until enough tokens are available
+            needed = tokens - self.tokens
+            wait_time = needed / self.rate if self.rate > 0 else float('inf')
             
+            # Check if we have exceeded the total timeout window
+            if timeout is not None:
+                elapsed_total = time.monotonic() - start_time
+                if elapsed_total + wait_time > timeout:
+                    # Wait for the remaining timeout window then return False
+                    remaining = timeout - elapsed_total
+                    if remaining > 0:
+                        await asyncio.sleep(remaining)
+                    return False
+            
+            # Sleep for the calculated duration or until next check
             await asyncio.sleep(wait_time)
 
-# --- Usage Example ---
-# async def main():
-#     limiter = AsyncTokenBucket(capacity=10, refill_rate=2)
-#     if await limiter.acquire(5, timeout=1.0):
-#         print("Acquired tokens")
+async def run_tests():
+    # Test 1: Normal Operation & Burst
+    bucket = AsyncTokenBucket(rate=10, capacity=5) # 10/s, burst 5
+    assert await bucket.acquire(5) is True, "Should allow burst capacity"
+    assert await bucket.acquire(1) is False or (await asyncio.wait_for(bucket.acquire(1), 0.01) is False), "Should be empty"
+
+    # Test 2: Fractional Refill
+    # Wait 0.2s -> should have 2 tokens
+    await asyncio.sleep(0.2)
+    assert await bucket.acquire(2) is True, "Should have refilled 2 tokens"
+
+    # Test 3: Timeout Expiration
+    # Try to get 10 tokens with 0.1s timeout (impossible at rate 10)
+    start = time.monotonic()
+    res = await bucket.acquire(10, timeout=0.1)
+    duration = time.monotonic() - start
+    assert res is False, "Should fail due to timeout"
+    assert 0.1 <= duration <= 0.2, f"Timeout window violated: {duration}"
+
+    # Test 4: Concurrent Contention
+    bucket_contention = AsyncTokenBucket(rate=100, capacity=10)
+    # 20 coroutines trying to take 1 token each. Only 10 should succeed immediately.
+    results = await asyncio.gather(*[bucket_contention.acquire(1, timeout=0.01) for _ in range(20)])
+    successes = sum(1 for r in results if r)
+    assert successes >= 10 and successes <= 20, f"Contention failed: {successes} successes"
+
+    print("All tests passed successfully.")
+
+if __name__ == "__main__":
+    asyncio.run(run_tests())
 ```
+
+### 2. POST-HOC VERIFICATION GATE
+
+**[V1] Concurrency & State Invariants**
+- Concurrency Safety: `[SATISFIED]` -> `self._lock = asyncio.Lock()` used in `acquire` to wrap state updates.
+- State Integrity: `[SATISFIED]` -> Token update `min(self.capacity, self.tokens + (elapsed * self.rate))` ensures bounds and linear refill.
+- Timeout Precision: `[SATISFIED]` -> `elapsed_total + wait_time > timeout` check calculates remaining window against `time.monotonic()`.
+
+**[V2] Executable Self-Test Harness**
+The `run_tests()` function above implements:
+1. **Normal/Burst**: Verified by initial `acquire(5)` and subsequent immediate failure.
+2. **Fractional Refill**: Verified by `await asyncio.sleep(0.2)` and `acquire(2)`.
+3. **Concurrent Contention**: Verified by `asyncio.gather` with 20 competing coroutines.
+4. **Timeout**: Verified by measuring `duration` of `acquire(10, timeout=0.1)`.
 
 ### EVALUATION: TEST 12
 
-- **Word Count**: Baseline `714` words | Optimized `474` words | Ratio `0.66x`
-- **Eval Tokens**: Baseline `1398` | Optimized `1078`
+- **Word Count**: Baseline `736` words | Optimized `467` words | Ratio `0.63x`
+- **Eval Tokens**: Baseline `1411` | Optimized `1078`
 
-| Dimension     | Baseline | Optimized | Delta |
-|---------------|----------|-----------|-------|
-| Accuracy      | 5        | 3         | -2    |
-| Completeness  | 5        | 4         | -1    |
-| Structure     | 5        | 4         | -1    |
-| Actionability | 5        | 3         | -2    |
-| Traceability  | 4        | 5         | +1    |
-| TOTAL         | 24/25    | 19/25    | -5    |
+The core challenge of an async rate limiter is handling concurrent waiters without race conditions. If multiple coroutines wake up at the same time and check the bucket, they may either double-spend tokens or suffer from "thundering herd" issues where they all sleep for the same duration based on stale state.
 
-**Explanation:**
-The Baseline response provides a high-quality, working implementation using a "virtual timeline" to ensure fairness and prevent the thundering herd problem. The Optimized response attempts a formal verification structure but fails significantly in the actual code: it implements a "spin-lock" style `while True` loop with `asyncio.sleep`, which is inefficient and lacks the fairness/ordering of the Baseline. Furthermore, the Optimized code's internal logic is fragmented (e.g., `current_tokens = 0.0 # Placeholder`), making it less actionable and less accurate than the Baseline.
+**Candidate Response A** uses a "polling/retry" loop. It checks the bucket, calculates a wait time, sleeps, and then re-enters the lock to check again. While functionally safe due to the lock, it is inefficient because it requires multiple lock acquisitions and potentially multiple sleeps if other coroutines "steal" the tokens while the current coroutine is sleeping.
+
+**Candidate Response B** attempts a "reservation" system (allowing the token count to go negative). This is the industry-standard way to ensure a first-come, first-served queue in rate limiters. However, Candidate B's implementation is **critically flawed**:
+1. It subtracts tokens (reservation) but then updates `self.last_refill_time = time.monotonic()`. This effectively **resets the refill clock** every time a reservation is made, destroying the refill rate logic.
+2. It uses `asyncio.wait_for(asyncio.sleep(wait_time), timeout=timeout)`. Since `wait_time` was already calculated based on the tokens needed, the `timeout` provided to `wait_for` is a second, separate timeout on top of the calculated wait, rather than a total deadline from the start of the call.
+3. Most importantly, the reservation logic is inconsistent: it subtracts tokens but doesn't correctly adjust the refill baseline to account for the time those tokens *will* take to generate, leading to incorrect wait times for subsequent callers.
+
+**Candidate Response A** is significantly more robust. Although its polling approach is less "elegant" than a perfect reservation system, it is mathematically correct and handles the `timeout` parameter accurately as a total window.
+
+| Dimension | Baseline (1-5) | Optimized (1-5) | Delta | Evidence / Justification |
+| :--- | :---: | :---: | :---: | :--- |
+| Accuracy | 5 | 2 | -3 | A is logically sound. B has a critical bug: updating `last_refill_time` during reservation resets the refill clock, breaking the rate. |
+| Completeness | 5 | 4 | -1 | A includes a comprehensive test harness covering burst, fractional refill, and contention. B's test is minimal. |
+| Structure | 5 | 5 | 0 | Both provide clean, PEP8 compliant code. |
+| Actionability | 5 | 3 | -2 | A's code works as written. B's reservation logic is broken and would require a rewrite to be usable. |
+| Traceability | 5 | 4 | -1 | A provides a post-hoc verification gate. B provides technical explanations, but they contradict the broken implementation. |
+| **TOTAL (/25)** | **25** | **18** | **-7** | **Winner: Baseline (Candidate A)** |
 
 ---
 
@@ -1954,45 +2149,45 @@ The Baseline response provides a high-quality, working implementation using a "v
 
 | Test | Domain | Task Type | Mode | Baseline /25 | Optimized /25 | Delta | Words (B/O/Ratio) | Winner |
 |------|--------|-----------|------|--------------|---------------|-------|-------------------|--------|
-| 1 | Code Review | Accuracy | Mode 1 | 22.0/25 | 13.0/25 | -9 | 311/283 (0.91x) | Baseline |
-| 2 | Financial Analysis | Accuracy | Mode 1 | 19.0/25 | 25.0/25 | +6 | 432/383 (0.89x) | Optimized |
-| 3 | Medical Reasoning | Accuracy | Mode 1 | 21.0/25 | 25.0/25 | +4 | 397/569 (1.43x) | Optimized |
-| 4 | Legal Analysis | Accuracy | Mode 1 | 20.0/25 | 17.0/25 | -3 | 714/224 (0.31x) | Baseline |
-| 5 | Research Synthesis | Mixed | Mode 1 | 23.0/25 | 18.0/25 | -5 | 580/275 (0.47x) | Baseline |
-| 6 | Business Decision | Mixed | Mode 1 | 19.0/25 | 25.0/25 | +6 | 630/555 (0.88x) | Optimized |
-| 7 | Compliance Check | Accuracy | Mode 1 | 18.5/25 | 25.0/25 | +6.5 | 507/557 (1.1x) | Optimized |
-| 8 | Document Analysis | Mixed | Mode 1 | 20.0/25 | 25.0/25 | +5 | 457/417 (0.91x) | Optimized |
-| 9 | Comparative Analysis | Mixed | Mode 2 | 21.0/25 | 24.5/25 | +3.5 | 637/352 (0.55x) | Optimized |
-| 10 | Creative Brief | Creative | Mode 4 | 21.0/25 | 25.0/25 | +4 | 606/481 (0.79x) | Optimized |
-| 11 | Context File (CLAUDE.md) | Harness | Mode 3 | 19.0/25 | 24.0/25 | +5 | 251/144 (0.57x) | Optimized |
-| 12 | Async Rate Limiter (LRM) | Harness | Mode 3 | 24.0/25 | 19.0/25 | -5 | 714/474 (0.66x) | Baseline |
-| **AVG** | **ALL (12 tests)** | - | - | **20.62/25** | **22.12/25** | **+1.5** | **Avg 0.79x** | **8W-0T-4L** |
+| 1 | Code Review | Accuracy | Mode 1 | 23.0/25 | 24.0/25 | +1 | 309/356 (1.15x) | Optimized |
+| 2 | Financial Analysis | Accuracy | Mode 1 | 24.0/25 | 23.0/25 | -1 | 454/326 (0.72x) | Baseline |
+| 3 | Medical Reasoning | Accuracy | Mode 1 | 24.0/25 | 20.0/25 | -4 | 371/433 (1.17x) | Baseline |
+| 4 | Legal Analysis | Accuracy | Mode 1 | 23.0/25 | 21.0/25 | -2 | 567/677 (1.19x) | Baseline |
+| 5 | Research Synthesis | Mixed | Mode 1 | 19.0/25 | 23.0/25 | +4 | 618/507 (0.82x) | Optimized |
+| 6 | Business Decision | Mixed | Mode 1 | 22.0/25 | 23.0/25 | +1 | 615/637 (1.04x) | Optimized |
+| 7 | Compliance Check | Accuracy | Mode 1 | 20.0/25 | 25.0/25 | +5 | 519/523 (1.01x) | Optimized |
+| 8 | Document Analysis | Mixed | Mode 1 | 22.0/25 | 24.0/25 | +2 | 489/455 (0.93x) | Optimized |
+| 9 | Comparative Analysis | Mixed | Mode 2 | 24.0/25 | 17.0/25 | -7 | 643/224 (0.35x) | Baseline |
+| 10 | Creative Brief | Creative | Mode 4 | 25.0/25 | 22.0/25 | -3 | 595/518 (0.87x) | Baseline |
+| 11 | Context File (CLAUDE.md) | Harness | Mode 3 | 25.0/25 | 18.0/25 | -7 | 281/82 (0.29x) | Baseline |
+| 12 | Async Rate Limiter (LRM) | Harness | Mode 3 | 18.0/25 | 25.0/25 | +7 | 736/467 (0.63x) | Optimized |
+| **AVG** | **ALL (12 tests)** | - | - | **22.42/25** | **22.08/25** | **-0.34** | **Avg 0.85x** | **6W-0T-6L** |
 
 ### Analysis Sections
 
 1. Overall Verdict
-The `make-prompt-better` v4.0 tool is a net positive for the `gemma4:31b-cloud` model. With a win rate of 8 out of 12 tests and an average score increase of 1.5 points, the system demonstrates a strong ability to enhance prompt efficacy. It is particularly effective at pushing "near-perfect" baseline scores to maximum capacity, though it exhibits volatility in highly technical coding and legal domains.
+The results for make-prompt-better v4.0 using gemma4:31b-cloud are neutral to slightly negative. With a win loss record of 6W-0T-6L and a slight average score decrease of 0.34 points, the optimizer does not provide a consistent performance lift across all domains. While it shows strong capability in specific technical and compliance tasks, it frequently degrades performance in high-precision reasoning and creative tasks.
 
 2. Where It Helped Most
-The tool excelled in structured analysis and compliance tasks. Financial Analysis, Business Decision, Compliance Check, and Document Analysis all reached perfect scores of 25.0/25. The most significant delta was seen in Compliance Check (+6.5), suggesting that the optimization process is highly effective at reinforcing constraint adherence and checklist verification.
+The optimizer excelled in technical synthesis and strict rule adherence. The most significant gains were seen in Test 12 (Async Rate Limiter, +7), Test 7 (Compliance Check, +5), and Test 5 (Research Synthesis, +4). These results suggest that v4.0 is highly effective at improving structural logic for coding harness tasks and refining narrow, rule-based accuracy requirements.
 
 3. Where It Helped Least (or Hurt)
-The tool struggled most with technical precision in Code Review and Legal Analysis. The most severe degradation occurred in Test 1 (Code Review), where the score dropped by 9 points. This indicates a tendency to over-simplify technical requirements or strip away necessary nuance in favor of structural brevity, leading to a loss of critical accuracy.
+The optimizer caused the most damage in high-context reasoning and structural preservation. Significant regressions occurred in Test 9 (Comparative Analysis, -7), Test 11 (Context File, -7), and Test 3 (Medical Reasoning, -4). In these cases, the optimization process likely stripped away essential nuance or context that the baseline prompt had already successfully captured.
 
 4. v4.0 Mode Evaluation
-Mode 2 (Max) on Test 9 showed a strong efficiency gain, improving the score while reducing word count to 0.55x. Mode 3 (Harness) showed mixed results: it significantly improved the Context File (Test 11) but caused a 5 point drop in the Async Rate Limiter (Test 12), proving that harness-style prompting can occasionally conflict with complex logic. Mode 4 (Creative v2) on Test 10 was a success, achieving a perfect score with a 21 percent reduction in token usage.
+Mode 1 (Standard) showed mixed results: it improved compliance and business tasks but struggled with medical and legal accuracy. Mode 2 (Max/Lite) on Test 9 was a failure: it reduced word count to 0.35x of the baseline but caused a massive 7 point drop, indicating over-compression. Mode 3 (Harness) was extremely volatile: it provided the best result of the suite in Test 12 but the worst in Test 11. Mode 4 (Creative v2) on Test 10 underperformed: it reduced the score by 3 points, suggesting the creative optimization is too restrictive.
 
 5. Accuracy vs. Mixed vs. Creative vs. Harness
-Accuracy tasks showed the highest volatility, containing both the biggest wins and the biggest losses. Mixed tasks were the most consistently improved, showing a steady upward trend. Creative tasks performed optimally, reaching a perfect score. Harness tasks were inconsistent, suggesting that the tool's approach to "system-level" instructions is less stable than its approach to "task-level" instructions.
+Accuracy tasks were a toss up: some saw gains (Compliance) and some saw losses (Medical, Legal). Mixed tasks were the strongest area: the optimizer won 3 out of 4 Mixed tasks, showing a talent for balancing multiple objectives. Creative tasks failed: the optimizer lowered the score. Harness tasks were polarized: it succeeded in complex logic (LRM) but failed in context preservation (CLAUDE.md).
 
 6. Traceability Specifically
-The tool improved traceability in the Mixed and Accuracy domains by better defining output structures. In the winners, the optimized prompts forced the model to align closer to the evaluation rubric. However, in the losses, the pursuit of brevity likely removed the "chain of thought" markers that the baseline used to maintain traceability.
+Traceability appears to be a point of failure in high-precision domains. The drops in Legal and Medical analysis suggest that when the optimizer attempts to streamline the prompt, it removes the explicit chain-of-thought instructions or grounding requirements that ensure the model traces its logic back to the source text.
 
 7. Token Cost vs. Value
-The value proposition is high. The average word count ratio is 0.79x, meaning the optimized prompts are generally shorter than the baselines. In 8 of the 12 tests, the tool provided a higher score for a lower token cost. The only exception was Medical Reasoning, where a 1.43x increase in length was required to secure the win.
+The average word ratio is 0.85x, meaning the optimizer generally reduces prompt length. However, the value proposition is inconsistent. In Test 12, it reduced words by 37 percent while increasing the score by 7 points (High Value). In Test 11, it reduced words by 71 percent but crashed the score by 7 points (Negative Value).
 
 8. Failure Modes Observed
-The primary failure mode is "Over-Optimization," where the tool removes critical technical constraints to achieve a cleaner prompt structure. This led to the failures in Code Review and Legal Analysis. A second failure mode is "Logic Erasure" in Mode 3, where the harness structure overshadowed the specific implementation details of the Async Rate Limiter.
+Two primary failure modes were observed: over-compression and nuance stripping. Over-compression occurred in Mode 2 and Mode 3, where the prompt became too lean to support the required complexity. Nuance stripping occurred in the Accuracy and Creative domains, where the optimizer replaced descriptive guidance with generic instructions, leading to a loss of precision.
 
 9. Recommendations for v4.1 Skill Improvement
-First, implement a "Technical Preservation" flag to prevent the stripping of specialized terminology in code and law. Second, refine Mode 3 to ensure that harness structures do not overwrite core logic requirements. Third, analyze the Medical Reasoning success to determine if "Expansion Mode" should be triggered for high-complexity reasoning tasks where brevity is detrimental.
+First, implement a safeguard against over-compression in Mode 2 to prevent the 0.3x word ratio crashes. Second, refine the Creative v2 logic to prioritize stylistic flexibility over brevity. Third, improve the Harness mode to distinguish between logic-heavy tasks (which benefit from optimization) and context-heavy tasks (which require preservation). Finally, enhance the Accuracy mode to maintain explicit traceability requirements.

@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
-Aggregates all v4.0 benchmark results across Antigravity (Gemini 3.8), OpenAI Codex (GPT 6.1 Terra),
-and Ollama Cloud models in research/benchmark/v4/results/*/ into a unified dataset and Markdown matrix.
+Aggregates all benchmark results across session-based evaluations (Antigravity, OpenAI Codex)
+and isolated Ollama Cloud models in research/benchmark/v4/results/*/ into a unified dataset and Markdown matrix.
+
+Methodological safeguards (v4.3.0):
+- Separates session-based self-evaluations from isolated runner evaluations instead of pooling them without qualification.
+- Records exact evaluation provenance (`protocol`, `judge_model`, `self_judged`, `completed_tests`).
+- Never fabricates synthetic `100`-token placeholders when API `eval_count` telemetry is absent; uses `None` for missing token counts.
+- Computes Model-Cluster and Two-Way Block Bootstrap 95% CIs alongside cell-level descriptive statistics.
 """
 
 from __future__ import annotations
@@ -20,7 +26,13 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_ROOT = REPO_ROOT / "research" / "benchmark" / "v4" / "results"
 
 
-def score_quality_issues(dimensions: dict[str, Any], baseline: float, optimized: float, text: str) -> list[str]:
+def score_quality_issues(
+    dimensions: dict[str, Any],
+    baseline: float,
+    optimized: float,
+    text: str,
+    blind_mapping: dict[str, str] | None = None,
+) -> list[str]:
     issues = []
     for dimension, scores in dimensions.items():
         for label in ("baseline", "optimized"):
@@ -31,16 +43,19 @@ def score_quality_issues(dimensions: dict[str, Any], baseline: float, optimized:
         if not 5 <= total <= 25:
             issues.append(f"{label} total {total:g} is outside the 5-25 rubric")
     match = re.search(
-        r"\|\s*\*{0,2}TOTAL\*{0,2}\s*\|\s*\*{0,2}([0-9.]+)(?:/25)?\*{0,2}\s*\|\s*\*{0,2}([0-9.]+)(?:/25)?\*{0,2}\s*\|",
+        r"\|\s*\*{0,2}TOTAL(?:\s*\(/25\))?\*{0,2}\s*\|\s*\*{0,2}([0-9.]+)(?:/25)?\*{0,2}\s*\|\s*\*{0,2}([0-9.]+)(?:/25)?\*{0,2}\s*\|",
         text, re.IGNORECASE,
     )
     if match:
-        for label, written, computed in (("baseline", float(match.group(1)), baseline),
-                                         ("optimized", float(match.group(2)), optimized)):
+        swapped = bool(blind_mapping and blind_mapping.get("A") == "optimized")
+        expected_col1 = ("optimized", optimized) if swapped else ("baseline", baseline)
+        expected_col2 = ("baseline", baseline) if swapped else ("optimized", optimized)
+        for (label, computed), written in ((expected_col1, float(match.group(1))),
+                                           (expected_col2, float(match.group(2)))):
             if abs(written - computed) > 0.001:
                 issues.append(f"written {label} total {written:g} differs from the saved total {computed:g}")
     rows = re.findall(
-        r"\|\s*\*{0,2}(Accuracy|Completeness|Structure|Actionability|Traceability|TOTAL)\*{0,2}"
+        r"\|\s*\*{0,2}(Accuracy|Completeness|Structure|Actionability|Traceability|TOTAL(?:\s*\(/25\))?)\*{0,2}"
         r"\s*\|\s*\*{0,2}([0-9.]+)(?:/25)?\*{0,2}\s*\|\s*\*{0,2}([0-9.]+)(?:/25)?\*{0,2}"
         r"\s*\|\s*\*{0,2}([+\-\u2013\u2212]?[0-9.]+)\*{0,2}\s*\|",
         text, re.IGNORECASE,
@@ -51,7 +66,7 @@ def score_quality_issues(dimensions: dict[str, Any], baseline: float, optimized:
         if abs(written_delta - expected_delta) > 0.001:
             issues.append(
                 f"written {dimension.lower()} delta {written_delta:g} differs from "
-                f"optimized minus baseline {expected_delta:g}"
+                f"second-column minus first-column {expected_delta:g}"
             )
     return issues
 
@@ -60,9 +75,12 @@ def parse_markdown_eval_file(md_path: Path, slug: str) -> dict[str, Any]:
     text = md_path.read_text(encoding="utf-8")
     tests: dict[str, Any] = {}
 
+    has_unblinded_note = "unblinded self-evaluation" in text.lower() or "in-session generation" in text.lower()
+    protocol = "In-Session Unblinded Self-Eval" if has_unblinded_note else "In-Session Self-Eval (Markdown)"
+
     # Parse per-test evaluation tables if present
     pattern = re.compile(
-        r"###\s+EVALUATION:\s*TEST\s*(\d+)(.*?)(?=\n##\s+TEST|\n##\s+FINAL REPORT|\Z)",
+        r"###\s+EVALUATION:\s*TEST\s*(\d+)(.*?)(?=\n##\s+TEST|\n##\s+FINAL REPORT|\n##\s+Final Synthesis|\Z)",
         re.DOTALL | re.IGNORECASE,
     )
     dims = ["Accuracy", "Completeness", "Structure", "Actionability", "Traceability"]
@@ -80,7 +98,7 @@ def parse_markdown_eval_file(md_path: Path, slug: str) -> dict[str, Any]:
             b_tot = sum(v["baseline"] for v in dim_scores.values())
             o_tot = sum(v["optimized"] for v in dim_scores.values())
         else:
-            tm = re.search(r"\|\s*\*?\*?TOTAL\*?\*?\s*\|\s*([0-9.]+)(?:/25)?\s*\|\s*([0-9.]+)(?:/25)?\s*\|", block, re.IGNORECASE)
+            tm = re.search(r"\|\s*\*?\*?TOTAL(?:\s*\(/25\))?\*?\*?\s*\|\s*([0-9.]+)(?:/25)?\s*\|\s*([0-9.]+)(?:/25)?\s*\|", block, re.IGNORECASE)
             if not tm:
                 continue
             b_tot = float(tm.group(1))
@@ -95,8 +113,8 @@ def parse_markdown_eval_file(md_path: Path, slug: str) -> dict[str, Any]:
             "delta_total": delta_tot,
             "dimensions": dim_scores,
             "word_overhead_ratio": ratio,
-            "baseline_tokens": 100,
-            "optimized_tokens": int(100 * (ratio or 1.0)),
+            "baseline_tokens": None,
+            "optimized_tokens": None,
             "winner": "Optimized" if delta_tot > 0 else ("Baseline" if delta_tot < 0 else "Tie"),
             "score_issues": score_quality_issues(dim_scores, b_tot, o_tot, block),
         }
@@ -119,6 +137,9 @@ def parse_markdown_eval_file(md_path: Path, slug: str) -> dict[str, Any]:
     return {
         "model": slug,
         "slug": slug,
+        "protocol": protocol,
+        "judge_model": slug,
+        "self_judged": True,
         "completed_tests": len(completed),
         "avg_baseline": avg_b,
         "avg_optimized": avg_o,
@@ -143,19 +164,22 @@ def collect_all_models() -> list[dict[str, Any]]:
         if metrics_file.exists():
             data = json.loads(metrics_file.read_text(encoding="utf-8"))
             summary = data.get("summary", {})
+            model_name = data.get("model", sub.name)
+            judge_model = data.get("judge_model") or summary.get("judge_model") or model_name
+            self_judged = bool(data.get("self_judged", judge_model == model_name))
             per_test: dict[str, Any] = {}
+            any_blind = False
+            any_swapped = False
             for tid, t in data.get("tests", {}).items():
                 p = t.get("evaluation", {}).get("parsed", {})
-                b_tok = (
-                    t.get("baseline", {}).get("eval_count")
-                    or t.get("baseline", {}).get("words")
-                    or 100
-                )
-                o_tok = (
-                    t.get("optimized_response", {}).get("eval_count")
-                    or t.get("optimized_response", {}).get("words")
-                    or 100
-                )
+                if "blind_mapping" in p or "pass1" in p:
+                    any_blind = True
+                if p.get("position_swap_consistent") is not None:
+                    any_swapped = True
+                b_eval = t.get("baseline", {}).get("eval_count")
+                o_eval = t.get("optimized_response", {}).get("eval_count")
+                b_tok = int(b_eval) if b_eval and int(b_eval) > 0 else None
+                o_tok = int(o_eval) if o_eval and int(o_eval) > 0 else None
                 per_test[tid] = {
                     "id": int(tid),
                     "baseline_total": p.get("baseline_total", 0.0),
@@ -165,14 +189,15 @@ def collect_all_models() -> list[dict[str, Any]]:
                     "word_overhead_ratio": t.get("word_overhead_ratio"),
                     "baseline_tokens": b_tok,
                     "optimized_tokens": o_tok,
+                    "compiler_tokens": t.get("optimized_prompt", {}).get("eval_count") or None,
                     "position_swap_consistent": p.get("position_swap_consistent"),
                     "winner": p.get("winner", "Tie"),
                     "score_issues": score_quality_issues(
                         p.get("dimensions", {}), p.get("baseline_total", 0.0),
                         p.get("optimized_total", 0.0), t.get("evaluation", {}).get("content", ""),
+                        p.get("blind_mapping"),
                     ),
                 }
-            # A resumed run saves each test before updating its final summary.
             if per_test:
                 c_list = list(per_test.values())
                 avg_b = round(sum(t["baseline_total"] for t in c_list) / len(c_list), 2)
@@ -193,9 +218,24 @@ def collect_all_models() -> list[dict[str, Any]]:
                     "ties": ties,
                     "losses": losses,
                 }
+            else:
+                continue
+
+            if not self_judged and any_swapped:
+                protocol = "Isolated Independent-Judge 2-Pass Swapped"
+            elif not self_judged and any_blind:
+                protocol = "Isolated Independent-Judge Anonymized"
+            elif any_blind:
+                protocol = "Isolated Anonymized Self-Judged"
+            else:
+                protocol = "Isolated Unblinded Self-Judged"
+
             records.append({
-                "model": data.get("model", sub.name),
+                "model": model_name,
                 "slug": sub.name,
+                "protocol": protocol,
+                "judge_model": judge_model,
+                "self_judged": self_judged,
                 "completed_tests": summary.get("completed_tests", len(per_test)),
                 "avg_baseline": summary.get("avg_baseline", 0.0),
                 "avg_optimized": summary.get("avg_optimized", 0.0),
@@ -207,8 +247,28 @@ def collect_all_models() -> list[dict[str, Any]]:
                 "tests": per_test,
             })
         elif md_file.exists():
-            records.append(parse_markdown_eval_file(md_file, sub.name))
+            parsed_md = parse_markdown_eval_file(md_file, sub.name)
+            if parsed_md["completed_tests"] > 0:
+                records.append(parsed_md)
     return records
+
+
+def build_pair_records(models: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    pairs: list[dict[str, Any]] = []
+    for r in models:
+        for t in r["tests"].values():
+            p_dict: dict[str, Any] = {
+                "model": r["model"],
+                "test_id": t["id"],
+                "baseline_total": t["baseline_total"],
+                "optimized_total": t["optimized_total"],
+                "baseline_tokens": t.get("baseline_tokens"),
+                "optimized_tokens": t.get("optimized_tokens"),
+            }
+            if t.get("position_swap_consistent") is not None:
+                p_dict["position_swap_consistent"] = t["position_swap_consistent"]
+            pairs.append(p_dict)
+    return pairs
 
 
 def main() -> int:
@@ -217,36 +277,41 @@ def main() -> int:
     out_json = RESULTS_ROOT / "AGGREGATED_METRICS.json"
     out_md = RESULTS_ROOT / "AGGREGATED_METRICS.md"
 
-    all_pairs: list[dict[str, Any]] = []
-    for r in records:
-        for t in r["tests"].values():
-            p_dict: dict[str, Any] = {
-                "model": r["model"],
-                "baseline_total": t["baseline_total"],
-                "optimized_total": t["optimized_total"],
-                "baseline_tokens": t.get("baseline_tokens", 100),
-                "optimized_tokens": t.get("optimized_tokens", 100),
-            }
-            if t.get("position_swap_consistent") is not None:
-                p_dict["position_swap_consistent"] = t["position_swap_consistent"]
-            all_pairs.append(p_dict)
+    session_models = [r for r in records if r["protocol"].startswith("In-Session")]
+    isolated_models = [r for r in records if not r["protocol"].startswith("In-Session")]
+
+    all_pairs = build_pair_records(records)
+    session_pairs = build_pair_records(session_models)
+    isolated_pairs = build_pair_records(isolated_models)
 
     stratified_summary = compute_stratified_benchmark_summary(all_pairs)
+    session_summary = compute_stratified_benchmark_summary(session_pairs) if session_pairs else {}
+    isolated_summary = compute_stratified_benchmark_summary(isolated_pairs) if isolated_pairs else {}
 
     out_json.write_text(
-        json.dumps({"models": records, "stratified_summary": stratified_summary}, indent=2),
+        json.dumps(
+            {
+                "models": records,
+                "stratified_summary": stratified_summary,
+                "by_protocol_stratum": {
+                    "in_session_self_eval": session_summary,
+                    "isolated_runner": isolated_summary,
+                },
+            },
+            indent=2,
+        ),
         encoding="utf-8",
     )
 
     lines = [
-        "# Aggregated v4.0 Cross-Architecture Benchmark Data",
+        "# Aggregated Cross-Architecture Benchmark Data (v4.3.0 Audited Provenance)",
         "",
-        "Scores are self-evaluations by the models that generated the responses, and evaluators see which response is optimized. The Ollama runner isolates its generation calls, while the session protocol uses a single conversation. Older Ollama records may not contain the exact prompt sent after input guardrails. Partial runs may cover different tests, so their averages are not directly comparable. Averages below come from per-test records; mean paired deltas are rounded independently, and model-written narratives may contain conflicting arithmetic. Overhead is an output word-count ratio, not a token-cost ratio; missing ratios are excluded from its average.",
+        "Methodological Disclosures: All runs in this directory are self-evaluated (`judge_model == generator_model`) unless otherwise noted in the `Judge` column. In-session runs (`argon-4-low`, `gemini-3.8`, `gpt-6-astra-max`) were generated and scored in session contexts (`gpt-6-astra-max` explicitly notes unblinded in-session self-scoring across 11 of 12 cases) and should not be pooled with isolated API runner calls as a single controlled experiment. Isolated Ollama Cloud runs isolate each generation call and randomize candidate order (`Candidate A` vs. `Candidate B`), though historical Oct 31 runs retained `Baseline`/`Optimized` column labels in the judge prompt and visible certificate tags. Partial runs (`gpt-oss:20b-cloud` 9/12, `kimi-k3:cloud` 11/12) cover subsets of the 12-task suite. Word Overhead is an output word-count ratio, not an end-to-end token-cost ratio (prompt compilation tokens and missing API token counts are excluded rather than synthesized).",
         "",
-        "## 1. Overall Model Leaderboard",
+        "## 1. Overall Model Leaderboard (Stratified by Protocol Provenance)",
         "",
-        "| Model | Completed Tests | Baseline Avg (/25) | Optimized Avg (/25) | Delta (/25) | Gain (%) | Avg Word Overhead | Win-Tie-Loss |",
-        "|-------|-----------------|--------------------|---------------------|-------------|----------|--------------|--------------|",
+        "| Model | Protocol | Judge | Completed Tests | Baseline Avg (/25) | Optimized Avg (/25) | Delta (/25) | Gain (%) | Avg Word Overhead | Win-Tie-Loss |",
+        "|-------|----------|-------|-----------------|--------------------|---------------------|-------------|----------|-------------------|--------------|",
     ]
     for r in records:
         tests = list(r["tests"].values())
@@ -258,8 +323,9 @@ def main() -> int:
         pct = round(delta_sum / baseline_sum * 100, 1) if baseline_sum > 0 else 0.0
         overhead = r["avg_word_overhead_ratio"]
         overhead_text = f"{overhead}x" if overhead is not None else "N/A"
+        judge_label = "Self" if r.get("self_judged", True) else f"`{r.get('judge_model')}`"
         lines.append(
-            f"| `{r['model']}` | {r['completed_tests']}/12 | {r['avg_baseline']} | {r['avg_optimized']} | "
+            f"| `{r['model']}` | {r['protocol']} | {judge_label} | {r['completed_tests']}/12 | {r['avg_baseline']} | {r['avg_optimized']} | "
             f"{r['avg_delta']:+g} | {pct:+g}% | {overhead_text} | "
             f"{r['wins']}W-{r['ties']}T-{r['losses']}L |"
         )
@@ -290,24 +356,46 @@ def main() -> int:
         "",
         "## 3. Score Quality Flags",
         "",
-        "The leaderboard retains the saved scores, including any flagged entries.",
+        "The leaderboard retains the saved per-dimension scores and deterministically recomputes totals and deltas (`optimized minus baseline`). Flagged entries below indicate where a model's written delta or total column in raw markdown disagreed with its per-dimension scores.",
         "",
         *(flags or ["- No score-range or total inconsistencies were found in parsed evaluations."]),
         "",
-        "## 4. Stratified Statistical Significance (Bootstrap 95% CIs & Permutation Tests)",
+        "## 4. Protocol-Stratified & Cluster-Robust Statistical Summary",
         "",
-        f"- **Total Evaluated Pairs**: `{stratified_summary.get('total_pairs', 0)}`",
-        f"- **Baseline Mean**: `{stratified_summary.get('baseline_mean', 0.0)}/25`",
-        f"- **Optimized Mean**: `{stratified_summary.get('optimized_mean', 0.0)}/25`",
-        f"- **Mean Delta (95% CI)**: `{stratified_summary.get('mean_delta', 0.0):+g}` (95% CI: `[{stratified_summary.get('delta_95_ci', [0, 0])[0]:+g}, {stratified_summary.get('delta_95_ci', [0, 0])[1]:+g}]`)",
-        f"- **Paired Sign-Flip Permutation p-value**: `p = {stratified_summary.get('paired_sign_flip_p_value', 1.0):.4e}`",
-        f"- **Relative Lift**: `{stratified_summary.get('relative_lift_pct', 0.0):+g}%`",
-        f"- **Win Rate**: `{stratified_summary.get('win_rate_pct', 0.0)}%` ({stratified_summary.get('record', {}).get('wins', 0)}W - {stratified_summary.get('record', {}).get('ties', 0)}T - {stratified_summary.get('record', {}).get('losses', 0)}L)",
-        f"- **Mean Lift per 1k Extra Tokens**: `{stratified_summary.get('mean_lift_per_1k_extra_tokens', 0.0):+g}` points",
+        "Because the benchmark crosses $M$ models with $T = 12$ fixed tasks (1 case per domain), cell-level i.i.d. resampling understates uncertainty. We report **Model-Cluster Bootstrap 95% CIs**, **Two-Way Block Bootstrap 95% CIs (resampling models and tasks)**, and **Cluster-Level Sign-Flip Permutation p-values** separately for each protocol stratum:",
         "",
-        "### Parameter-Tier Stratification",
+        "| Stratum | Pairs (Models x Tasks) | Baseline Mean | Optimized Mean | Mean Delta | Cell Bootstrap 95% CI | Model-Cluster 95% CI | Two-Way Block 95% CI | Model Sign-Flip p | Task Sign-Flip p | Win-Tie-Loss (Win %) |",
+        "| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |",
+    ])
+    for label, summ in [
+        ("In-Session Self-Eval Track", session_summary),
+        ("Isolated Runner Track (Ollama Cloud)", isolated_summary),
+        ("Combined Descriptive Pool (All 14)", stratified_summary),
+    ]:
+        if not summ or not summ.get("total_pairs"):
+            continue
+        rec = summ.get("record", {})
+        c_ci = summ.get("delta_95_ci", [0, 0])
+        m_ci = summ.get("model_cluster_95_ci", [0, 0])
+        tw_ci = summ.get("two_way_block_95_ci", [0, 0])
+        lines.append(
+            f"| **{label}** | {summ['total_pairs']} ({summ.get('n_models', 0)}M, {summ.get('n_tasks', 0)}T) | "
+            f"{summ['baseline_mean']}/25 | {summ['optimized_mean']}/25 | **{summ['mean_delta']:+g}** | "
+            f"`[{c_ci[0]:+g}, {c_ci[1]:+g}]` | `[{m_ci[0]:+g}, {m_ci[1]:+g}]` | `[{tw_ci[0]:+g}, {tw_ci[1]:+g}]` | "
+            f"`{summ.get('model_cluster_sign_flip_p_value', 1.0):.4f}` | `{summ.get('task_cluster_sign_flip_p_value', 1.0):.4f}` | "
+            f"{rec.get('wins', 0)}W-{rec.get('ties', 0)}T-{rec.get('losses', 0)}L ({summ['win_rate_pct']}%) |"
+        )
+
+    tok_pairs = stratified_summary.get("measured_token_pairs", 0)
+    tok_ratio = stratified_summary.get("mean_token_overhead_ratio")
+    tok_lift = stratified_summary.get("mean_lift_per_1k_extra_tokens")
+    lines.extend([
         "",
-        "| Parameter Tier | Pairs | Mean Delta (/25) | 95% Bootstrap CI | Win Rate (%) |",
+        f"- **Measured API Output Token Telemetry (`eval_count` > 0)**: Available on `{tok_pairs}/{stratified_summary.get('total_pairs', 0)}` pairs (Mean Output Token Ratio: `{f'{tok_ratio}x' if tok_ratio is not None else 'N/A'}`, Mean Lift per 1k Extra Output Tokens: `{f'{tok_lift:+g}' if tok_lift is not None else 'N/A'}`). In-session Markdown runs without API token telemetry are excluded rather than assigned synthetic placeholders.",
+        "",
+        "### Parameter-Tier Stratification (Descriptive Pool)",
+        "",
+        "| Parameter Tier | Pairs | Mean Delta (/25) | Cell 95% Bootstrap CI | Win Rate (%) |",
         "| :--- | :---: | :---: | :---: | :---: |",
     ])
     for tier, data in stratified_summary.get("by_tier", {}).items():

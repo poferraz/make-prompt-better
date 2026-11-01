@@ -61,27 +61,28 @@ START
 │
 ├─► Is this an AGENTS.md, CLAUDE.md, or multi-turn agent harness?
 │   ├─► YES → Use Mode 3 (LRM / Harness Mode: Minimal Viable Context).
-│   │         Prune directory overviews (Gloaguen et al., 2026); keep only
-│   │         non-inferable commands, invariants, and verification gates.
+│   │         Fulfill any explicitly requested overview/layout/style items
+│   │         compactly in Section 0 (<=5 lines, Gloaguen et al., 2026);
+│   │         devote 85%+ to non-inferable commands, invariants, and gates.
 │   └─► NO → Continue below.
 │
-├─► Are you targeting a Large Reasoning Model (o3, R1, Extended Thinking)?
-│   ├─► YES → Use Mode 3 (LRM Verification Certificate).
-│   │         Omit persona (Hu et al., 2026) and visible step-by-step CoT;
-│   │         enforce [P] Premises + [V] Verification Gates.
+├─► Are you targeting a Large Reasoning Model (o3, R1, Extended Thinking) or async/concurrency code?
+│   ├─► YES → Use Mode 3 (Code-First LRM Verification Harness, Template 12).
+│   │         Omit persona (Hu et al., 2026); generate complete executable code
+│   │         first, followed by post-hoc [V1] -> [V2] gates (<25% overhead).
 │   └─► NO → Continue below.
 │
 ├─► Is the task creative, editorial, or divergent ideation?
 │   ├─► YES → Use Mode 4 (Creative & Divergent v2).
-│   │         Apply [NT0] Verbalized Sampling (Zhang et al., 2025) +
-│   │         Narrative Traces + Anti-SlopShape rules (Madler, 2026).
+│   │         Apply internal [NT0] Verbalized Sampling (p <= 0.15, Zhang et al., 2025)
+│   │         + Anti-SlopShape rules (Madler, 2026); output clean finished copy.
 │   └─► NO → Continue below.
 │
 ├─► Is the task accuracy-critical?
 │   ├─► YES
-│   │   └─► Is it high-stakes (medical, legal, financial, security) or low baseline?
-│   │       ├─► YES → Use Mode 1 (Max Certificate, ~2.2x overhead, no persona).
-│   │       └─► NO  → Use Mode 2 (Lite Certificate, ~1.5x overhead, no persona).
+│   │   └─► Is it a high-stakes multi-constraint audit (medical, legal, financial, security)?
+│   │       ├─► YES → Use Mode 1 (Max Certificate, ~1.65x-2.2x overhead, anti-redundancy).
+│   │       └─► NO  → Use Mode 2 (Lite Certificate, ~1.45x overhead, default analytical mode).
 │   └─► NO → Use Persona + Constraints (or Lite Certificate with <=5-word persona).
 │
 └─► END

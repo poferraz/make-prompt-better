@@ -67,77 +67,83 @@
   <!-- Subtle Vertical Divider -->
   <line x1="748" y1="56" x2="748" y2="344" stroke="#1C2030" stroke-width="1" />
 
-  <!-- ================= LEFT: DISTILLED FLAGSHIP LEADERBOARD (x: 56 -> 712) ================= -->
+  <!-- ================= LEFT: PROTOCOL-STRATIFIED BENCHMARK MATRIX (x: 56 -> 712) ================= -->
   <g transform="translate(56, 62)">
-    <text x="0" y="0" font-family="Inter, -apple-system, sans-serif" font-size="20" font-weight="700" fill="#F5F3EC" letter-spacing="-0.02em">Cross-Architecture Quality Lift</text>
-    <text x="498" y="0" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#8292A8">25-pt Blinded Judge</text>
+    <text x="0" y="0" font-family="Inter, -apple-system, sans-serif" font-size="20" font-weight="700" fill="#F5F3EC" letter-spacing="-0.02em">Protocol-Stratified Benchmark (N = 164 Pairs)</text>
+    <text x="468" y="0" font-family="'JetBrains Mono', Consolas, monospace" font-size="11.5" font-weight="500" fill="#8292A8">25-pt Self-Judged Rubric</text>
 
-    <!-- Row 1: gemini-3.8 -->
+    <!-- Row 1: gemini-3.8 (In-Session) -->
     <g transform="translate(0, 42)">
-      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="600" fill="#F5F3EC">gemini-3.8</text>
-      <rect x="196" y="2" width="232" height="14" rx="3" fill="#1C2133" />
-      <rect class="delta-1" x="428" y="2" width="64" height="14" rx="3" fill="url(#liftGrad)" />
-      <text x="510" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00E58B">+27.3%</text>
-      <text x="582" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="500" fill="#8292A8">24.7/25</text>
+      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#F5F3EC">gemini-3.8 (Session)</text>
+      <rect x="210" y="2" width="220" height="14" rx="3" fill="#1C2133" />
+      <rect class="delta-1" x="430" y="2" width="46" height="14" rx="3" fill="url(#liftGrad)" />
+      <text x="492" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#00E58B">+3.29</text>
+      <text x="562" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#8292A8">24.8/25</text>
     </g>
 
-    <!-- Row 2: muse-wonder-1.0-max -->
+    <!-- Row 2: argon-4-low (In-Session) -->
     <g transform="translate(0, 90)">
-      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="600" fill="#F5F3EC">muse-wonder-max</text>
-      <rect x="196" y="2" width="257" height="14" rx="3" fill="#1C2133" />
-      <rect class="delta-2" x="453" y="2" width="41" height="14" rx="3" fill="url(#liftGrad)" />
-      <text x="510" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00E58B">+16.0%</text>
-      <text x="582" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="500" fill="#8292A8">24.8/25</text>
+      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#F5F3EC">argon-4-low (Session)</text>
+      <rect x="210" y="2" width="226" height="14" rx="3" fill="#1C2133" />
+      <rect class="delta-2" x="436" y="2" width="40" height="14" rx="3" fill="url(#liftGrad)" />
+      <text x="492" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#00E58B">+2.88</text>
+      <text x="562" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#8292A8">25.0/25</text>
     </g>
 
-    <!-- Row 3: claude-opus -->
+    <!-- Row 3: gpt-6-astra-max (In-Session) -->
     <g transform="translate(0, 138)">
-      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="600" fill="#F5F3EC">claude-opus</text>
-      <rect x="196" y="2" width="252" height="14" rx="3" fill="#1C2133" />
-      <rect class="delta-3" x="448" y="2" width="31" height="14" rx="3" fill="url(#liftGrad)" />
-      <text x="510" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00E58B">+12.3%</text>
-      <text x="582" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="500" fill="#8292A8">23.6/25</text>
+      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#F5F3EC">gpt-6-astra (Session)</text>
+      <rect x="210" y="2" width="232" height="14" rx="3" fill="#1C2133" />
+      <rect class="delta-3" x="442" y="2" width="16" height="14" rx="3" fill="url(#liftGrad)" />
+      <text x="492" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="700" fill="#00E58B">+0.92</text>
+      <text x="562" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#8292A8">23.7/25</text>
     </g>
 
-    <!-- Row 4: kimi-k3 -->
+    <!-- Row 4: gemma4:31b-cloud (Isolated Anonymized) -->
     <g transform="translate(0, 186)">
-      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="600" fill="#F5F3EC">kimi-k3</text>
-      <rect x="196" y="2" width="254" height="14" rx="3" fill="#1C2133" />
-      <rect class="delta-4" x="450" y="2" width="28" height="14" rx="3" fill="url(#liftGrad)" />
-      <text x="510" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00E58B">+11.2%</text>
-      <text x="582" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="500" fill="#8292A8">23.5/25</text>
+      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#D5D9E2">gemma4:31b (Isolated)</text>
+      <rect x="210" y="2" width="225" height="14" rx="3" fill="#1C2133" />
+      <rect x="427" y="2" width="8" height="14" rx="3" fill="#F5A623" />
+      <text x="492" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#F5A623">-0.33</text>
+      <text x="562" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#8292A8">0.85x words</text>
     </g>
 
-    <!-- Row 5: glm-5.3-flash -->
+    <!-- Row 5: glm-5.3-flash:cloud (Isolated Anonymized) -->
     <g transform="translate(0, 234)">
-      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="600" fill="#F5F3EC">glm-5.3-flash</text>
-      <rect x="196" y="2" width="258" height="14" rx="3" fill="#1C2133" />
-      <rect class="delta-5" x="454" y="2" width="24" height="14" rx="3" fill="url(#liftGrad)" />
-      <text x="510" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00E58B">+9.3%</text>
-      <text x="582" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="500" fill="#8292A8">23.5/25</text>
+      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#D5D9E2">glm-5.3-flash (Isolated)</text>
+      <rect x="210" y="2" width="216" height="14" rx="3" fill="#1C2133" />
+      <rect x="416" y="2" width="10" height="14" rx="3" fill="#F5A623" />
+      <text x="492" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#F5A623">-0.46</text>
+      <text x="562" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12" font-weight="500" fill="#8292A8">T1-T9: +1.50</text>
     </g>
 
-    <!-- Row 6: Honest Sub-30B Tradeoff Row -->
+    <!-- Row 6: 11-Model Cloud Mean (Forced Mode 1 Overhead) -->
     <g transform="translate(0, 282)">
-      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="500" fill="#8292A8">gpt-oss:20b</text>
-      <rect x="196" y="2" width="218" height="14" rx="3" fill="#1C2133" />
-      <rect x="392" y="2" width="22" height="14" rx="3" fill="#FF5A36" />
-      <text x="510" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="600" fill="#FF6B4A">-8.9% (Use Lite)</text>
+      <text x="0" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="13" font-weight="500" fill="#8292A8">11-Cloud Mean (Forced)</text>
+      <rect x="210" y="2" width="204" height="14" rx="3" fill="#1C2133" />
+      <rect x="380" y="2" width="34" height="14" rx="3" fill="#FF5A36" />
+      <text x="492" y="15" font-family="'JetBrains Mono', Consolas, monospace" font-size="12.5" font-weight="600" fill="#FF6B4A">-2.35 (3.57x bloat)</text>
     </g>
   </g>
 
-  <!-- ================= RIGHT: EDITORIAL PROOF ANCHOR (x: 804 -> 1144) ================= -->
-  <g transform="translate(804, 92)">
-    <text x="0" y="56" font-family="Inter, -apple-system, sans-serif" font-size="76" font-weight="800" fill="#F5F3EC" letter-spacing="-0.04em">94.1%</text>
-    <text x="4" y="88" font-family="Inter, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#00E58B">Frontier Model Win Rate</text>
-    <text x="4" y="114" font-family="Inter, -apple-system, sans-serif" font-size="14" font-weight="400" fill="#8292A8">108 wins across 146 blinded A/B pairs</text>
+  <!-- ================= RIGHT: STRATIFIED EVIDENCE ANCHOR (x: 788 -> 1152) ================= -->
+  <g transform="translate(788, 76)">
+    <text x="0" y="42" font-family="Inter, -apple-system, sans-serif" font-size="56" font-weight="800" fill="#F5F3EC" letter-spacing="-0.03em">+2.36 / 25</text>
+    <text x="4" y="72" font-family="Inter, -apple-system, sans-serif" font-size="16.5" font-weight="600" fill="#00E58B">Frontier In-Session Track (31W-4T-1L)</text>
+    <text x="4" y="96" font-family="Inter, -apple-system, sans-serif" font-size="13" font-weight="400" fill="#8292A8">Two-Way Block 95% CI: [+1.00, +3.38] at 1.65x words</text>
 
-    <line x1="4" y1="146" x2="320" y2="146" stroke="#1E2336" stroke-width="1" />
+    <line x1="4" y1="120" x2="356" y2="120" stroke="#1E2336" stroke-width="1" />
 
-    <text x="4" y="182" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="700" fill="#00E58B">+4.41 / 25</text>
-    <text x="108" y="182" font-family="Inter, -apple-system, sans-serif" font-size="14.5" font-weight="500" fill="#F5F3EC">Creative &amp; Anti-SlopShape</text>
+    <text x="4" y="152" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00E58B">+1.83 / 25</text>
+    <text x="104" y="152" font-family="Inter, -apple-system, sans-serif" font-size="14" font-weight="500" fill="#F5F3EC">T12 Code-First Concurrency (14 Models)</text>
 
-    <text x="4" y="218" font-family="'JetBrains Mono', Consolas, monospace" font-size="14" font-weight="700" fill="#00E58B">+3.11 / 25</text>
-    <text x="108" y="218" font-family="Inter, -apple-system, sans-serif" font-size="14.5" font-weight="500" fill="#F5F3EC">Financial Due Diligence</text>
+    <text x="4" y="186" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00E58B">+1.50 / 25</text>
+    <text x="104" y="186" font-family="Inter, -apple-system, sans-serif" font-size="14" font-weight="500" fill="#F5F3EC">T2 Financial Due Diligence (8W-1T-4L)</text>
+
+    <text x="4" y="220" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#00E58B">+0.78 / 5.0</text>
+    <text x="104" y="220" font-family="Inter, -apple-system, sans-serif" font-size="14" font-weight="500" fill="#F5F3EC">Traceability Gain Across All 164 Pairs</text>
+
+    <text x="4" y="254" font-family="'JetBrains Mono', Consolas, monospace" font-size="13.5" font-weight="700" fill="#FF6B4A">-2.35 / 25</text>
+    <text x="104" y="254" font-family="Inter, -apple-system, sans-serif" font-size="13.5" font-weight="400" fill="#8292A8">Isolated Cloud Track (Fixed in v4.3.0)</text>
   </g>
 </svg>

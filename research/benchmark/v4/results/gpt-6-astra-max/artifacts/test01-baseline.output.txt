@@ -1,0 +1,15 @@
+Yes. Assuming `20` means a **20% discount**, the calculation is missing division by `100`.
+
+For example, `calculate_discount(100, 20, False)` currently returns `0` instead of `80`.
+
+Corrected version:
+
+```python
+def calculate_discount(price, discount_percent, is_member):
+    if is_member:
+        discount_percent += 10
+    final_price = price - (price * discount_percent / 100)
+    return max(0, final_price)
+```
+
+This assumes membership adds **10 percentage points**, turning a 20% discount into 30%. Negative prices and negative discount percentages remain unvalidated.

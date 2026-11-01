@@ -1,0 +1,9 @@
+Look at this Python function and tell me if it has any bugs.
+
+def calculate_discount(price, discount_percent, is_member):
+    if is_member:
+        discount_percent += 10
+    final_price = price - (price * discount_percent)
+    if final_price < 0:
+        return 0
+    return final_price

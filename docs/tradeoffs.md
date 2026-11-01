@@ -34,25 +34,27 @@ Mahmoudi et al. (2025) found that 40.5% of the LLM-based systems they surveyed l
 
 ### Cross-architecture benchmark results
 
-The academic findings above are corroborated by two cross-architecture benchmark suites:
+The academic findings above have been tested across three benchmark iterations (`research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md` and `AGGREGATED_METRICS.md`):
 1. **v1.0 Analytical Baseline Suite (`N = 40` tests, 4 model families: Gemini, GLM, Qwen, Kimi)**: Achieved a **+25.9%** average relative improvement (+4.9 / 25 delta) and a **96.3%** win rate on analytical tasks.
-2. **v4.0 Expanded Multi-Model Suite (`N = 146` controlled test pairs across 14 model architectures spanning Google Antigravity, Anthropic Claude, Meta Muse, and Ollama Cloud)**: Achieved a **74.0% overall win rate** (108W-8T-30L) across all 14 models and 12 domains, and a **94.1% frontier win rate** (32W-2T-0L across `gemini-3.8` at +5.29 / +27.3% with 12W-0T-0L, `meta-muse-wonder-1.0-max` at +3.42 / +16.0% with 12W-0T-0L and 1.61x word overhead, and `claude-opus`).
+2. **v4.0 Unblinded Multi-Model Suite (`N = 146` pairs across 14 architectures, October 30, 2026)**: Reported a **74.0% win rate** (108W-8T-30L) when evaluators saw explicit `Baseline` and `Optimized` headings.
+3. **v4.2.0 Protocol-Stratified Multi-Model Suite (`N = 164` pairs across 14 architectures, October 31, 2026)**: Separated results into two distinct evaluation protocols with cluster-robust confidence intervals:
+   - **Stratum A: In-Session Frontier Self-Evaluation Track (`3` models, `36` pairs: `gemini-3.8`, `argon-4-low`, `gpt-6-astra-max`)**: Achieved a **+2.36 / 25 mean delta** (`Model-Cluster 95% CI: [+0.92, +3.29]`, `Two-Way Block 95% CI: [+1.00, +3.38]`, `31W-4T-1L`, **86.1% win rate**) with controlled **1.65x** average word overhead. (Note: `gpt-6-astra-max` generated and self-scored 11 of 12 tasks in-session without blinded labels and is classified as an exploratory in-session benchmark.)
+   - **Stratum B: Isolated Runner Anonymized Self-Judged Cloud Track (`11` Ollama Cloud models, `128` pairs)**: When forced into prescribed modes (`TEST_MODE_OVERRIDES`) and evaluated under randomized `Response A` / `Response B` presentation (self-judged), the 11 cloud models recorded a **-2.35 / 25 mean delta** (`Model-Cluster 95% CI: [-3.13, -1.57]`, `Two-Way Block 95% CI: [-4.11, -0.66]`, `38W-5T-85L`, **29.7% win rate**) accompanied by **3.57x** word expansion (`5.22x` measured API output token expansion).
 
-**The value is structural and traceable.** In both benchmark suites, the certificate structure consistently makes responses more verifiable and organized:
-- In the 14-model v4.0 benchmark (146 test runs), **Traceability increased by an average of +1.66 / 5.0** across all architectures.
-- In the v1.0 4-model suite, the dimension-level breakdown was:
+**The value is structural and traceable, provided structure stays proportional.** Across all 164 pairs in v4.2.0:
+- **Traceability increased across both strata (+0.78 / 5.0 overall**: **+0.90 / 5.0** on Frontier models and **+0.75 / 5.0** on Isolated Cloud models), confirming that explicit premise-to-conclusion references consistently improve auditability (Ugare & Chandra, 2026; Zhang, Hu et al., 2026).
+- **Code-First Concurrency Harnesses (`Test 12`, Template 12) achieved the highest lift in the suite (+1.83 / 25 across all 14 models**: **+3.67** on Frontier, **+1.22** on Cloud, with +7.0 breakthroughs on `beam:cloud`, `gemma4:31b-cloud`, and `deepseek-v4.1-flash:1017-cloud`), reversing the v4.0 pre-code table token-starvation failure (-1.85).
+- **Financial Due Diligence (`Test 2`, Template 9) won across both strata (+1.50 / 25 overall, 8W-1T-4L**: **+1.83** on Frontier, **+1.40** on Cloud).
 
-| Dimension | v1.0 4-Model Average | v4.0 14-Model Finding | Interpretation |
-|-----------|----------------------|-----------------------|----------------|
-| Traceability | **+1.9** | **+1.66 / 5.0** (146 runs) | Claims linked to evidence; core skill claim validated across 14 architectures |
-| Structure | **+1.4** | Consistent lift on Frontier & Mid-tier | Consistent formatting, logical organization |
-| Completeness | **+0.9** | High on Mode 1/2/4; requires self-contained premises | Fewer missed cases when input facts are bound inside `[P]` |
-| Accuracy | **+0.6** | Strongest on Fin (+3.11), NIST (+2.42), Biz (+2.42), Code (+2.07) | Execution traces expose arithmetic and parameter scaling bugs |
-| Actionability | **+0.4** (v1.0) | Resolved via mandatory Remediation block | Copy-pasteable patches and commands included in conclusion |
+| Dimension | v1.0 4-Model Avg | v4.2.0 Frontier Track (`36` pairs) | v4.2.0 Isolated Cloud Track (`128` pairs) | Interpretation |
+|-----------|------------------|------------------------------------|-------------------------------------------|----------------|
+| Traceability | **+1.9** | **+0.90 / 5.0** (4.07 to 4.97) | **+0.75 / 5.0** (3.62 to 4.37) | Positive across every stratum; core traceability claim holds under anonymized evaluation |
+| Accuracy | **+0.6** | **+0.39 / 5.0** | **-0.29 / 5.0** | Gains on Financial (+1.50) and Concurrency (+1.83); cloud compiler drift fixed in v4.3.0 `[REQ-PRESERVE]` |
+| Completeness | **+0.9** | **+0.36 / 5.0** | **-0.60 / 5.0** | Cloud penalty driven by Test 11 (`CLAUDE.md`) dropping 3 requested sections (-8.91); fixed in v4.3.0 `Section 0` |
+| Actionability | **+0.4** | **+0.36 / 5.0** | **-0.80 / 5.0** | Verbose Mode 1 cloud essays buried takeaways; fixed via anti-redundancy & acuity-first clinical ordering |
+| Structure | **+1.4** | **+0.35 / 5.0** | **-1.40 / 5.0** | Anonymized cloud judges penalized 3.57x bureaucratic `[P]`/`[T]` repetition; fixed via proportional Mode 2 Lite defaults |
 
-Traceability improved across every model tier. If your primary need is auditability and hallucination reduction, the skill delivers high ROI. If your primary need is raw correctness on tasks where the model already performs near ceiling, gains are smaller.
-
-**Ceiling, floor, and model-capacity effects.** Frontier reasoning models (`gemini-3.8`, `meta-muse-wonder-1.0-max`, `claude-opus`) achieved a 94.1% win rate with controlled word overhead (1.61x to 2.04x) because they have the capacity to internalize semi-formal certificates without sacrificing implementation depth. Mid-tier open-weights models (`mistral-large-4`, `glm-5.3`, `kimi-k3`, `gemma4:31b`, `beam`) posted 70% to 85% win rates (+1.50 to +2.17 net delta). By contrast, compact and flash-tier models (`<30B` parameters) suffered high word overhead (up to 11.93x on `minimax-m3.1-flash`) or token starvation when forced into heavy Mode 1 Max Certificates. In v4.1.0, **Model-Aware Mode Routing** defaults flash-tier and sub-30B models to **Mode 2 (Lite Certificate)**.
+**Ceiling, floor, and protocol-stratum effects.** Frontier models (`gemini-3.8` +3.29, `argon-4-low` +2.88, `gpt-6-astra-max` +0.92) kept Mode 1 expansion to 1.65x words because they treat `[P]` and `[T]` items as concise analytical indexes. When a model already scores near the rubric ceiling at baseline (`gpt-6-astra-max` at 22.75/25 or `glm-5.3:cloud` at 23.08/25), heavy scaffolding offers smaller upside and can cause regressions if compilation drops secondary requirements or repeats facts across sections. In v4.3.0, **Requirement Preservation (`[REQ-PRESERVE]`)** and **Proportional Structure** prevent scope loss and cross-section repetition.
 
 ---
 
@@ -125,23 +127,24 @@ Average creative delta: **+1.0**, compared to +6.3 for code review and +5.8 for 
 
 The naive solution, skipping the certificate entirely for creative tasks, throws away the benefits of structured reasoning. The model goes back to freeform generation, which means no systematic thinking about audience, tone, or emotional arc before writing.
 
-**V3/V4 mitigation and empirical breakthrough (+4.41 delta in v4.0):** V3 introduced **Narrative Traces**, and v4.0 upgraded this to **Mode 4: Creative & Divergent v2**, combining `[NT0]` **Verbalized Sampling** (generating candidate angles with typicality `p <= 0.20` per Zhang et al., 2025) with `[SC0]` **Anti-SlopShape Structural Rarity Contract** (Delayed Thesis, Direct Evidence Progression, Practitioner Voice, Actionable Close per Madler, 2026).
+**V3/V4 mitigation and Mode 4 backstage visibility findings:** V3 introduced **Narrative Traces**, and v4.0 upgraded this to **Mode 4: Creative & Divergent v2**, combining `[NT0]` **Verbalized Sampling** (generating candidate angles with typicality `p <= 0.15` per Zhang et al., 2025) with `[SC0]` **Anti-SlopShape Structural Rarity Contract** (Delayed Thesis, Direct Evidence Progression, Practitioner Voice, Actionable Close per Madler, 2026).
 
-In the 14-model v4.0 benchmark, Test 10 (Creative Brief) jumped from the weakest test in v1.0 (**+1.0 delta**) to the **highest-performing test in the entire benchmark (+4.41 / 25 net delta, 10W-1T-0L, 100% win rate)**, completely resolving v1.0's creative rigidity across both frontier and compact architectures.
+In the v4.2.0 benchmark, Mode 4 achieved **+2.00 / 25 on Frontier models (`2W-1T-0L`)** and **+4.0 / 25 on `mistral-large-4:cloud` (`0.63x` words)** when the output remained clean. However, 9 of 10 isolated cloud models lost (`-2.50 / 25` mean delta) because they emitted 150 to 300 words of visible `[NT0]`-`[NT3]` backstage probability tables above the product description, which anonymized judges penalized as unrequested meta-commentary. In **v4.3.0**, Mode 4 and Template 10 keep `[NT0]`-`[NT3]` backstage preparation **strictly internal by default**, outputting only the finished creative deliverable unless the user explicitly asks for planning notes.
 
-### v4.0 Multi-Model Failure Modes & v4.1.0 Mitigations
+### v4.2.0 Benchmark Findings & v4.3.0 Architectural Upgrades
 
-Evaluating 146 controlled pairs across 14 architectures in v4.0 surfaced three specific failure modes on compact and open-weights models, each addressed in **v4.1.0**:
+Comparing the October 30 v4.0 unblinded cloud run (+1.06 mean delta) against the October 31 v4.2.0 anonymized cloud run (-2.35 mean delta) revealed an observational shift of **-3.41 / 25** (+1.53 on Baseline and -1.88 on Optimized; confounded by skill edits, regenerated responses, self-judging, and residual `"Baseline"`/`"Optimized"` column headers in the v4.2.0 judge table). Inspecting the 164 v4.2.0 pairs surfaced four concrete product and harness failure modes, all resolved in **v4.3.0**:
 
-1. **LRM Concurrency Token Starvation (Test 12: -1.85 net delta on compact models)**:
-   - *Finding*: While frontier models won decisively on Test 12 (`gemini-3.8` +6.5, `meta-muse-wonder-1.0-max` +4.0), requiring an elaborate verification table *before* the code burned output token budgets on smaller open-weights models (`gpt-oss:20b`, `minimax-m3.1-flash`, `deepseek-v4.1-flash`), resulting in truncated or incomplete async implementations.
-   - *v4.1.0 Fix*: Template 12 (`[HARNESS]`) now inverts the sequence so the **complete, executable implementation is generated first**, followed by a compact post-hoc verification gate (`[V1] Concurrency & State Invariants -> [V2] Executable Self-Test Harness`), and caps non-code verification overhead at `<25%` of total response length.
-2. **The Context File Evaluator Paradox (Test 11: -0.73 net delta)**:
-   - *Finding*: Template 11 (`[CONTEXT-FILES]`) intentionally strips discoverable directory trees and standard PEP8 boilerplate (`<150` lines) per Gloaguen et al. (2026). While frontier evaluators rewarded this (+7.0 on Gemini 3.8 and Muse Wonder 1.0 Max), smaller model evaluators penalized the omission on Completeness because they did not recognize it as an intentional architectural constraint.
-   - *v4.1.0 Fix*: Template 11 outputs now include an explicit header contract: `<!-- Context Architecture Contract: Generic directory trees and standard language style guides are omitted per Gloaguen et al. (2026) to protect agent context window. -->`
-3. **Flash Model Bloat & Abstract Placeholder Rewrites**:
-   - *Finding*: Sub-30B and flash-tier models suffered high word overhead when forced into Mode 1 Max Certificates (e.g., `minimax-m3.1-flash` at 11.93x overhead), and occasionally emitted prompt schemas with empty placeholders (`[insert code here]`) instead of embedding input facts.
-   - *v4.1.0 Fix*: Step 1 enforces **Model-Aware Mode Routing** (defaulting flash-tier and `<30B` models to Mode 2 Lite Certificate, which achieved a +1.09 delta with controlled overhead on Test 9), and Steps 4 and 5 mandate **Self-Contained Data Binding** (embedding all input code, tables, numbers, and case facts directly inside `[P]` premises).
+1. **Test 12 (`AsyncTokenBucket`) Code-First Turnaround (-1.85 in v4.0 to +1.83 in v4.2.0)**:
+   - *Finding*: Placing the complete executable implementation *before* the post-hoc `[V1] -> [V2]` verification gate (`<25%` commentary ceiling) turned Test 12 into the **highest-scoring task across all 14 models (+1.83 / 25 overall, +3.67 on Frontier, +1.22 on Cloud, with +7.0 gains on `beam:cloud`, `gemma4:31b-cloud`, and `deepseek-v4.1-flash:1017-cloud`)**. In v4.3.0, Template 12 also adds an exact integer/rational accounting check to prevent floating-point capacity drift (`2**53 + 1`).
+2. **Test 11 (`CLAUDE.md`) Compiler Requirement-Preservation Defect (-8.91 on Cloud, 0W-0T-11L)**:
+   - *Finding*: The Test 11 prompt explicitly asks for a project overview, folder structure, and PEP8 convention explanation. Template 11 previously instructed the compiler to delete those three sections entirely per Gloaguen et al. (2026). Anonymized cloud judges evaluating `Candidate B` (`0.33x` word length) against the user prompt heavily penalized the omission of three explicitly requested deliverables.
+   - *v4.3.0 Fix*: **Requirement Preservation (`[REQ-PRESERVE]`)** is now Invariant #1 in `SKILL.md`. In Template 11, any explicitly requested overview, directory layout, or style convention is fulfilled compactly in **`## 0. Requested Scope & Conventions Summary` (`<= 5` lines)** rather than silently deleted, while devoting 85%+ of the file to non-inferable commands, invariants, and verification gates.
+3. **Disproportionate Mode 1 Verbosity & Clinical Priority Burial (3.57x Words / 5.22x Tokens on Cloud)**:
+   - *Finding*: Forcing full Mode 1 Max Certificates onto compact tasks (Test 1's 12-line function at `8.92x` words or Test 3's urgent clinical scenario at `7.12x` words) caused open cloud models to repeat the same facts across Premises, Traces, and Conclusions and bury urgent stabilization actions.
+   - *v4.3.0 Fix*: Templates 1 to 9 enforce an explicit **Anti-Redundancy Rule** (state each fact once in `[P]` and reference by ID `[P1]`, `[T1]`), Template 7 enforces **Acuity-First Clinical Ordering** (immediate stabilization actions placed first), and `SKILL.md` defaults standard analytical tasks to **Mode 2 (Lite Certificate, `1.45x` average word overhead on Test 9)**.
+4. **Benchmark Measurement & Statistical Engine Repairs (`blind_stats_engine.py`, `rejudge_saved_outputs.py`)**:
+   - *v4.3.0 Fix*: Replaced `"Baseline"` / `"Optimized"` table column headers in `build_blind_eval_instruction` with neutral `"Candidate A (1-5)"` / `"Candidate B (1-5)"` headers, added **Model-Cluster** and **Two-Way Block Bootstrap 95% CIs**, removed synthetic `100`-token fallbacks, added `--unprescribed-routing` to test natural mode routing, and added `rejudge_saved_outputs.py` to isolate pure judge effects on identical saved outputs.
 
 ### Traceability self-check overhead
 
@@ -180,15 +183,15 @@ There are situations where semi-formal reasoning is the wrong tool:
 
 ## Bottom Line
 
-Semi-formal reasoning is a precision tool, not a default setting. Across the v1.0 4-model analytical benchmark (+25.9% average relative improvement, 96.3% win rate) and the expanded v4.0 14-model benchmark (146 controlled pairs, **74.0% overall win rate**, **94.1% frontier win rate**, **+1.66 / 5.0 average Traceability gain**, and **+4.41 / 25 delta on Mode 4 Creative**), structured reasoning certificates consistently elevate verification depth and auditability.
+Semi-formal reasoning is a precision tool, not a default setting. Across the v1.0 4-model analytical benchmark (+25.9% average relative improvement, 96.3% win rate) and the v4.2.0 14-model protocol-stratified benchmark (`N = 164` pairs: **+2.36 / 25 delta and 86.1% win rate on the In-Session Frontier Track at 1.65x words**, **+0.78 / 5.0 Traceability gain across all 164 pairs**, **+1.83 / 25 overall delta on Code-First Template 12**, and **-2.35 / 25 on the Isolated Anonymized Cloud Track when forced into disproportionate Mode 1 scaffolding or Test 11 section deletion**), structured certificates deliver high value when proportional to the task and grounded in full requirement preservation.
 
-The costs are real: ~2.2x token overhead in Max mode (~1.5x in Lite), proportional latency increase, diminishing returns on already-strong baselines, token starvation if verification tables precede large code implementations on compact models (resolved in v4.1.0 by code-first Template 12), and active accuracy loss if persona framing is misapplied on factual tasks.
+The costs are real: ~1.65x to 2.2x word overhead on Frontier models in Max mode (~1.45x in Lite mode, up to 3.57x words / 5.22x tokens when Max mode is forced onto open cloud models), proportional latency increase, diminishing returns on near-ceiling baselines (>22.5/25), and completeness penalties if prompt compilation drops user-requested sections or leaks backstage planning notes.
 
-**Decision framework (v4.2.0):**
-- High-stakes analytical task on a frontier reasoning architecture or for mission-critical human review? **Mode 1: Max Certificate (~2.2x overhead).**
-- Flash-tier or sub-30B parameter model, OR routine analytical task where the model is moderately competent? **Mode 2: Lite Certificate (~1.5x overhead, default for compact/flash models).**
-- Large Reasoning Model (o3, R1, Extended Thinking), async concurrency coding, or `AGENTS.md` / `CLAUDE.md` context file? **Mode 3: LRM / Harness Mode (~1.1x to 1.3x overhead; generates executable code first before `[V1] -> [V2]` verification with `<25%` overhead ceiling, and includes the Context Architecture Contract preamble for `AGENTS.md`/`CLAUDE.md` per Lee et al., 2026 and Gloaguen et al., 2026).**
-- Creative, editorial, or divergent writing task? **Mode 4: Creative & Divergent v2 (+4.41 benchmark delta; Verbalized Sampling + Narrative Traces + Anti-SlopShape rules per Zhang et al., 2025 and Madler, 2026).**
+**Decision framework (v4.3.0):**
+- High-stakes multi-constraint audit (financial, legal, clinical, compliance, deep code review) where full premise-to-conclusion traceability is required? **Mode 1: Max Certificate (with anti-redundancy and acuity-first clinical ordering).**
+- Standard analytical task, code debugging, comparative trade-offs, or compact/flash model? **Mode 2: Lite Certificate (~1.45x word overhead, default for standard analytical tasks).**
+- Large Reasoning Model (o3, R1, Extended Thinking), async concurrency coding, or `AGENTS.md` / `CLAUDE.md` context file? **Mode 3: LRM / Harness Mode (Code-First `[V1] -> [V2]` verification with `<25%` overhead ceiling for Template 12, and compact `Section 0` requirement fulfillment + non-inferable gates for Template 11 per Lee et al., 2026 and Gloaguen et al., 2026).**
+- Creative, editorial, or divergent writing task? **Mode 4: Creative & Divergent v2 (Internal `[NT0]` Verbalized Sampling `p <= 0.15` + `[SC0]` Anti-SlopShape rules, outputting clean finished prose by default per Zhang et al., 2025 and Madler, 2026).**
 - Simple factual lookup or pure stream-of-consciousness generation? **Skip the certificate entirely.**
 
 Use it when traceable reasoning matters. Scale it across the 4 modes. Do not use Max mode for every prompt.

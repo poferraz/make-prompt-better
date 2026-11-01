@@ -541,7 +541,13 @@ Make sure we don't break anything because we have a critical investor audit next
 #### Optimized Context File (`AGENTS.md` / `CLAUDE.md`)
 
 ```
+<!-- Context Architecture Contract: Discoverable directory tutorials and generic style prose are compacted per Gloaguen et al. (2026) to protect agent context window while preserving all explicitly requested sections. -->
 # Billing Service Agent Operating Contract
+
+## 0. Architecture, Layout & Conventions (Compactly Preserved)
+- Overview & Stack: Python FastAPI billing microservice backed by SQLAlchemy.
+- Directory Map: `src/api/` (FastAPI routers), `src/models/` (SQLAlchemy models), `src/services/` (business logic), `tests/` (unit and integration tests).
+- Coding Conventions: Standard PEP8 enforced via `ruff` and `mypy` in Section 1; modular boundaries enforced in Section 2.
 
 ## 1. Non-Inferable Environment & Execution Commands
 - Dependency & virtualenv runner: `uv run <command>` (never invoke bare `python` or `pip`)
@@ -565,7 +571,7 @@ Before declaring any task complete:
 
 #### What Changed and Why
 
-- **Stripped directory overview and generic PEP8 platitudes:** Per CONTEXT-FILES (Gloaguen et al., 2026), removing inferable directory trees and generic coding advice avoids the >20% token cost penalty and -3% resolution drop caused by bloated context files.
+- **Compacted requested directory overview and PEP8 rules into Section 0 instead of silently deleting them:** Per CONTEXT-FILES (Gloaguen et al., 2026) and Requirement Preservation (`[ACE]`, Zhang, Hu et al., 2026), keeping a 3-line summary of explicitly requested layout and style items fulfills the user's deliverables while avoiding the >20% token cost penalty and -3% resolution drop caused by verbose directory tutorials.
 - **Replaced persona and "think step by step" with executable invariants [I1]-[I3]:** Per PRISM (Hu, Rostami & Thomason, 2026) and HARNESS (Lee et al., 2026), coding agents and reasoning models need non-inferable tooling commands (`uv run`) and hard boundary rules (`Decimal` only, router-to-service session boundary).
 - **Added Context-as-a-File scratchpad rule and Verification Gate:** Per CLM (Shao et al., 2026) and DS-STAR (Nam et al., 2025), externalizing multi-file plans to a scratchpad file and enforcing a pre-completion verification gate improves accuracy while lowering compute overhead.
 
@@ -591,16 +597,16 @@ Write an 800-word blog post for our engineering blog about why teams should swit
 #### Optimized Prompt
 
 ```
-You are a systems engineer. The editorial craft protocol requires completing
-the backstage scaffolding block before drafting the final article.
+You are a systems engineer. Follow the editorial craft protocol below to prepare
+and draft the article.
 
 ### PREMISES
 - [P1] Reader & context: Senior backend and ML engineers debugging brittle multi-turn agent pipelines in production.
 - [P2] Target shift: Move the reader from treating prompts as magic strings to treating the context window as a bounded state buffer with explicit schemas and invariants.
 - [P3] Constraints: 750-850 words, technical engineering essay, zero product promotion.
 
-### BACKSTAGE SCAFFOLD
-- [NT0] Verbalized Distribution Sampling: Enumerate 4 structurally distinct entry angles for this essay and estimate each angle's typicality probability (p = likelihood a default LLM prompt produces it):
+### INTERNAL BACKSTAGE PREPARATION (Perform silently before drafting; output backstage notes ONLY if explicitly requested)
+- [NT0] Verbalized Distribution Sampling: Consider 4 structurally distinct entry angles for this essay and estimate each angle's heuristic typicality (p = likelihood a default LLM prompt produces it):
   1. [Angle 1: chronological history of prompt engineering to context engineering] (p = ...)
   2. [Angle 2: high-level definition comparing prompts to RAM/OS] (p = ...)
   3. [Angle 3: post-mortem of a specific production failure caused by a 12-line system prompt rewrite] (p = ...)
@@ -618,11 +624,11 @@ Construct the final essay to satisfy these four structural rules:
 4. Actionable Close: End on a specific diagnostic check the reader can run on their own repository today, without a summary paragraph that restates the thesis.
 
 ### FINAL DELIVERABLE
-Present the finished 750-850 word essay executing the selected [NT0] angle and adhering to the Structural Rarity Contract.
+Output ONLY the finished 750-850 word essay executing the selected [NT0] angle and adhering to the Structural Rarity Contract (do not print the [P], [NT], or [SC0] scaffolding blocks).
 ```
 
 #### What Changed and Why
 
 - **Removed "go viral on Hacker News and drive signups":** Per GOAL-BLIND (Cao, Jiang & Xu, 2026), removing promotional goals prevents hype inflation and sales-pitch framing.
-- **Added `[NT0]` Verbalized Distribution Sampling:** Per VS (Zhang et al., 2025), forcing the model to enumerate 4 candidate angles with typicality probabilities (`p`) and select a low-typicality (`p <= 0.20`) angle increases structural diversity by 1.6x to 2.1x and avoids the generic history-lesson opening.
+- **Kept `[NT0]` Verbalized Distribution Sampling internal to the preparation phase:** Per VS (Zhang et al., 2025), considering 4 candidate angles with typicality estimates (`p`) and selecting a low-typicality (`p <= 0.20`) angle increases structural diversity by 1.6x to 2.1x, while keeping the scaffold internal prevents backstage planning notes from polluting the delivered article.
 - **Enforced the 4-part Structural Rarity Contract:** Per SLOPSHAPE (Madler, 2026), explicitly replacing pre-announced theses, "Legacy vs. Modern" contrasts, editorial-explainer voice, and summary endings targets the exact core features that separate human writing (mean rarity 0.838) from AI writing (mean rarity 0.435, Cohen's `d = 1.83`).

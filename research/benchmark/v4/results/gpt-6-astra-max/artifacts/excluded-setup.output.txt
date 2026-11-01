@@ -1,0 +1,15 @@
+Yes. The function mixes percentage units: `+= 10` assumes whole percentages, but the multiplication treats the discount as a fraction.
+
+For example, `calculate_discount(100, 20, False)` returns `0` instead of `80`.
+
+Assuming `20` means 20% and membership adds 10 percentage points:
+
+```python
+def calculate_discount(price, discount_percent, is_member):
+    if is_member:
+        discount_percent += 10
+    final_price = price - (price * discount_percent / 100)
+    return max(0, final_price)
+```
+
+You may also want input validation: negative discounts currently increase the price, and negative prices silently return zero for ordinary discount values.

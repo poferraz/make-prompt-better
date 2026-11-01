@@ -459,6 +459,7 @@ def run_model_benchmark(
     blind_eval: bool = True,
     swap_positions: bool = False,
     strip_cert_markers: bool = False,
+    unprescribed_routing: bool = False,
     seed: int = 42,
 ) -> bool:
     if test_ids is None:
@@ -475,15 +476,16 @@ def run_model_benchmark(
         metrics = {
             "model": model,
             "slug": slug,
-            "version": "4.0.0",
+            "version": "4.3.0",
             "tests": {},
             "summary": {},
         }
     metrics["judge_model"] = judge_model or model
     metrics["self_judged"] = ((judge_model or model) == model)
+    metrics["unprescribed_routing"] = unprescribed_routing
 
     print(f"\n============================================================")
-    print(f"Running v4.0 Benchmark for Model: {model} -> {out_dir.relative_to(REPO_ROOT)}")
+    print(f"Running Benchmark for Model: {model} -> {out_dir.relative_to(REPO_ROOT)}")
     print(f"============================================================")
 
     if (resume and metrics.get("final_report_md") and md_path.exists()
@@ -511,30 +513,40 @@ def run_model_benchmark(
                 messages=[{"role": "user", "content": tc["raw_prompt"]}],
                 host=host,
                 timeout=timeout,
+                seed=seed,
             )
 
-            # Step B: Optimize Prompt using make-prompt-better v4.0
-            print(f"    -> Step B: Applying make-prompt-better v4.0 ({tc['target_mode']})...")
+            # Step B: Optimize Prompt using make-prompt-better
+            print(
+                f"    -> Step B: Applying make-prompt-better "
+                f"({'unprescribed router' if unprescribed_routing else tc['target_mode']})..."
+            )
+            routing_line = (
+                "- Mode & Template Selection: Classify the task and select the optimal Mode (1..4) and Template (1..12) from the skill instructions.\n"
+                if unprescribed_routing
+                else f"- Required Mode & Template: {tc['target_mode']}\n"
+            )
             opt_prompt_instruction = (
-                "You are applying the `make-prompt-better` v4.0 prompt optimization skill.\n\n"
+                "You are applying the `make-prompt-better` prompt optimization skill.\n\n"
                 f"{skill_bundle}\n\n"
                 "---\n"
-                f"TASK: Rewrite the following raw prompt using `make-prompt-better` v4.0.\n"
+                f"TASK: Rewrite the following raw prompt using `make-prompt-better`.\n"
                 f"- Domain: {tc['domain']}\n"
-                f"- Task Classification: {tc['task_type']}\n"
-                f"- Required v4.0 Mode & Template: {tc['target_mode']}\n\n"
+                f"{routing_line}\n"
                 "RAW PROMPT TO OPTIMIZE:\n"
                 f"```\n{tc['raw_prompt']}\n```\n\n"
                 "CRITICAL INSTRUCTIONS FOR THE OPTIMIZED PROMPT:\n"
-                "1. The rewritten prompt MUST BE 100% SELF-CONTAINED. It will be sent to a separate fresh LLM with no memory.\n"
-                "2. You MUST embed all code, data, numbers, requirements, and facts from the RAW PROMPT directly inside the rewritten prompt (e.g. inside the premises, input section, or code fence). Never leave placeholders like '[insert code here]' or refer to external context.\n"
-                "3. Output ONLY the rewritten, ready-to-execute Optimized Prompt. Do not answer the prompt yet, and do not wrap in conversational chatter."
+                "1. Preserve every requested deliverable, sub-question, ordering requirement, and operational constraint from the RAW PROMPT.\n"
+                "2. The rewritten prompt MUST BE 100% SELF-CONTAINED (Portable Mode). It will be sent to a separate fresh LLM with no memory.\n"
+                "3. You MUST embed all code, data, numbers, requirements, and facts from the RAW PROMPT directly inside the rewritten prompt (e.g. inside the premises, input section, or code fence). Never leave placeholders like '[insert code here]' or refer to external context.\n"
+                "4. Output ONLY the rewritten, ready-to-execute Optimized Prompt. Do not answer the prompt yet, and do not wrap in conversational chatter."
             )
             opt_prompt_res = call_ollama_chat(
                 model=model,
                 messages=[{"role": "user", "content": opt_prompt_instruction}],
                 host=host,
                 timeout=timeout,
+                seed=seed,
             )
 
             # Step C: Execute Optimized Prompt (isolated context)
@@ -816,6 +828,11 @@ def main() -> int:
         help="Strip [P1], [T1], [V1], and certificate mode tags before judging.",
     )
     parser.add_argument(
+        "--unprescribed-routing",
+        action="store_true",
+        help="Do not prescribe target_mode in Step B; evaluate the skill's native mode routing.",
+    )
+    parser.add_argument(
         "--seed",
         type=int,
         default=42,
@@ -849,7 +866,7 @@ def main() -> int:
     test_ids = [int(x.strip()) for x in args.tests.split(",") if x.strip()]
     skill_bundle = load_skill_bundle()
 
-    print(f"Loaded make-prompt-better v4.0 skill bundle ({len(skill_bundle.splitlines())} lines).")
+    print(f"Loaded make-prompt-better skill bundle ({len(skill_bundle.splitlines())} lines).")
     print(f"Target models ({len(models)}): {', '.join(models)}")
     print(f"Target tests ({len(test_ids)}): {test_ids}")
 
@@ -867,6 +884,7 @@ def main() -> int:
                 blind_eval=not args.unblinded,
                 swap_positions=args.swap_positions,
                 strip_cert_markers=args.strip_cert_markers,
+                unprescribed_routing=args.unprescribed_routing,
                 seed=args.seed,
             )
             if not complete:

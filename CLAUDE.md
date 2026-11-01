@@ -2,7 +2,7 @@
 
 ## Repository Purpose
 
-This repository is a research-grounded prompt, context, and harness optimization skill (`v4.2.0`). It synthesizes eleven peer-reviewed papers into an actionable methodology called semi-formal reasoning. The repo serves as both a universal installable agent skill (`agentskills.io` standard for Claude Code, Antigravity, Gemini CLI, OpenAI Codex CLI, Qwen Code, Copilot CLI, Cursor, Windsurf, and AdaL) and a standalone reference.
+This repository is a research-grounded prompt, context, and harness optimization skill (`v4.3.0`). It synthesizes eleven peer-reviewed papers into an actionable methodology called semi-formal reasoning. The repo serves as both a universal installable agent skill (`agentskills.io` standard for Claude Code, Antigravity, Gemini CLI, OpenAI Codex CLI, Qwen Code, Copilot CLI, Cursor, Windsurf, and AdaL) and a standalone reference.
 
 ## File Organization
 
@@ -16,10 +16,11 @@ This repository is a research-grounded prompt, context, and harness optimization
 
 ## Key Constraints
 
+- **Requirement preservation (`[REQ-PRESERVE]`)**: Preserve every user-requested deliverable, sub-question, output ordering rule, and decision-relevant operational constraint (budget, latency, timeline, target audience). When optimizing `CLAUDE.md` / `AGENTS.md`, fulfill any explicitly requested overview/layout/style items compactly (`Section 0`, `<= 5` lines) rather than silently deleting them.
 - **No dashes as punctuation**: No em/en dashes as sentence punctuation anywhere. Use commas, colons, semicolons. Hyphens in compounds (goal-blind, semi-formal) are fine.
 - **Universal cross-tool compatibility**: `SKILL.md` frontmatter must contain only `name` and a single-line quoted `description` starting with `"Use when..."` (no colons or multi-line YAML folding markers that break cross-runtime parsers).
 - **Attribution is paramount**: Every claim must trace to a cited paper. Never claim originality for ideas from the 11 papers or severity1's architecture.
-- **Goal-blind**: Never include evaluation criteria or downstream use in prompt templates.
+- **Goal-blind**: Strip evaluative pressure, sycophancy triggers, and presupposed verdicts from prompt templates while retaining operational constraints.
 - **Positive recipes over prohibitions**: Express template rules as positive structural contracts and observable-predicate conditionals rather than bare "Do NOT" anti-pattern lists (avoid the negative prohibition trap).
 - **Progressive disclosure**: `SKILL.md` under 500 lines. Heavy content goes in `references/`.
 

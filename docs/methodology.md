@@ -12,7 +12,7 @@ Semi-formal reasoning is a prompt and context engineering method that forces the
 
 The technique originates from work by Ugare and Chandra at Meta (2026), who demonstrated that structured reasoning templates improved code analysis accuracy by 10 to 15 percentage points without any model retraining. Their method raised patch equivalence accuracy from 78% to 88% on curated examples and reached 93% on real-world patches. Code QA accuracy climbed from 78% to 87%. The original paper reported ~2.8x more reasoning steps than standard prompting. Cross-architecture benchmarking (Gemini, GLM, Qwen, Kimi) shows the actual average overhead is ~2.2x (ranging from ~1.7x on Qwen to ~2.7x on Kimi), a tradeoff that reliably buys a ~26% accuracy and traceability improvement for analytical tasks (Ugare & Chandra, 2026).
 
-This document describes the full v4.0 methodology: the certificate structure, the eleven research constraints that shape it across analytical, agentic, and creative tasks, the prompt framework that operationalizes it, and the optimization process that applies it across any LLM or coding agent.
+This document describes the full v4.3.0 methodology: Requirement Preservation as the first compiler invariant, the proportional certificate structure, Dual Context Binding (`Portable` vs. `Working-Context`), the eleven research constraints that shape it across analytical, agentic, and creative tasks, the prompt framework that operationalizes it, and the optimization process that applies it across any LLM or coding agent.
 
 For quick-reference versions of the research constraints, see `make-prompt-better/references/research-principles.md`. For ready-to-use certificate templates across twelve domains, see `make-prompt-better/references/domain-templates.md`.
 
@@ -86,7 +86,7 @@ Cao, Jiang, and Xu discovered that disclosing the downstream objective to an LLM
 
 The effect is insidious. Goal-aware prompts inflated in-sample performance, making the results look better during testing. But out-of-sample generalization degraded. The inflated in-sample improvement disappeared entirely after the model's knowledge cutoff, confirming that the model was exploiting training-data correlations rather than producing genuine analytical improvement. The model was not getting smarter. It was cheating, in a way that became invisible during evaluation but harmful in production.
 
-**What this means for prompt optimization:** Never include evaluation criteria, downstream use case, success metrics, or purpose descriptions in the prompt. The certificate specifies what evidence to gather and what analytical paths to follow, not what answer is desired or how the output will be judged. This constraint applies to the certificate's conclusion format as well: the verdict template must be neutral, not tilted toward any particular outcome.
+**What this means for prompt optimization:** Strip evaluation rubrics, sycophancy triggers, emotional pleading, and presupposed conclusions from the prompt (Cao, Jiang & Xu, 2026). Critically, **distinguish biasing evaluative pressure from decision-relevant operational constraints**: always preserve user-requested deliverables, output ordering rules (such as urgent clinical stabilization actions first), budget ceilings, latency/SLA bounds, timelines, and target audience specifications (`[REQ-PRESERVE]`). The certificate specifies what evidence to gather and what analytical paths to follow without tilting the verdict toward a predetermined conclusion.
 
 Consider a compliance check prompt. A goal-leaking version would say: "Check whether this system meets GDPR requirements so we can pass our upcoming audit." The goal-blind version says: "Examine this system against the following GDPR articles. For each article, trace the specific implementation, state the evidence found, and mark COMPLIANT, NON-COMPLIANT, or UNABLE TO VERIFY." The second version produces more reliable results because the model has no incentive to reach a particular verdict.
 
@@ -169,7 +169,7 @@ This classification is not optional. Adding an expert persona to an accuracy-dep
 
 Post-training alignment (RLHF, DPO) causes LLMs to suffer from mode collapse, repeatedly generating the same prototypical storylines, metaphors, and openings. Zhang and colleagues prove that this is driven by typicality bias in human preference data. Their training-free fix, Verbalized Sampling (VS), instructs the model to verbalize a probability or typicality distribution over multiple candidate responses before selecting or generating. Across creative writing, dialogue simulation, and open-ended synthesis, VS increases diversity by 1.6x to 2.1x without sacrificing factual accuracy or safety.
 
-**What this means for prompt optimization:** In Mode 4 (Creative & Divergent v2), prepend a `[NT0] Verbalized Distribution Sampling` step where the model generates 4 structurally distinct angles with estimated typicality probabilities (`p`), then commits to the strongest low-typicality angle (`p <= 0.20`) that satisfies the premises.
+**What this means for prompt optimization:** In Mode 4 (Creative & Divergent v2), perform `[NT0] Verbalized Distribution Sampling` (4 structurally distinct angles with estimated typicality probabilities `p`, committing to `p <= 0.15`) and `[NT1]`-`[NT3]` narrative planning **internally by default** (inside hidden thinking tokens or silent preparation), outputting only the finished creative artifact unless the user explicitly asks to see the planning notes.
 
 ### 8. Discourse-Level Anti-SlopShape Constraints
 
@@ -185,7 +185,7 @@ Madler demonstrated that while word-level AI detectors collapse under paraphrasi
 
 Evaluating coding agents across SWE-bench and AGENTBENCH, Gloaguen and colleagues found that LLM-generated context files (`AGENTS.md`, `CLAUDE.md`) reduce task success rates by 3% on average while increasing inference costs by over 20%. Even in human-written context files, codebase directory overviews (present in 8 of 12 repositories) failed to reduce the number of steps before the agent touched the target file. Because coding agents strictly obey context instructions, unnecessary rules cause redundant exploration and test runs.
 
-**What this means for prompt optimization:** When optimizing `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, or persistent system prompts, strip all directory trees, file inventories, and generic style advice. Include only non-inferable build/test/lint commands and hard architectural invariants.
+**What this means for prompt optimization:** When optimizing `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, or persistent system prompts, default to non-inferable build/test/lint commands, hard architectural invariants, and verification gates. If the user's prompt explicitly asks for a project overview, directory layout, or coding convention explanation, fulfill those requested items compactly in **`## 0. Requested Scope & Conventions Summary` (`<= 5` lines)** so every user deliverable is preserved without bloating the agent context window.
 
 ### 10. Harness Optimization, Context-as-a-File & Verification Gates
 

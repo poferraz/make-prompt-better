@@ -1,0 +1,4 @@
+SELF-TEST PASS: refill, burst, contention, timeout, cancellation, validation, cross-thread loops
+Large-capacity boundary 2**53+1: ValueError reproduced
+Required one-liner: VALIDATED OK (exit 0)
+./install.sh: synced across 7 agent directories; 1 skipped (exit 0)
