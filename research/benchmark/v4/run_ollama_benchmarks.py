@@ -332,6 +332,8 @@ def call_ollama_chat(
                 err_body = err.read().decode("utf-8", errors="replace").strip()
             except Exception:
                 pass
+            finally:
+                err.close()
 
             # Retry transient server/gateway errors: 502, 503, 504, 500, 429, 520..527
             retryable = err.code in (502, 503, 504, 500, 429) or (520 <= err.code <= 527)
