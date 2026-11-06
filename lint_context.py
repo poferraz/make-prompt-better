@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
-"""Standalone [CONTEXT-CERT] Repository Context File Linter & Readiness Auditor.
+"""Standalone heuristic repository-context linter.
 
-Implements the empirical findings from make-prompt-better's research foundation:
-- [CONTEXT-FILES] Gloaguen et al., 2026 (arXiv:2602.11988): Repository context files
-  degrade agent task resolution when bloated with inferable directory trees or generic
-  style guides; they improve performance only when restricted to non-inferable build/test
-  commands, hard architectural invariants, non-obvious traps, and critical file anchors.
-- [PRISM] Hu, Rostami & Thomason, 2026 (arXiv:2603.18507): Uncalibrated expert persona
-  fluff ("You are a world-class 10x engineer") consumes attention and degrades accuracy.
-- [META] Ugare & Chandra, 2026 (arXiv:2603.01896) & [SKILLS-SDO] Yin et al., 2026
-  (arXiv:2608.12610): Negative-only constraints ("don't hallucinate", "never guess")
-  fail under attention load unless rewritten as positive verification recipes.
+Patterns are project adaptations informed by the cited studies, not validation of
+correctness, safety, requirement preservation, or the studies' effect sizes.
 
 Usage:
   python3 lint_context.py CLAUDE.md AGENTS.md
@@ -21,10 +13,13 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import json
 from pathlib import Path
 import re
 import sys
+import tempfile
 import unittest
 from typing import Any
 
@@ -52,8 +47,7 @@ CONCLUSION_FIRST_RE = re.compile(
     re.I,
 )
 GOAL_LEAKAGE_RE = re.compile(
-    r"\b(?:for\s+(?:tomorrow's|our|the)\s+(?:client\s+demo|board\s+meeting|investor\s+pitch)|"
-    r"so\s+we\s+can\s+prove\s+that|my\s+career\s+depends\s+on)\b",
+    r"\b(?:so\s+we\s+can\s+prove\s+that|my\s+career\s+depends\s+on)\b",
     re.I,
 )
 EM_EN_DASH_RE = re.compile(r"[\u2014\u2013]")
@@ -93,6 +87,10 @@ def audit_context_text(text: str, filename: str = "CLAUDE.md") -> dict[str, Any]
     est_tokens = estimate_tokens(text)
 
     findings: list[dict[str, str]] = []
+    if not text.strip():
+        findings.append({"severity": "MEDIUM", "paper": "Input validation",
+                         "issue": "No context content was supplied.",
+                         "remediation": "Supply the text to be reviewed."})
 
     # Category 1: Signal-to-Noise & Token Budget (25 points)
     snr_score = 25
@@ -104,7 +102,7 @@ def audit_context_text(text: str, filename: str = "CLAUDE.md") -> dict[str, Any]
             "severity": "HIGH",
             "paper": "[CONTEXT-FILES] arXiv:2602.11988",
             "issue": f"Detected {len(tree_lines)} lines of ASCII directory tree visualization (lines {tree_lines[:4]}...).",
-            "remediation": "Remove static directory trees; agents discover file trees dynamically via glob/ls. List only 3-6 Critical File Anchors with non-obvious roles.",
+            "remediation": "Review whether the tree is needed; preserve any explicitly requested overview and relevant file anchors.",
         })
 
     if line_count > 500:
@@ -146,7 +144,7 @@ def audit_context_text(text: str, filename: str = "CLAUDE.md") -> dict[str, Any]
         findings.append({
             "severity": "MEDIUM",
             "paper": "[SKILLS-SDO] arXiv:2608.12610",
-            "issue": f"Found ungrounded negative constraints ({neg_hits[:3]!r}) that fail under attention load.",
+            "issue": f"Found negative constraints ({neg_hits[:3]!r}) without a concrete verification recipe.",
             "remediation": "Replace negative prohibitions ('don't hallucinate') with positive verification recipes (e.g., 'Cite exact file:line anchors for every claim').",
         })
 
@@ -156,8 +154,8 @@ def audit_context_text(text: str, filename: str = "CLAUDE.md") -> dict[str, Any]
         findings.append({
             "severity": "HIGH",
             "paper": "[META] arXiv:2603.01896",
-            "issue": f"Found conclusion-first reversal directive ({order_hits[:2]!r}) that suppresses evidence tracing.",
-            "remediation": "Enforce Reason-Before-Conclude ordering: complete [P] Premises and [T] Traces before emitting the Verdict.",
+            "issue": f"Found a conclusion-first directive ({order_hits[:2]!r}); presentation order does not establish whether evidence was checked.",
+            "remediation": "Preserve requested presentation order and ask for evidence checks before forming the conclusion.",
         })
 
     leakage_hits = GOAL_LEAKAGE_RE.findall(text)
@@ -167,7 +165,7 @@ def audit_context_text(text: str, filename: str = "CLAUDE.md") -> dict[str, Any]
             "severity": "MEDIUM",
             "paper": "[GOAL-BLIND] arXiv:2602.09504",
             "issue": f"Found downstream goal/stake leakage ({leakage_hits[:2]!r}).",
-            "remediation": "Enforce Goal-Blind Isolation: specify what artifact to verify without disclosing downstream business stakes.",
+            "remediation": "Review evaluative pressure while preserving requested deadlines, context, and operational constraints.",
         })
     bloat_score = max(0, bloat_score)
 
@@ -205,9 +203,11 @@ def audit_context_text(text: str, filename: str = "CLAUDE.md") -> dict[str, Any]
 
     total_score = snr_score + bloat_score + pillar_points + hygiene_score
     grade = (
-        "A (Certified)"
+        "Not assessed (empty input)"
+        if not text.strip()
+        else "A (few heuristic matches)"
         if total_score >= 90
-        else "B (Production-Ready)"
+        else "B (some heuristic matches)"
         if total_score >= 75
         else "C (Needs Compaction)"
         if total_score >= 60
@@ -242,7 +242,7 @@ def format_audit_report(result: dict[str, Any]) -> str:
         f"4-Pillars={sub['four_pillars_35']}/35 | Hygiene={sub['hygiene_15']}/15",
     ]
     if not result["findings"]:
-        out.append("Status: PASS - Zero context bloat or anti-patterns detected.")
+        out.append("Status: No configured patterns matched. This is not a correctness or safety assessment.")
     else:
         out.append("Actionable Findings:")
         for idx, f in enumerate(result["findings"], 1):
@@ -252,6 +252,23 @@ def format_audit_report(result: dict[str, Any]) -> str:
 
 
 class ContextLinterTests(unittest.TestCase):
+    def test_cli_policy_mode_and_unreadable_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            prompt = Path(tmp) / "prompt.md"
+            prompt.write_text("You are a world-class expert. Do not hallucinate.")
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(main([str(prompt)]), 0)
+                self.assertEqual(main(["--fail-on-findings", str(prompt)]), 1)
+            errors = io.StringIO()
+            with contextlib.redirect_stderr(errors):
+                self.assertEqual(main([tmp]), 1)
+            self.assertIn("Cannot read", errors.getvalue())
+
+    def test_empty_input_is_not_certified(self) -> None:
+        result = audit_context_text("")
+        self.assertEqual(result["grade"], "Not assessed (empty input)")
+        self.assertTrue(result["findings"])
+
     def test_high_signal_context_scores_grade_a(self) -> None:
         good_context = (
             "# Repository Operating Contract\n\n"
@@ -296,6 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("files", nargs="*", help="Markdown context files to audit.")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for CI pipelines.")
     parser.add_argument("--self-test", action="store_true", help="Run built-in unit tests.")
+    parser.add_argument("--fail-on-findings", action="store_true", help="Exit 1 when heuristic findings are present.")
     args = parser.parse_args(argv)
 
     if args.self_test:
@@ -314,7 +332,11 @@ def main(argv: list[str] | None = None) -> int:
         if not p.exists():
             print(f"Error: File not found: {file_path}", file=sys.stderr)
             return 1
-        results.append(audit_context_text(p.read_text(encoding="utf-8"), str(p)))
+        try:
+            results.append(audit_context_text(p.read_text(encoding="utf-8"), str(p)))
+        except (OSError, UnicodeError) as exc:
+            print(f"Error: Cannot read {file_path}: {exc}", file=sys.stderr)
+            return 1
 
     if args.json:
         print(json.dumps(results, indent=2))
@@ -323,7 +345,7 @@ def main(argv: list[str] | None = None) -> int:
             print(format_audit_report(r))
             print()
 
-    return 0
+    return 1 if args.fail_on_findings and any(r["findings"] for r in results) else 0
 
 
 if __name__ == "__main__":

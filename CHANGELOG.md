@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Keep one canonical Codex copy in `.agents/skills`; migrate duplicate identities and legacy `.bak.*` folders into recovery storage outside discovery. Add a read-only `--check` command.
+- Show help when the Node CLI is run without arguments; add a beginner quickstart, a simpler README, current brand artwork, and concise skill-picker metadata.
+- Correct plugin descriptions that still overstated paper counts and verification.
+- Stage installer replacements, retain recoverable backups, scope Cursor rules to Cursor installations, and reject symlinked destination parents and rule files.
+- Bind new benchmark and rejudge checkpoints to their inputs and protocol, save individual stages, preserve both judge passes, and keep new runs separate from historical results.
+- Correct template mappings, qualify research and distribution claims, and add a first-use example and recovery instructions.
+- Describe linter results as heuristic signals; reject unknown CLI options and propagate process failures.
+- Include installer integration tests in `npm test` and configure Node.js 22 in CI.
+
+### Evidence limits
+- These changes are not part of the published v4.3.0 tag. Fresh model outcomes, host discovery, remote CI on a release commit, and npm publication remain unverified.
+
 ## [4.3.0] - 2026-10-31
 
 ### Changed

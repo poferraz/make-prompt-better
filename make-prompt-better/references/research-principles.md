@@ -1,15 +1,15 @@
 # Research Principles Index
 
-Quick reference for explaining why specific optimization decisions were made. Each entry maps a research paper to its actionable constraint on prompt, context, and harness design.
+Quick reference for research findings and project adaptations. The cited studies concern specific tasks and models; their results do not automatically validate this skill's exact rules, thresholds, or current behavior. Review primary sources and the user's requirements.
 
 ---
 
 ## [META] Semi-Formal Reasoning (Ugare & Chandra, 2026)
 arXiv: 2603.01896
 
-**Finding:** Structured reasoning templates (premises, traces, conclusion) improved accuracy 10 to 15 percentage points across code analysis tasks (78% to 88% on curated patch equivalence, 93% on real-world patches, 78% to 87% on code QA, +5 to 12 pp on Top-5 fault localization) by preventing the model from skipping cases or making unsupported claims. Cross-architecture benchmarking shows an average token overhead of ~2.2x for a +25.9% relative improvement.
+**Finding:** The authors studied structured reasoning for selected code-analysis tasks. Earlier project benchmarks reported both positive and negative results under different protocols; neither proves an effect for the current skill or every task.
 
-**Constraint:** Every optimized analytical prompt must include the certificate structure. The model states premises before tracing, and traces before concluding. Conclusions must reference traces by identifier.
+**Project adaptation:** Use an appropriately sized evidence structure when the task warrants it. Preserve requested presentation order and take the short-return path when the main skill calls for it.
 
 **When to cite:** Explaining why the prompt has a structured certificate scaffold.
 
@@ -18,7 +18,7 @@ arXiv: 2603.01896
 ## [GOAL-BLIND] Purpose-Conditioned Cognition (Cao, Jiang & Xu, 2026)
 arXiv: 2602.09504
 
-**Finding:** Telling an LLM how its output will be used (for example, "this will predict stock returns" or "we need to pass tomorrow's client demo") causes the model to reshape intermediate outputs toward the disclosed goal. In-sample performance improved, but out-of-sample generalization degraded. The effect disappeared after the model's knowledge cutoff, confirming exploitation of training correlations rather than genuine signal improvement.
+**Finding:** The authors study purpose-conditioned bias in a financial prediction setting. The findings do not establish that every mention of a deadline, audience, or evaluation criterion should be removed.
 
 **Constraint:** Omit evaluation criteria, downstream use cases, business stakes, and success metrics from the prompt. Specify what to measure, trace, or build, never why or how the result will be judged downstream.
 
@@ -29,7 +29,7 @@ arXiv: 2602.09504
 ## [ACE] Agentic Context Engineering (Zhang, Hu et al., 2026)
 arXiv: 2510.04618 (ICLR 2026)
 
-**Finding:** Contexts perform best as structured, itemized playbooks with unique identifiers per entry. Two failure modes degrade prompts: brevity bias (optimization collapses to short generic instructions that omit domain specifics) and context collapse (iterative full rewrites erode accumulated detail). Incremental delta updates outperform full rewrites (+10.6% on agent tasks, +8.6% on finance benchmarks, 86.9% lower adaptation latency).
+**Finding:** The authors study context adaptation and describe brevity bias and context collapse in their evaluated settings. This project's identifiers and preservation checks are adaptations, not separately isolated effects.
 
 **Constraint:** Use numbered identifiers (`[P1]`, `[T1]`) for every premise and trace so conclusions can cross-reference them. Prefer explicit domain detail over generic brevity in task certificates. When iterating across sessions, make targeted delta edits rather than rewriting the whole prompt.
 
@@ -77,7 +77,7 @@ arXiv: 2603.18507
 ## [VS] Verbalized Sampling for Diversity (Zhang, Yu, Chong, Sicilia, Tomz, Manning & Shi, 2025)
 arXiv: 2510.01171
 
-**Finding:** Post-training alignment (RLHF, DPO) induces mode collapse driven by typicality bias in human preference data, where annotators systematically favor familiar, prototypical responses. Prompting the model to verbalize a probability or typicality distribution over a set of candidate responses (for example, generating 3 to 5 distinct candidates with estimated typicality probabilities and sampling from the lower-typicality tail) circumvents mode collapse without sacrificing accuracy or safety. In creative writing, dialogue simulation, and open-ended synthesis, Verbalized Sampling increases output diversity by 1.6x to 2.1x, with larger gains on more capable models.
+**Finding:** The authors study typicality and Verbalized Sampling on selected open-ended tasks. This project's four-angle procedure and typicality cutoff are adaptations; their probabilities, accuracy, and safety are not established by those experiments.
 
 **Constraint:** For creative, editorial, brainstorming, and multi-hypothesis prompts, include a backstage `[NT0] Verbalized Distribution Sampling` trace that enumerates 3 to 5 structurally distinct candidate angles with estimated typicality probabilities (`p`), then selects the strongest low-typicality angle (`p < 0.25`) that satisfies all premises.
 
@@ -99,11 +99,11 @@ arXiv: 2609.15369
 ## [CONTEXT-FILES] Repository Context File Evaluation (Gloaguen, Mundler, Muller, Raychev & Vechev, 2026)
 arXiv: 2602.11988
 
-**Finding:** Across coding agents (Claude Code, Codex, Qwen Code, Sonnet 4.5, GPT-5.2) on SWE-bench and AGENTBENCH, LLM-generated repository context files (`AGENTS.md`, `CLAUDE.md`) reduced task resolution success by 3% on average while increasing inference costs by over 20% and increasing steps before first file interaction. Developer-written context files improved success by +4% on average (at up to 19% higher cost), but codebase directory overviews (included in 8 of 12 files) failed to speed up file localization. Because agents strictly obey context files, unnecessary instructions trigger redundant file traversal, grep calls, and test runs.
+**Finding:** In v3 of the paper, generated repository context files had small, statistically non-significant average accuracy effects on the studied benchmarks while increasing cost. The authors did not find a significant independent effect for instruction categories or length. These results do not prove that every overview or instruction is harmful.
 
-**Constraint:** When optimizing persistent system prompts, `AGENTS.md`, `CLAUDE.md`, or cursor/windsurf rule files, apply the Minimal Viable Context rule: omit auto-generated directory trees, codebase overviews, and generic coding platitudes. Include only (1) exact, non-inferable environment, build, lint, and test commands (such as `uv`, custom scripts, or specific flags), and (2) hard architectural boundary invariants that cannot be discovered by reading the code.
+**Project adaptation:** Favor useful, concise context, including non-inferable commands and boundary invariants. Preserve any explicitly requested overview, layout, style rule, or other deliverable rather than deleting it.
 
-**When to cite:** Explaining why directory trees, file inventories, and generic style guidelines were stripped when optimizing an `AGENTS.md`, `CLAUDE.md`, or system prompt.
+**When to cite:** Explaining evidence and limitations behind context-file design, without attributing this project's exact pruning recipe to the study.
 
 ---
 
@@ -123,8 +123,8 @@ arXiv: 2603.28052 (Meta-Harness), arXiv: 2606.09498 (Self-Harness), arXiv: 2609.
 ## [SKILLS-SDO] Skill Residency & Positive Recipe Shaping (Yin, Li, Shi, Zhang, Seong & Wang, 2026)
 arXiv: 2608.12610
 
-**Finding:** Across 56,804 published `SKILL.md` files, installed skill descriptions sit permanently in the system prompt (50 to 280 tokens per skill every message), competing for an attention budget of fewer than 100 reliable slots. Furthermore, empirical wording evaluations show that negative prohibitions ("Do not X", "Never narrate") backfire under competing incentives, producing higher variance and more violations than positive structural recipes (stating the exact output parts in order) and conditionals keyed to observable predicates ("When condition X holds, output Y").
+**Finding:** The study examines skill metadata, residency, and attention. The previously attributed experiment comparing negative prohibitions with positive recipes was not located in the reviewed source; its support remains unknown.
 
-**Constraint:** Keep skill frontmatter descriptions compact, universal, and strictly focused on triggering conditions ("Use when..."). Within optimized prompts, express anti-hallucination and formatting rules as positive structural recipes and observable-predicate conditionals (for example, "When a trace lacks direct source evidence in [P1]-[Pn], record `UNABLE TO TRACE: [missing artifact]` and exclude the claim from the Verdict") rather than bare prohibition lists.
+**Project adaptation:** Keep this project's skill description compact and trigger-focused. Express verification rules as observable-predicate recipes, for example: "When a trace lacks source evidence, record `UNABLE TO TRACE: [missing artifact]`." Retain necessary prohibitions and user constraints.
 
-**When to cite:** Explaining why negative "Do NOT" rules were rewritten into positive conditional recipes, or why skill metadata uses trigger-only descriptions.
+**When to cite:** Discussing skill metadata and attention. The positive-recipe preference is a project choice, not an established result from the reviewed paper.

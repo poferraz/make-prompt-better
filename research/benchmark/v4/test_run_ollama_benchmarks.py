@@ -15,6 +15,19 @@ def stream(*frames):
 
 class ChatStreamingTests(unittest.TestCase):
     @mock.patch.object(runner.time, "sleep")
+    def test_oversized_stream_is_rejected_without_retry(self, _sleep):
+        oversized = stream({"message": {"content": "x" * 256}, "done": True})
+        with mock.patch.object(runner.urllib.request, "urlopen", return_value=oversized) as request:
+            try:
+                runner.call_ollama_chat("model", [], max_response_bytes=64)
+            except Exception as exc:
+                self.assertIsInstance(exc, ValueError)
+                self.assertIn("size limit", str(exc))
+            else:
+                self.fail("An oversized stream was accepted")
+            self.assertEqual(request.call_count, 1)
+
+    @mock.patch.object(runner.time, "sleep")
     def test_stream_combines_content_and_preserves_final_token_counts(self, _sleep):
         def response(request, timeout):
             payload = json.loads(request.data)
@@ -122,7 +135,9 @@ class BenchmarkResumeTests(unittest.TestCase):
                 "word_overhead_ratio": 1,
             }
         metrics = {"model": "model", "tests": tests, "summary": {"completed_tests": 1},
-                   "final_report_md": "Report covering only one test"}
+                   "final_report_md": "Report covering only one test", "in_progress": {},
+                   "manifest": runner.build_manifest("model", "", [1, 2], "http://localhost", 10,
+                                                     None, True, False, False, False, 42)}
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             results = root / "results"
@@ -193,6 +208,9 @@ class BenchmarkResumeTests(unittest.TestCase):
             },
             "summary": {"completed_tests": 1},
             "final_report_md": "Original final report",
+            "in_progress": {},
+            "manifest": runner.build_manifest("model", "", [1], "http://localhost", 10,
+                                              None, True, False, False, False, 42),
         }
         with tempfile.TemporaryDirectory() as tmp:
             results = Path(tmp)

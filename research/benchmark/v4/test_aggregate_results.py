@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +10,27 @@ import aggregate_results as aggregator
 
 
 class AggregateResultsTests(unittest.TestCase):
+    def test_default_legacy_aggregate_is_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            results = root / 'research/benchmark/v4/results'
+            results.mkdir(parents=True)
+            output = results / 'AGGREGATED_METRICS.json'
+            output.write_text('original historical data')
+            with mock.patch.object(aggregator, 'RESULTS_ROOT', results), \
+                 mock.patch.object(aggregator, 'REPO_ROOT', root):
+                self.assertNotEqual(aggregator.main(), 0)
+            self.assertEqual(output.read_text(), 'original historical data')
+
+    def test_legacy_aggregate_can_be_regenerated_in_an_explicit_copy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            results = Path(tmp) / 'copy'
+            results.mkdir()
+            result = subprocess.run([sys.executable, str(Path(aggregator.__file__)), '--results-dir', str(results)],
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((results / 'AGGREGATED_METRICS.json').exists())
+
     def test_gain_percentage_uses_unrounded_paired_scores(self):
         metrics = {"model": "example", "tests": {}}
         for tid, optimized in [(1, 15), (2, 15), (3, 17)]:

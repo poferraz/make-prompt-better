@@ -1,0 +1,5 @@
+interface:
+  display_name: "Make Prompt Better"
+  short_description: "Turn rough requests into clear, usable prompts"
+  brand_color: "#124E3B"
+  default_prompt: "Use $make-prompt-better to rewrite the request below. Preserve all requirements and return only the rewritten prompt."

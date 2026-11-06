@@ -1,0 +1,14 @@
+{
+  "discount-review": {
+    "description": "Check observable details in the documented discount-review rewrite; not model safety or semantic proof.",
+    "requirements": {
+      "function": "def\\s+discount\\(price,\\s*pct\\)",
+      "percentage_range": "0\\s+to\\s+100",
+      "signature": "signature",
+      "verdict_first": "one-sentence verdict",
+      "patch": "patch",
+      "two_tests": "two tests",
+      "word_limit": "180 words"
+    }
+  }
+}

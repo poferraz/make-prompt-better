@@ -176,7 +176,7 @@ def unblind_parsed_scores(
 def merge_position_swapped_scores(
     pass1_unblinded: dict[str, Any], pass2_unblinded: dict[str, Any]
 ) -> dict[str, Any]:
-    """Combines Pass 1 (A, B) and Pass 2 (B, A) unblinded scores to cancel position bias."""
+    """Average two unblinded, position-swapped passes; bias may still remain."""
     b_avg = round(
         (pass1_unblinded["baseline_total"] + pass2_unblinded["baseline_total"]) / 2.0, 2
     )

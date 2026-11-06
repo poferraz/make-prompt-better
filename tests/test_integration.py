@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import unittest
@@ -61,7 +62,7 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual((target / 'SKILL.md').read_bytes(), (ROOT / 'make-prompt-better/SKILL.md').read_bytes())
             (target / 'marker').write_text('original')
             install('--backup')
-            self.assertEqual(len(list(target.parent.glob('make-prompt-better.bak.*/marker'))), 1)
+            self.assertEqual(len(list((project / '.make-prompt-better/backups').glob('*/payload/marker'))), 1)
             install('--symlink')
             self.assertTrue(target.is_symlink())
             self.assertEqual(target.resolve(), ROOT / 'make-prompt-better')
@@ -117,6 +118,15 @@ class PackageTests(unittest.TestCase):
             names = {item['path'] for item in metadata['files']}
             for required in ['bin/cli.mjs', 'install.sh', 'lint_context.py', 'scripts/lint-prompt.mjs', 'make-prompt-better/SKILL.md']:
                 self.assertIn(required, names)
+            readme = (ROOT / 'README.md').read_text()
+            links = re.findall(r'\]\(([^)]+)\)', readme) + re.findall(r'<img\s+src="([^"]+)"', readme)
+            for link in links:
+                if link.startswith(('http://', 'https://', '#', 'mailto:')):
+                    continue
+                target = link.split('#', 1)[0]
+                if target:
+                    self.assertIn(target, names, f'Packaged README target missing: {target}')
+            self.assertNotIn('scripts/run_benchmarks_queue.sh', names)
             installed = run('npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund', '--prefix', tmp, str(Path(tmp) / metadata['filename']), env=env)
             self.assertEqual(installed.returncode, 0, installed.stderr)
             cli = Path(tmp) / 'node_modules/.bin/make-prompt-better'

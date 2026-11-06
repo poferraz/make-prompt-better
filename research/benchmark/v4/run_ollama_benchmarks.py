@@ -17,14 +17,19 @@ Saves incremental progress after every test to:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import http.client
+import ipaddress
 import json
 import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
+import uuid
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -47,7 +52,9 @@ except ImportError:
     )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-RESULTS_ROOT = REPO_ROOT / "research" / "benchmark" / "v4" / "results"
+RESULTS_ROOT = REPO_ROOT / "research" / "benchmark" / "v4" / "runs"
+DEFAULT_MAX_RETRIES = 5
+DEFAULT_MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 
 DEFAULT_CLOUD_MODELS = [
     "glm-5.3:cloud",
@@ -98,7 +105,7 @@ TEST_CASES: list[dict[str, Any]] = [
         "id": 2,
         "domain": "Financial Analysis",
         "task_type": "Accuracy",
-        "target_mode": "Mode 1 (Max Certificate, Template 2 [F1]-[F3])",
+        "target_mode": "Mode 1 (Max Certificate, Template 9 [P1]-[P3])",
         "raw_prompt": (
             "A company reports $50M revenue in Q1, $47M in Q2, $52M in Q3, and $61M in Q4. "
             "Operating expenses were 78% of revenue in Q1, 82% in Q2, 75% in Q3, and 71% in Q4. "
@@ -109,7 +116,7 @@ TEST_CASES: list[dict[str, Any]] = [
         "id": 3,
         "domain": "Medical Reasoning",
         "task_type": "Accuracy",
-        "target_mode": "Mode 1 (Max Certificate, Template 3 [S1]-[S4])",
+        "target_mode": "Mode 1 (Max Certificate, Template 7 [P1]-[P3])",
         "raw_prompt": (
             "A 58-year-old male presents with sudden onset chest pain radiating to the left arm, "
             "diaphoresis, and shortness of breath. BP 90/60, HR 110, SpO2 94%. ECG shows ST elevation "
@@ -121,7 +128,7 @@ TEST_CASES: list[dict[str, Any]] = [
         "id": 4,
         "domain": "Legal Analysis",
         "task_type": "Accuracy",
-        "target_mode": "Mode 1 (Max Certificate, Template 4 [L1]-[L3])",
+        "target_mode": "Mode 1 (Max Certificate, Template 8 [P1]-[P3])",
         "raw_prompt": (
             "An employee signed a non-compete agreement that prevents them from working in "
             "\"any related industry\" within a 200-mile radius for 5 years after leaving the company. "
@@ -133,7 +140,7 @@ TEST_CASES: list[dict[str, Any]] = [
         "id": 5,
         "domain": "Research Synthesis",
         "task_type": "Mixed",
-        "target_mode": "Mode 1 (Max Certificate, Template 5 [E1]-[E3])",
+        "target_mode": "Mode 1 (Max Certificate, Template 3 [P1]-[P3])",
         "raw_prompt": (
             "What does the research say about whether remote work improves or hurts productivity? "
             "Give me a balanced overview."
@@ -143,7 +150,7 @@ TEST_CASES: list[dict[str, Any]] = [
         "id": 6,
         "domain": "Business Decision",
         "task_type": "Mixed",
-        "target_mode": "Mode 1 (Max Certificate, Template 6 [O1]-[O3])",
+        "target_mode": "Mode 1 (Max Certificate, Template 5 [P1]-[P3])",
         "raw_prompt": (
             "We're a 15-person SaaS startup deciding between building our own authentication system "
             "or using Auth0/Clerk. We handle sensitive healthcare data (HIPAA). What should we do?"
@@ -153,7 +160,7 @@ TEST_CASES: list[dict[str, Any]] = [
         "id": 7,
         "domain": "Compliance Check",
         "task_type": "Accuracy",
-        "target_mode": "Mode 1 (Max Certificate, Template 7 [R1]-[R2])",
+        "target_mode": "Mode 1 (Max Certificate, Template 4 [P1]-[P3])",
         "raw_prompt": (
             "Review this password policy for NIST 800-63B compliance:\n"
             "- Minimum 8 characters\n"
@@ -167,7 +174,7 @@ TEST_CASES: list[dict[str, Any]] = [
         "id": 8,
         "domain": "Document Analysis",
         "task_type": "Mixed",
-        "target_mode": "Mode 1 (Max Certificate, Template 8 [C1]-[C3])",
+        "target_mode": "Mode 1 (Max Certificate, Template 2 [P1]-[P3])",
         "raw_prompt": (
             "Here is an executive summary from a project proposal: \"Our AI-powered customer service "
             "solution will reduce support tickets by 60% within 6 months of deployment. The system uses "
@@ -180,7 +187,7 @@ TEST_CASES: list[dict[str, Any]] = [
         "id": 9,
         "domain": "Comparative Analysis",
         "task_type": "Mixed",
-        "target_mode": "Mode 2 (Lite Certificate [LITE], Template 9 [D1]-[D3], target <1.5x overhead)",
+        "target_mode": "Mode 2 (Lite Certificate [LITE], Template 6 [P1]-[P3], target <1.5x overhead)",
         "raw_prompt": (
             "Compare PostgreSQL and MongoDB for a new application that needs to handle both structured "
             "transaction data and semi-structured user activity logs. We expect 10M records per month "
@@ -231,6 +238,63 @@ def slugify_model(model_name: str) -> str:
     return re.sub(r"[^a-zA-Z0-9._-]+", "-", model_name.replace(":", "-")).strip("-").lower()
 
 
+def sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def validate_host(host: str, allow_remote_http: bool = False) -> None:
+    parsed = urllib.parse.urlsplit(host)
+    if (parsed.scheme not in {"http", "https"} or not parsed.hostname or
+            parsed.username or parsed.password or parsed.query or parsed.fragment):
+        raise ValueError("host must be an HTTP(S) URL without credentials, query, or fragment")
+    hostname = parsed.hostname.lower()
+    try:
+        loopback = hostname == "localhost" or ipaddress.ip_address(hostname).is_loopback
+    except ValueError:
+        loopback = hostname == "localhost"
+    if parsed.scheme == "http" and not loopback and not allow_remote_http:
+        raise ValueError("remote cleartext HTTP requires --allow-remote-http")
+
+
+def build_manifest(model: str, skill_bundle: str, test_ids: list[int], host: str,
+                   timeout: int, judge_model: str | None, blind_eval: bool,
+                   swap_positions: bool, strip_cert_markers: bool,
+                   unprescribed_routing: bool, seed: int) -> dict[str, Any]:
+    """Bind resumable results to the exact inputs controlled by this runner."""
+    return {
+        "schema": 1,
+        "model": model,
+        "judge_model": judge_model or model,
+        "model_revision": "unknown: provider identifier may be mutable",
+        "skill_sha256": sha256_text(skill_bundle),
+        "test_suite_sha256": sha256_text(json.dumps(TEST_CASES, sort_keys=True)),
+        "runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "judge_code_sha256": hashlib.sha256(Path(__file__).with_name("blind_stats_engine.py").read_bytes()).hexdigest(),
+        "host_sha256": sha256_text(host),
+        "test_ids": sorted(test_ids),
+        "timeout": timeout,
+        "blind_eval": blind_eval,
+        "swap_positions": swap_positions,
+        "strip_cert_markers": strip_cert_markers,
+        "unprescribed_routing": unprescribed_routing,
+        "seed": seed,
+        "loading_strategy": "full skill, templates, and research bundle",
+    }
+
+
+def atomic_write(path: Path, content: str) -> None:
+    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
 def load_skill_bundle() -> str:
     skill_md = (REPO_ROOT / "make-prompt-better" / "SKILL.md").read_text(encoding="utf-8")
     templates_md = (REPO_ROOT / "make-prompt-better" / "references" / "domain-templates.md").read_text(encoding="utf-8")
@@ -267,11 +331,14 @@ def call_ollama_chat(
     messages: list[dict[str, str]],
     host: str = "http://localhost:11434",
     timeout: int = 600,
-    max_retries: int = 5,
+    max_retries: int = DEFAULT_MAX_RETRIES,
     initial_delay: float = 3.0,
     seed: int = 42,
     options: dict[str, Any] | None = None,
+    max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
 ) -> dict[str, Any]:
+    if max_response_bytes <= 0:
+        raise ValueError("Response size limit must be positive")
     url = f"{host.rstrip('/')}/api/chat"
     payload_options: dict[str, Any] = {"seed": seed}
     if options:
@@ -297,7 +364,14 @@ def call_ollama_chat(
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 parts: list[str] = []
                 body = None
-                for line in resp:
+                received = 0
+                while True:
+                    line = resp.readline(max_response_bytes - received + 1)
+                    if not line:
+                        break
+                    received += len(line)
+                    if received > max_response_bytes:
+                        raise ValueError(f"Ollama response exceeded size limit ({max_response_bytes} bytes)")
                     if not line.strip():
                         continue
                     try:
@@ -329,7 +403,7 @@ def call_ollama_chat(
         except urllib.error.HTTPError as err:
             err_body = ""
             try:
-                err_body = err.read().decode("utf-8", errors="replace").strip()
+                err_body = err.read(4096).decode("utf-8", errors="replace").strip()
             except Exception:
                 pass
             finally:
@@ -463,31 +537,87 @@ def run_model_benchmark(
     strip_cert_markers: bool = False,
     unprescribed_routing: bool = False,
     seed: int = 42,
+    results_dir: Path | None = None,
+    allow_remote_http: bool = False,
+) -> bool:
+    if not model or slugify_model(model) in {"", ".", ".."}:
+        raise ValueError("Invalid model identifier")
+    validate_host(host, allow_remote_http)
+    root = results_dir if results_dir is not None else RESULTS_ROOT
+    root.mkdir(parents=True, exist_ok=True)
+    lock = root / f".{slugify_model(model)}.lock"
+    try:
+        lock.mkdir()
+    except FileExistsError as exc:
+        raise RuntimeError(f"Benchmark run is locked: {lock}") from exc
+    try:
+        return _run_model_benchmark(model, skill_bundle, test_ids, host, resume, timeout,
+                                    judge_model, blind_eval, swap_positions, strip_cert_markers,
+                                    unprescribed_routing, seed, results_dir)
+    finally:
+        lock.rmdir()
+
+
+def _run_model_benchmark(
+    model: str,
+    skill_bundle: str,
+    test_ids: list[int] | None,
+    host: str,
+    resume: bool,
+    timeout: int,
+    judge_model: str | None,
+    blind_eval: bool,
+    swap_positions: bool,
+    strip_cert_markers: bool,
+    unprescribed_routing: bool,
+    seed: int,
+    results_dir: Path | None,
 ) -> bool:
     if test_ids is None:
         test_ids = [tc["id"] for tc in TEST_CASES]
+    valid_ids = {tc["id"] for tc in TEST_CASES}
+    if not test_ids or len(test_ids) != len(set(test_ids)) or not set(test_ids) <= valid_ids:
+        raise ValueError("Requested test IDs must be unique and belong to the test suite")
+    if not model or slugify_model(model) in {"", ".", ".."}:
+        raise ValueError("A nonempty model identifier is required")
+    if swap_positions and not blind_eval:
+        raise ValueError("Position swapping requires blinded evaluation")
+    manifest = build_manifest(model, skill_bundle, test_ids, host, timeout, judge_model,
+                              blind_eval, swap_positions, strip_cert_markers,
+                              unprescribed_routing, seed)
     slug = slugify_model(model)
-    out_dir = RESULTS_ROOT / slug
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_dir = (results_dir if results_dir is not None else RESULTS_ROOT) / slug
     metrics_path = out_dir / "metrics.json"
     md_path = out_dir / "EVALUATION_RESULTS.md"
 
-    if resume and metrics_path.exists():
+    if metrics_path.exists():
+        if not resume:
+            raise FileExistsError(f"Refusing to overwrite existing results: {metrics_path}; choose a new run")
         metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+        if metrics.get("manifest") != manifest:
+            raise ValueError(f"Experiment manifest missing or mismatched: {metrics_path}; choose a new run")
     else:
+        if out_dir.exists() and any(out_dir.iterdir()):
+            raise FileExistsError(f"Refusing to overwrite nonempty result directory: {out_dir}")
+        out_dir.mkdir(parents=True, exist_ok=True)
         metrics = {
             "model": model,
             "slug": slug,
             "version": "4.3.0",
+            "source_state": "working tree; exact inputs are identified by manifest hashes",
+            "manifest": manifest,
             "tests": {},
+            "in_progress": {},
             "summary": {},
         }
+        atomic_write(metrics_path, json.dumps(metrics, indent=2))
+    metrics.setdefault("in_progress", {})
     metrics["judge_model"] = judge_model or model
     metrics["self_judged"] = ((judge_model or model) == model)
     metrics["unprescribed_routing"] = unprescribed_routing
 
     print(f"\n============================================================")
-    print(f"Running Benchmark for Model: {model} -> {out_dir.relative_to(REPO_ROOT)}")
+    print(f"Running Benchmark for Model: {model} -> {out_dir}")
     print(f"============================================================")
 
     if (resume and metrics.get("final_report_md") and md_path.exists()
@@ -508,15 +638,23 @@ def run_model_benchmark(
         print(f"  [Test {tid:02d}/{len(TEST_CASES)}] {tc['domain']} ({tc['target_mode']})...")
 
         try:
+            stages = metrics["in_progress"].setdefault(str(tid), {})
+
+            def stage_call(name: str, stage_model: str, messages: list[dict[str, str]]) -> dict[str, Any]:
+                request = {"model": stage_model, "messages": messages, "seed": seed}
+                if name in stages:
+                    if stages[name]["request"] != request:
+                        raise ValueError(f"Saved stage request differs: test {tid}, {name}")
+                    return stages[name]["response"]
+                result = call_ollama_chat(model=stage_model, messages=messages, host=host,
+                                          timeout=timeout, seed=seed)
+                stages[name] = {"request": request, "response": result}
+                atomic_write(metrics_path, json.dumps(metrics, indent=2))
+                return result
+
             # Step A: Baseline Response (isolated context)
             print(f"    -> Step A: Generating Baseline response...")
-            base_res = call_ollama_chat(
-                model=model,
-                messages=[{"role": "user", "content": tc["raw_prompt"]}],
-                host=host,
-                timeout=timeout,
-                seed=seed,
-            )
+            base_res = stage_call("baseline", model, [{"role": "user", "content": tc["raw_prompt"]}])
 
             # Step B: Optimize Prompt using make-prompt-better
             print(
@@ -543,13 +681,7 @@ def run_model_benchmark(
                 "3. You MUST embed all code, data, numbers, requirements, and facts from the RAW PROMPT directly inside the rewritten prompt (e.g. inside the premises, input section, or code fence). Never leave placeholders like '[insert code here]' or refer to external context.\n"
                 "4. Output ONLY the rewritten, ready-to-execute Optimized Prompt. Do not answer the prompt yet, and do not wrap in conversational chatter."
             )
-            opt_prompt_res = call_ollama_chat(
-                model=model,
-                messages=[{"role": "user", "content": opt_prompt_instruction}],
-                host=host,
-                timeout=timeout,
-                seed=seed,
-            )
+            opt_prompt_res = stage_call("optimize", model, [{"role": "user", "content": opt_prompt_instruction}])
 
             # Step C: Execute Optimized Prompt (isolated context)
             print(f"    -> Step C: Generating Optimized response...")
@@ -568,13 +700,7 @@ def run_model_benchmark(
             elif tc["id"] == 8 and "60%" not in opt_prompt_to_send:
                 opt_prompt_to_send += f"\n\n### PROPOSAL TEXT:\n{tc['raw_prompt']}"
 
-            opt_exec_res = call_ollama_chat(
-                model=model,
-                messages=[{"role": "user", "content": opt_prompt_to_send}],
-                host=host,
-                timeout=timeout,
-                seed=seed,
-            )
+            opt_exec_res = stage_call("execute", model, [{"role": "user", "content": opt_prompt_to_send}])
 
             # Step D: Evaluate Baseline vs. Optimized
             effective_judge = judge_model or model
@@ -591,13 +717,7 @@ def run_model_benchmark(
                 eval_instruction_p1 = build_blind_eval_instruction(
                     tc, resp_a_p1, resp_b_p1, strip_markers=strip_cert_markers
                 )
-                eval_res = call_ollama_chat(
-                    model=effective_judge,
-                    messages=[{"role": "user", "content": eval_instruction_p1}],
-                    host=host,
-                    timeout=timeout,
-                    seed=seed,
-                )
+                eval_res = stage_call("judge_1", effective_judge, [{"role": "user", "content": eval_instruction_p1}])
                 parsed_p1 = unblind_parsed_scores(parse_scores(eval_res["content"]), mapping_p1)
 
                 if swap_positions:
@@ -605,13 +725,7 @@ def run_model_benchmark(
                     eval_instruction_p2 = build_blind_eval_instruction(
                         tc, resp_b_p1, resp_a_p1, strip_markers=strip_cert_markers
                     )
-                    eval_res_p2 = call_ollama_chat(
-                        model=effective_judge,
-                        messages=[{"role": "user", "content": eval_instruction_p2}],
-                        host=host,
-                        timeout=timeout,
-                        seed=seed,
-                    )
+                    eval_res_p2 = stage_call("judge_2", effective_judge, [{"role": "user", "content": eval_instruction_p2}])
                     parsed_p2 = unblind_parsed_scores(parse_scores(eval_res_p2["content"]), mapping_p2)
                     parsed = merge_position_swapped_scores(parsed_p1, parsed_p2)
                 else:
@@ -636,13 +750,7 @@ def run_model_benchmark(
                     "| Traceability  | X        | Y         | +Z    |\n"
                     "| TOTAL         | XX/25    | YY/25     | +ZZ   |\n"
                 )
-                eval_res = call_ollama_chat(
-                    model=effective_judge,
-                    messages=[{"role": "user", "content": eval_instruction}],
-                    host=host,
-                    timeout=timeout,
-                    seed=seed,
-                )
+                eval_res = stage_call("judge_1", effective_judge, [{"role": "user", "content": eval_instruction}])
                 parsed = parse_scores(eval_res["content"])
 
             b_tokens = max(base_res.get("eval_count", 0) or base_res["words"], 1)
@@ -659,7 +767,7 @@ def run_model_benchmark(
                 "id": tid,
                 "domain": tc["domain"],
                 "task_type": tc["task_type"],
-                "target_mode": tc["target_mode"],
+                "target_mode": ("Unprescribed (model selection unverified)" if unprescribed_routing else tc["target_mode"]),
                 "raw_prompt": tc["raw_prompt"],
                 "judge_model": effective_judge,
                 "self_judged": (effective_judge == model),
@@ -671,14 +779,17 @@ def run_model_benchmark(
                 "evaluation": {
                     "content": eval_res["content"],
                     "parsed": parsed,
+                    "passes": ([{"content": eval_res["content"], "mapping": mapping_p1}] +
+                               ([{"content": eval_res_p2["content"], "mapping": mapping_p2}] if swap_positions else [])
+                               if blind_eval else [{"content": eval_res["content"], "mapping": None}]),
                 },
                 "word_overhead_ratio": ratio,
             }
             metrics["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
             # Save incremental progress after every test
-            metrics_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
-            md_path.write_text(render_markdown_report(model, metrics, metrics.get("final_report_md", "")), encoding="utf-8")
+            atomic_write(metrics_path, json.dumps(metrics, indent=2))
+            atomic_write(md_path, render_markdown_report(model, metrics, metrics.get("final_report_md", "")))
             print(
                 f"    -> Saved Test {tid:02d}: Baseline={parsed['baseline_total']}/25, "
                 f"Optimized={parsed['optimized_total']}/25 (Delta={parsed['delta_total']:+g}, Overhead={ratio}x)"
@@ -719,18 +830,18 @@ def run_model_benchmark(
 
     print(f"  [Final Report] Generating 9-section synthesis for {model}...")
     final_prompt = (
-        f"You have completed {len(completed)} of the 12 tests in the evaluation of `make-prompt-better` v4.0 using model `{model}`.\n\n"
+        f"You have completed {len(completed)} of the 12 configured tests using model `{model}`. Exact input and protocol hashes are in the saved manifest.\n\n"
         f"Here is the Summary Table of your results:\n\n{summary_table_md}\n\n"
-        "Write the 9 Analysis Sections required by the v4.0 benchmark protocol:\n"
+        "Write the 9 Analysis Sections for this descriptive run:\n"
         "1. Overall Verdict\n"
         "2. Where It Helped Most\n"
         "3. Where It Helped Least (or Hurt)\n"
-        "4. v4.0 Mode Evaluation (Max vs. Lite on Test 9 vs. Harness on Tests 11-12 vs. Creative v2 on Test 10)\n"
+        "4. Mode and routing observations, distinguishing prescribed targets from unverified model choices\n"
         "5. Accuracy vs. Mixed vs. Creative vs. Harness\n"
         "6. Traceability Specifically\n"
         "7. Token Cost vs. Value\n"
         "8. Failure Modes Observed\n"
-        "9. Recommendations for v4.1 Skill Improvement\n\n"
+        "9. Recommendations and limitations for future evaluation\n\n"
         "Do not use em dashes or en dashes; use commas, colons, or semicolons."
     )
     final_content = ""
@@ -744,6 +855,7 @@ def run_model_benchmark(
             seed=seed,
         )
         final_content = final_res["content"]
+        metrics["final_synthesis"] = {"request": final_prompt, "response": final_res}
     except Exception as exc:
         print(f"  [WARN] Final synthesis generation failed for {model}: {exc}. Preserving summary metrics.")
         final_content = f"Synthesis analysis generation encountered error: {exc}"
@@ -768,8 +880,8 @@ def run_model_benchmark(
         "self_judged": ((judge_model or model) == model),
     }
     metrics["final_report_md"] = final_report_md
-    metrics_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
-    md_path.write_text(render_markdown_report(model, metrics, final_report_md), encoding="utf-8")
+    atomic_write(metrics_path, json.dumps(metrics, indent=2))
+    atomic_write(md_path, render_markdown_report(model, metrics, final_report_md))
     requested_complete = all(str(tid) in metrics["tests"] for tid in test_ids)
     status = "DONE" if requested_complete and report_ok else "PARTIAL"
     print(f"  [{status}] {model}: {len(completed)}/12 tests, Avg {avg_b}/25 -> {avg_o}/25 ({avg_d:+g}), Overhead {avg_ratio}x ({wins}W-{ties}T-{losses}L)")
@@ -805,8 +917,18 @@ def main() -> int:
     parser.add_argument(
         "--no-resume",
         action="store_true",
-        help="Re-run all tests from scratch even if metrics.json already has completed tests.",
+        help="Start from scratch; refuses to overwrite a populated run directory.",
     )
+    parser.add_argument("--results-dir", type=Path, default=RESULTS_ROOT,
+                        help="Parent directory for new runs (default: research/benchmark/v4/runs).")
+    parser.add_argument("--run-id", default=None,
+                        help="Run identifier; provide the same identifier to resume. Defaults to a new unique ID.")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Show result path and call estimate without requests or file writes.")
+    parser.add_argument("--max-requests", type=int, default=None,
+                        help="Reject runs whose worst-case HTTP request count exceeds this limit.")
+    parser.add_argument("--allow-remote-http", action="store_true",
+                        help="Explicitly permit unencrypted HTTP to a non-loopback host.")
     parser.add_argument(
         "--timeout",
         type=int,
@@ -827,7 +949,7 @@ def main() -> int:
     parser.add_argument(
         "--swap-positions",
         action="store_true",
-        help="Run two evaluation passes with swapped (A, B) and (B, A) order to cancel position bias.",
+        help="Run two evaluation passes with swapped (A, B) and (B, A) order to investigate position effects.",
     )
     parser.add_argument(
         "--strip-cert-markers",
@@ -852,6 +974,12 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    try:
+        validate_host(args.host, args.allow_remote_http)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
     if args.list_models:
         discovered = discover_ollama_cloud_models()
         print("Discovered Ollama Cloud models:")
@@ -870,12 +998,40 @@ def main() -> int:
     else:
         models = discover_ollama_cloud_models()
 
-    test_ids = [int(x.strip()) for x in args.tests.split(",") if x.strip()]
+    try:
+        test_ids = [int(x.strip()) for x in args.tests.split(",") if x.strip()]
+    except ValueError:
+        print("Error: --tests must be comma-separated integers", file=sys.stderr)
+        return 1
+    valid_ids = {tc["id"] for tc in TEST_CASES}
+    if not models or not test_ids or len(test_ids) != len(set(test_ids)) or not set(test_ids) <= valid_ids:
+        print("Error: specify at least one model and unique valid test IDs", file=sys.stderr)
+        return 1
+    if len({slugify_model(model) for model in models}) != len(models):
+        print("Error: model identifiers have colliding result paths", file=sys.stderr)
+        return 1
+    if args.timeout <= 0 or (args.swap_positions and args.unblinded):
+        print("Error: timeout must be positive and swapping requires blind evaluation", file=sys.stderr)
+        return 1
+    run_id = args.run_id or f"{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}-{uuid.uuid4().hex[:8]}"
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", run_id) or run_id in {".", ".."}:
+        print("Error: invalid --run-id", file=sys.stderr)
+        return 1
+    run_dir = args.results_dir / run_id
+    stages = len(models) * (len(test_ids) * (4 + int(args.swap_positions)) + 1)
+    worst_requests = stages * DEFAULT_MAX_RETRIES
+    if args.max_requests is not None and (args.max_requests < 0 or worst_requests > args.max_requests):
+        print(f"Error: up to {worst_requests} HTTP requests exceed --max-requests", file=sys.stderr)
+        return 1
     skill_bundle = load_skill_bundle()
 
     print(f"Loaded make-prompt-better skill bundle ({len(skill_bundle.splitlines())} lines).")
     print(f"Target models ({len(models)}): {', '.join(models)}")
     print(f"Target tests ({len(test_ids)}): {test_ids}")
+    print(f"Run ID: {run_id}; result directory: {run_dir}")
+    print(f"Planned generation stages: {stages}; maximum HTTP requests with retries: {worst_requests}")
+    if args.dry_run:
+        return 0
 
     failures: list[tuple[str, str]] = []
     for model in models:
@@ -893,6 +1049,8 @@ def main() -> int:
                 strip_cert_markers=args.strip_cert_markers,
                 unprescribed_routing=args.unprescribed_routing,
                 seed=args.seed,
+                results_dir=run_dir,
+                allow_remote_http=args.allow_remote_http,
             )
             if not complete:
                 failures.append((model, "requested tests or final report are incomplete"))

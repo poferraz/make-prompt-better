@@ -11,15 +11,43 @@
   "files": [
     "make-prompt-better",
     ".claude-plugin",
+    ".github/CONTRIBUTING.md",
+    "assets",
     "bin",
-    "scripts",
+    "scripts/lint-prompt.mjs",
     "install.sh",
     "lint_context.py",
+    "docs/installation.md",
+    "docs/benchmark-runs.md",
+    "docs/demo.md",
+    "docs/claims.md",
+    "docs/methodology.md",
+    "docs/tradeoffs.md",
+    "docs/when-to-use.md",
+    "docs/task-classification.md",
+    "docs/releasing.md",
+    "research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md",
+    "research/benchmark/v4/EVALUATION_PROMPT_V4.md",
+    "research/benchmark/v4/results/AGGREGATED_METRICS.md",
     "README.md",
-    "LICENSE"
+    "CHANGELOG.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CITATION.cff",
+    "CODE_OF_CONDUCT.md",
+    "SECURITY.md",
+    "SUPPORT.md",
+    "LICENSE",
+    "docs/quickstart.md",
+    "docs/compatibility.md",
+    "docs/testing.md",
+    "docs/evidence/2026-11-06/codex-discovery.json"
   ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "test": "python3 -m unittest discover -s research/benchmark/v4 -p 'test_*.py' -v && node scripts/lint-prompt.mjs --self-test && python3 research/benchmark/v4/blind_stats_engine.py",
+    "test": "python3 -m unittest discover -s research/benchmark/v4 -p 'test_*.py' -v && node scripts/lint-prompt.mjs --self-test && python3 research/benchmark/v4/blind_stats_engine.py && python3 -m unittest discover -s tests -v",
     "lint": "python3 lint_context.py --self-test && python3 lint_context.py CLAUDE.md AGENTS.md && node scripts/lint-prompt.mjs CLAUDE.md AGENTS.md"
   },
   "repository": {

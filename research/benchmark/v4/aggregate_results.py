@@ -12,8 +12,10 @@ Methodological safeguards (v4.3.0):
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -272,6 +274,10 @@ def build_pair_records(models: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def main() -> int:
+    legacy_root = REPO_ROOT / "research" / "benchmark" / "v4" / "results"
+    if RESULTS_ROOT.resolve() == legacy_root.resolve():
+        print("Error: historical aggregates are immutable; copy results to a disposable directory before regenerating", file=sys.stderr)
+        return 1
     RESULTS_ROOT.mkdir(parents=True, exist_ok=True)
     records = collect_all_models()
     out_json = RESULTS_ROOT / "AGGREGATED_METRICS.json"
@@ -403,9 +409,12 @@ def main() -> int:
         lines.append(f"| {tier} | {data['pairs']} | {data['mean_delta']:+g} | {ci_str} | {data['win_rate_pct']}% |")
 
     out_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"Aggregated {len(records)} model(s) -> {out_md.relative_to(REPO_ROOT)} and {out_json.relative_to(REPO_ROOT)}")
+    print(f"Aggregated {len(records)} model(s) -> {out_md} and {out_json}")
     return 0
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Regenerate historical aggregates in a disposable copy.")
+    parser.add_argument("--results-dir", type=Path, default=RESULTS_ROOT)
+    RESULTS_ROOT = parser.parse_args().results_dir
     raise SystemExit(main())

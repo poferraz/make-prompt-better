@@ -8,9 +8,9 @@
 
 Large language models produce better output when they show their work. This is not a platitude. It is a finding with quantitative backing from multiple independent research teams, and it forms the basis of a technique called **semi-formal reasoning**.
 
-Semi-formal reasoning is a prompt and context engineering method that forces the model to follow a structured analytical process before producing an answer. The model must declare its starting conditions, trace concrete evidence paths step by step, and derive a formal conclusion that references the evidence it gathered. The output functions as a "reasoning certificate": an auditable record of how the model arrived at its answer, with every claim tied to a specific piece of evidence.
+Semi-formal reasoning is a prompting method that asks a model to state conditions, trace evidence, and present a conclusion with references. The resulting "reasoning certificate" is a review aid, not proof of the model's internal reasoning or that the cited evidence was checked.
 
-The technique originates from work by Ugare and Chandra at Meta (2026), who demonstrated that structured reasoning templates improved code analysis accuracy by 10 to 15 percentage points without any model retraining. Their method raised patch equivalence accuracy from 78% to 88% on curated examples and reached 93% on real-world patches. Code QA accuracy climbed from 78% to 87%. The original paper reported ~2.8x more reasoning steps than standard prompting. Cross-architecture benchmarking (Gemini, GLM, Qwen, Kimi) shows the actual average overhead is ~2.2x (ranging from ~1.7x on Qwen to ~2.7x on Kimi), a tradeoff that reliably buys a ~26% accuracy and traceability improvement for analytical tasks (Ugare & Chandra, 2026).
+Ugare and Chandra (2026) studied structured reasoning on code analysis tasks. An earlier project benchmark reported relative improvements and additional overhead across four model families; these historical observations do not establish a reliable improvement for the current skill or unrelated tasks. No fresh v4.3.0 outcome evaluation has been completed.
 
 This document describes the full v4.3.0 methodology: Requirement Preservation as the first compiler invariant, the proportional certificate structure, Dual Context Binding (`Portable` vs. `Working-Context`), the eleven research constraints that shape it across analytical, agentic, and creative tasks, the prompt framework that operationalizes it, and the optimization process that applies it across any LLM or coding agent.
 
@@ -158,7 +158,7 @@ An additional finding: reasoning-distilled models (like DeepSeek-R1 variants) be
 **What this means for prompt optimization:** Before adding any identity or persona framing to a prompt, classify the task:
 
 - **Accuracy-dependent** (fact retrieval, classification, math, coding logic, diagnostic reasoning): no persona at all. Adding "You are an expert diagnostician" to a medical reasoning prompt will make the model worse at diagnosis.
-- **Alignment-dependent** (format following, style matching, safety, tone): full persona helps. "You are a professional copywriter" will improve style and tone consistency.
+- **Alignment-dependent** (format following, style matching, safety, tone): a persona may help in some settings, but this project's persona rules have not been validated for every task.
 - **Mixed** (analytical reports that need both accuracy and good presentation): minimal persona, five words or fewer. "You are an analyst." This limits accuracy damage while preserving some alignment benefit.
 
 This classification is not optional. Adding an expert persona to an accuracy-dependent task actively makes the output worse, and the effect is measurable and consistent across models.
@@ -167,9 +167,9 @@ This classification is not optional. Adding an expert persona to an accuracy-dep
 
 **Zhang, J., Yu, S., Chong, D., Sicilia, A., Tomz, M. R., Manning, C. D. & Shi, W.** (2025). "Verbalized Sampling: How to Mitigate Mode Collapse and Unlock LLM Diversity." arXiv:2510.01171. https://arxiv.org/abs/2510.01171
 
-Post-training alignment (RLHF, DPO) causes LLMs to suffer from mode collapse, repeatedly generating the same prototypical storylines, metaphors, and openings. Zhang and colleagues prove that this is driven by typicality bias in human preference data. Their training-free fix, Verbalized Sampling (VS), instructs the model to verbalize a probability or typicality distribution over multiple candidate responses before selecting or generating. Across creative writing, dialogue simulation, and open-ended synthesis, VS increases diversity by 1.6x to 2.1x without sacrificing factual accuracy or safety.
+Zhang and colleagues study typicality bias and Verbalized Sampling (VS), which asks a model to consider a distribution of candidate responses. Their reported diversity results apply to the evaluated tasks and models; they do not establish factual accuracy or safety for this project's adaptation.
 
-**What this means for prompt optimization:** In Mode 4 (Creative & Divergent v2), perform `[NT0] Verbalized Distribution Sampling` (4 structurally distinct angles with estimated typicality probabilities `p`, committing to `p <= 0.15`) and `[NT1]`-`[NT3]` narrative planning **internally by default** (inside hidden thinking tokens or silent preparation), outputting only the finished creative artifact unless the user explicitly asks to see the planning notes.
+**What this means for prompt optimization:** In Mode 4 (Creative & Divergent v2), perform `[NT0] Verbalized Distribution Sampling` (4 structurally distinct angles with estimated typicality probabilities `p`, committing to `p <= 0.20`) and `[NT1]`-`[NT3]` narrative planning **internally by default** (inside hidden thinking tokens or silent preparation), outputting only the finished creative artifact unless the user explicitly asks to see the planning notes.
 
 ### 8. Discourse-Level Anti-SlopShape Constraints
 
@@ -183,7 +183,7 @@ Madler demonstrated that while word-level AI detectors collapse under paraphrasi
 
 **Gloaguen, T., Mundler, N., Muller, M., Raychev, V. & Vechev, M.** (2026). "Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?" arXiv:2602.11988. https://arxiv.org/abs/2602.11988
 
-Evaluating coding agents across SWE-bench and AGENTBENCH, Gloaguen and colleagues found that LLM-generated context files (`AGENTS.md`, `CLAUDE.md`) reduce task success rates by 3% on average while increasing inference costs by over 20%. Even in human-written context files, codebase directory overviews (present in 8 of 12 repositories) failed to reduce the number of steps before the agent touched the target file. Because coding agents strictly obey context instructions, unnecessary rules cause redundant exploration and test runs.
+In v3, Gloaguen and colleagues report small, statistically non-significant average success differences and increased costs for generated context in the evaluated settings. Their analysis does not establish a universal effect of any single category or file length. This project's preference for concise context is an adaptation, and requested content must be preserved.
 
 **What this means for prompt optimization:** When optimizing `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, or persistent system prompts, default to non-inferable build/test/lint commands, hard architectural invariants, and verification gates. If the user's prompt explicitly asks for a project overview, directory layout, or coding convention explanation, fulfill those requested items compactly in **`## 0. Requested Scope & Conventions Summary` (`<= 5` lines)** so every user deliverable is preserved without bloating the agent context window.
 
@@ -194,7 +194,7 @@ Evaluating coding agents across SWE-bench and AGENTBENCH, Gloaguen and colleague
 **Shao, R. et al.** (2026). "Context Language Models." arXiv:2609.37725. https://arxiv.org/abs/2609.37725
 **Nam, J., Yoon, J., Chen, J. & Pfister, T.** (2025). "DS-STAR: Data Science Agent via Iterative Planning and Verification." arXiv:2509.21825. https://arxiv.org/abs/2509.21825
 
-Meta-Harness proves that optimizing how a harness stores, retrieves, and presents context outperforms static context engineering (`[ACE]`) by +7.7 points while using 4x fewer context tokens. Self-Harness shows that harness design is model-specific (+14.2 to +21.4 pp on Terminal-Bench-2.0). Context Language Models (CLMs) show that treating context as an editable file yields +11.4% higher accuracy with 21.5% fewer FLOPs, and DS-STAR demonstrates the value of plan-sufficiency verification gates.
+These studies examine different harness, context, and plan-verification methods. Shao et al. report their context-model effect on BrowseComp-Plus; it is not a measurement of this project's scratchpad recipe. The code-first and plan-gate rules here are project adaptations, not established outcomes from these papers.
 
 **What this means for prompt optimization:** Route prompts for Large Reasoning Models (LRMs) and multi-turn agents to **Mode 3 (LRM / Harness Mode)**: use `[P]` Premises and `[V]` Verification Gates without forcing verbose visible step-by-step CoT narration, and instruct multi-step agents to externalize plans and intermediate state to a scratchpad file.
 
@@ -202,7 +202,7 @@ Meta-Harness proves that optimizing how a harness stores, retrieves, and present
 
 **Yin, L., Li, Z., Shi, Z., Zhang, H., Seong, H. & Wang, Z.** (2026). "@skills: Attention Is All You Have." arXiv:2608.12610. https://arxiv.org/abs/2608.12610
 
-Yin and colleagues show that installed agent skills compete for fewer than 100 reliable attention slots in the system prompt (costing 50 to 280 resident tokens every turn). Furthermore, controlled wording experiments show that negative prohibitions ("Do not X") backfire under competing incentives compared to positive structural recipes and observable-predicate conditionals ("When condition X holds, output Y").
+Yin and colleagues study skill metadata and attention. The previously attributed comparison of negative prohibitions with positive recipes was not located in the reviewed source, so its support is unknown. Observable-predicate recipes are a project design choice.
 
 **What this means for prompt optimization:** Express anti-hallucination and formatting rules as positive conditional recipes rather than negative prohibition lists, and keep skill metadata compact and trigger-focused.
 
@@ -251,7 +251,7 @@ This classification comes directly from the PRISM findings (Hu, Rostami & Thomas
 
 After classifying the task type, select the certificate intensity level:
 
-- **Max Certificate** (default for high-stakes tasks): The full exhaustive structure with comprehensive premises, detailed multi-step evidence traces, and a formal conclusion with gap analysis. Use for high-stakes domains (medical, legal, financial), when baseline model competence is expected to be low, or when full auditability is required. Cost: ~2.2x token overhead. Delivers the full ~26% accuracy improvement.
+- **Max Certificate** (option for complex tasks): A detailed structure with premises, traces, and a conclusion with gap analysis. Overhead and accuracy depend on the actual task and model; no current improvement is guaranteed.
 
 - **Lite Certificate** (for routine analytical tasks): A compressed variant. Premises capped at 3 items, traces restricted to single-line causal arrows (`[T1] Input -> Processing Step -> Finding`), conclusion fields limited to 1-2 sentences. Cost: ~1.5x token overhead. Preserves approximately 80% of the traceability benefits (projected target, not yet benchmarked).
 
@@ -264,7 +264,7 @@ Read the user's prompt and identify structural weaknesses:
 - **Where could the model guess instead of reason?** Vague instructions invite pattern matching. The certificate forces step-by-step evidence gathering.
 - **What evidence should the model gather before concluding?** This determines what goes into the premises and traces sections.
 - **What are the failure modes?** Hallucination, skipped cases, surface matching, and anchoring on salient features are the most common.
-- **Does the prompt leak its downstream objective?** Any mention of how the output will be used, evaluated, or scored must be removed (Cao, Jiang & Xu, 2026). This is the most common and most damaging error in the prompts people write.
+- **Does evaluative pressure bias the prompt?** Separate desired conclusions from evidence while retaining any decision-relevant use, deadline, output order, or other explicit constraint (Cao, Jiang & Xu, 2026; Zhang, Hu et al., 2026).
 - **Does the prompt rely on system/user separation for priority?** If the only thing enforcing a constraint is its position in the message hierarchy, it is unreliable (Geng et al., 2025).
 
 ### Step 3: Identify the Domain-Specific Certificate Structure
@@ -279,7 +279,7 @@ Each template in that file incorporates numbered identifiers (Zhang, Hu et al., 
 
 Transform the original prompt through nine specific operations:
 
-1. **Remove goal leakage.** Strip any mention of downstream use, evaluation criteria, or success metrics. The certificate template specifies what evidence to gather, not what answer is desired (Cao, Jiang & Xu, 2026).
+1. **Reduce goal bias.** Avoid prescribing a desired finding while preserving requested evaluation criteria, downstream use, deadlines, and other operational requirements (Cao, Jiang & Xu, 2026; Zhang, Hu et al., 2026).
 
 2. **Add authority-framed preamble.** Use expertise or consensus framing to present the certificate as a required analytical protocol, not a suggestion (Geng et al., 2025). "The standard code review protocol requires completing the following analytical certificate before providing any verdict" is stronger than "Please fill out this template."
 
@@ -299,7 +299,7 @@ Transform the original prompt through nine specific operations:
 
 ### Step 5: Add Anti-Hallucination Guards
 
-These instructions, appended to any certificate template, consistently reduce hallucination across domains. They come primarily from the semi-formal reasoning method (Ugare & Chandra, 2026) and the goal-blind principle (Cao, Jiang & Xu, 2026):
+These instructions request traceable evidence. Their effect on hallucination across domains is unverified; review the result and cited sources (Ugare & Chandra, 2026; Cao, Jiang & Xu, 2026):
 
 - "Do not infer behavior, meaning, or content from labels or names alone. Trace the actual substance."
 - "If you cannot complete a trace, state 'UNABLE TO TRACE: [reason]' rather than filling in plausible-sounding content."
@@ -351,7 +351,7 @@ Semi-formal reasoning is not a universal improvement. The research is clear abou
 
 For a detailed decision framework with specific criteria, see `docs/when-to-use.md`.
 
-The honest summary: semi-formal reasoning produces larger accuracy gains on harder tasks where the baseline is lower. Cross-architecture benchmarking confirmed a 25.9% average relative improvement with a 96.3% win rate across four model families. On tasks where modern models are already highly accurate, the gains are smaller but the auditability benefit remains. The ~2.2x token overhead (Max mode) or ~1.5x (Lite mode) is always a cost. Whether it is worth paying depends on how much the answer matters.
+Historical self-judged results varied by protocol and model; they do not establish a current or universal benefit. Additional structure can increase token cost and may harm some tasks. Whether it is worthwhile requires evaluation against the user's actual requirements.
 
 ---
 

@@ -17,7 +17,7 @@ class GlobalInstallerTests(unittest.TestCase):
     def test_each_runtime_copy_and_uninstall_in_isolated_home(self):
         targets = {
             'claude': ['.claude/skills'], 'gemini': ['.gemini/skills', '.gemini/config/skills'],
-            'antigravity': ['.gemini/antigravity/skills'], 'codex': ['.codex/skills'],
+            'antigravity': ['.gemini/antigravity/skills'], 'codex': ['.agents/skills'],
             'cursor': ['.cursor/skills'], 'qwen': ['.qwen/skills'],
         }
         with tempfile.TemporaryDirectory(prefix='global home spaces ') as tmp:
@@ -55,7 +55,7 @@ class GlobalInstallerTests(unittest.TestCase):
             self.assertFalse((root / '.cursor/rules/make-prompt-better.mdc').exists())
 
     def test_interrupted_mutations_are_recoverable(self):
-        for command, extra in [('mkdir', ()), ('rm', ()), ('mv', ('--backup',)), ('cp', ()), ('ln', ('--symlink',))]:
+        for command, extra in [('mkdir', ()), ('mv', ('--backup',)), ('cp', ()), ('ln', ('--symlink',))]:
             with self.subTest(command=command), tempfile.TemporaryDirectory(prefix='interrupted operation ') as tmp:
                 root = Path(tmp)
                 target = root / '.claude/skills/make-prompt-better'
@@ -69,6 +69,7 @@ class GlobalInstallerTests(unittest.TestCase):
                 env = dict(os.environ, PATH=str(fakebin) + os.pathsep + os.environ['PATH'])
                 args = ('bash', str(ROOT / 'install.sh'), '--project', '--runtime', 'claude', *extra)
                 self.assertNotEqual(run(*args, cwd=root, env=env).returncode, 0)
+                self.assertEqual((target / 'original').read_text(), 'old')
                 result = run('bash', str(ROOT / 'install.sh'), '--project', '--runtime', 'claude', cwd=root)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertTrue((target / 'SKILL.md').exists())
@@ -87,10 +88,10 @@ class GlobalInstallerTests(unittest.TestCase):
             env = dict(os.environ, PATH=str(fakebin) + os.pathsep + os.environ['PATH'])
             args = ('bash', str(ROOT / 'install.sh'), '--project', '--runtime', 'claude', '--backup')
             self.assertNotEqual(run(*args, cwd=root, env=env).returncode, 0)
-            backups = list(target.parent.glob('make-prompt-better.bak.*/original'))
-            self.assertEqual(len(backups), 1)
-            self.assertEqual(backups[0].read_text(), 'original data')
+            self.assertEqual((target / 'original').read_text(), 'original data')
             self.assertEqual(run(*args, cwd=root).returncode, 0)
+            backups = list((root / '.make-prompt-better/backups').glob('*/payload/original'))
+            self.assertEqual(len(backups), 1)
             self.assertEqual(backups[0].read_text(), 'original data')
 
 
