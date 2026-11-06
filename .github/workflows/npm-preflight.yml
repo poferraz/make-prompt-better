@@ -1,0 +1,103 @@
+name: npm artifact preflight
+
+on:
+  workflow_call:
+    inputs:
+      publishing:
+        description: 'Require published-tag and exact-commit CI evidence before preparing a publish artifact'
+        type: boolean
+        default: false
+    outputs:
+      tag:
+        value: ${{ jobs.verify.outputs.tag }}
+      integrity:
+        value: ${{ jobs.verify.outputs.integrity }}
+      sha256:
+        value: ${{ jobs.verify.outputs.sha256 }}
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      tag: ${{ steps.package.outputs.tag }}
+      integrity: ${{ steps.package.outputs.integrity }}
+      sha256: ${{ steps.package.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require a published stable tag on validated main before publishing
+        if: inputs.publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REPOSITORY" == 'poferraz/make-prompt-better' ]]
+          [[ "$GITHUB_REF_TYPE" == 'tag' ]]
+          [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          release_commit="$(git rev-parse HEAD)"
+          [[ "$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")" == "$release_commit" ]]
+          git merge-base --is-ancestor "$release_commit" refs/remotes/origin/main
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/npm-release.json"
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$release_commit&event=push&per_page=100" > "$RUNNER_TEMP/npm-runs.json"
+          python3 scripts/npm_release.py release --tag "$RELEASE_TAG" --commit "$release_commit" --release-file "$RUNNER_TEMP/npm-release.json" --runs-file "$RUNNER_TEMP/npm-runs.json"
+          python3 scripts/npm_release.py registry --tag "$RELEASE_TAG"
+      - name: Validate source
+        run: npm run verify
+      - name: Pack once, inspect, and test the actual artifact
+        id: package
+        env:
+          PUBLISHING: ${{ inputs.publishing }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v$(node -p "require('./package.json').version")"
+          if [[ "$PUBLISHING" == 'true' ]]; then [[ "$tag" == "$RELEASE_TAG" ]]; fi
+          mkdir -p "$RUNNER_TEMP/mpb-pack" dist
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/mpb-pack"
+          mv "$RUNNER_TEMP/mpb-pack/"*.tgz dist/package.tgz
+          python3 scripts/npm_release.py audit dist/package.tgz --tag "$tag" > dist/metadata.json
+          python3 scripts/npm_release.py smoke dist/package.tgz --tag "$tag"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          data = json.loads(Path('dist/metadata.json').read_text())
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              for key in ('tag', 'integrity', 'sha256'):
+                  out.write(f'{key}={data[key]}\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
+              out.write('## Verified npm candidate\n\n')
+              out.write(f"Tag label: `{data['tag']}`\n\nSHA-256: `{data['sha256']}`\n\n")
+              out.write('Archive and filesystem smoke checks passed. Registry publication, host discovery, and token publishing rights are separate checks.\n')
+          PY
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: npm-candidate-${{ github.run_id }}
+          path: |
+            dist/package.tgz
+            dist/metadata.json
+          if-no-files-found: error
+          retention-days: 7

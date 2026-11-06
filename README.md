@@ -62,15 +62,27 @@ You need Git and Bash on macOS or Linux, or in WSL on Windows. From a folder whe
 ```bash
 git clone --branch v4.4.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
 cd make-prompt-better
+./install.sh --runtime codex --dry-run
 ./install.sh --runtime codex
 ./install.sh --runtime codex --check
 ```
 
-Replace `codex` with `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. Run `./install.sh` to update all configured targets. Node and Python are needed only for the optional developer tools below.
+The first installer command previews the changes. Replace `codex` with `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. The commands above install for your user account; for a project installation, choose `--project` as described in the [installation guide](docs/installation.md#choose-a-scope-and-host). The source installer needs neither Node nor Python.
 
-Codex uses one copy at `~/.agents/skills/make-prompt-better`. The installer removes older entries from the selected skill folders and keeps recovery copies outside them. Check your host's picker after installation; if Codex still shows old entries, restart it. [Update, uninstall, and recovery](docs/installation.md) · [Host compatibility](docs/compatibility.md)
+The [installation guide](docs/installation.md#node-cli) also describes the Node CLI. Available commands can differ by version; run `node bin/cli.mjs --help` from your checkout to see its options.
 
-**Current release:** [v4.4.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.4.0) includes these installation and onboarding improvements. npm returned 404 on 2026-11-06; use the source installation above. The npm publishing setup is configured; registry installation still awaits a published and tested package. [Maintainer setup and status](docs/npm-publishing.md).
+If you already have a package installed in your project's `node_modules` and its help lists `install` and `check`, activate and verify the skill from that project:
+
+```bash
+./node_modules/.bin/make-prompt-better install --runtime codex --project --copy
+./node_modules/.bin/make-prompt-better check --runtime codex --project --copy
+```
+
+Replace `codex` with your host. If the executable is on your `PATH`, use `make-prompt-better --help` to check the available commands. Installing the package and activating the skill are separate steps.
+
+Codex uses `~/.agents/skills/make-prompt-better` for user scope and `.agents/skills/make-prompt-better` in the selected project. The installer removes older entries from the selected skill folders and keeps recovery copies outside them. Check your host's picker after installation; if Codex still shows old entries, restart it. [Update, uninstall, and recovery](docs/installation.md) · [Host compatibility](docs/compatibility.md)
+
+The source commands above select [v4.4.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.4.0) for a repeatable installation. To choose another version or restore a backup, see [update and recovery](docs/installation.md#update).
 
 ## Use it on your next request
 
@@ -127,7 +139,7 @@ The source is MIT licensed. The installer and linters need no API key. Your AI h
 <details>
 <summary><strong>Can I install with npm or npx?</strong></summary>
 
-Use the GitHub source commands above for now. The publishing workflow and maintainer credential are configured, but npm returned 404 on the latest check. We will add a verified npm command after the first package is published and tested. Public installation will not require a publishing token. [Distribution status](docs/npm-publishing.md).
+Use the source commands above to install without a publisher token. See the [distribution status](docs/npm-publishing.md) for the latest recorded registry status and any verified installation guidance. Installing an npm package alone does not activate the skill in your agent; activation is a separate step.
 
 </details>
 

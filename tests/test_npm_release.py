@@ -30,6 +30,32 @@ class ReleaseGateTests(unittest.TestCase):
     def test_stable_published_release_with_successful_exact_main_ci(self):
         self.assertEqual(release.validate_release('v4.4.0', self.sha, self.published, self.runs), '4.4.0')
 
+    def test_paginated_ci_evidence_is_checked_without_ignoring_a_later_failure(self):
+        first_page = {'workflow_runs': [dict(self.runs['workflow_runs'][0], path='other.yml')]}
+        pages = [first_page, self.runs]
+        self.assertEqual(release.validate_release('v4.4.0', self.sha, self.published, pages), '4.4.0')
+        pages.append({'workflow_runs': [dict(self.runs['workflow_runs'][0], id=3, conclusion='failure')]})
+        with self.assertRaises(ValueError):
+            release.validate_release('v4.4.0', self.sha, self.published, pages)
+
+    def test_newer_rerun_attempt_and_every_non_success_conclusion_block_release(self):
+        passed = dict(self.runs['workflow_runs'][0], run_attempt=1)
+        for status, conclusion in [('completed', 'failure'), ('completed', 'cancelled'),
+                                   ('completed', 'skipped'), ('completed', 'neutral'),
+                                   ('completed', 'timed_out'), ('in_progress', None), ('queued', None)]:
+            retry = dict(passed, run_attempt=2, status=status, conclusion=conclusion)
+            for ordered in ([passed, retry], [retry, passed]):
+                with self.subTest(status=status, conclusion=conclusion, order=ordered):
+                    with self.assertRaises(ValueError):
+                        release.validate_release('v4.4.0', self.sha, self.published, {'workflow_runs': ordered})
+
+    def test_incomplete_or_malformed_ci_evidence_fails_closed(self):
+        for runs in ([], {}, None, [None], {'workflow_runs': 'not a list'},
+                     {'total_count': 5, **self.runs},
+                     {'workflow_runs': [dict(self.runs['workflow_runs'][0], id=None)]}):
+            with self.subTest(runs=runs), self.assertRaises(ValueError):
+                release.validate_release('v4.4.0', self.sha, self.published, runs)
+
     def test_invalid_tags_and_unpublished_releases_are_rejected(self):
         for tag in ['main', 'v4.4.0-beta', 'v04.4.0', '../v4.4.0', 'v4.4.0\n', 'v4.4.0; echo nope']:
             with self.subTest(tag=tag), self.assertRaises(ValueError):
@@ -193,6 +219,27 @@ class ActualPackageTests(unittest.TestCase):
                 with patch.object(sys, 'argv', ['npm_release.py', command, str(archive), '--tag', 'v' + metadata['version']]), redirect_stdout(io.StringIO()) as output:
                     release.main()
                     self.assertEqual(json.loads(output.getvalue())[key], expected)
+
+            # A release smoke must actually exercise each public lifecycle command.
+            # Disable one command at a time in a valid archive; each must be rejected.
+            with tarfile.open(archive, 'r:gz') as src:
+                entries = [(copy.copy(member), src.extractfile(member).read())
+                           for member in src if member.isfile()]
+            marker = b'const args = process.argv.slice(2);'
+            for broken_command in ('install', 'check', 'update', 'uninstall'):
+                with self.subTest(broken_command=broken_command):
+                    altered = base / f'broken-{broken_command}.tgz'
+                    with tarfile.open(altered, 'w:gz') as dest:
+                        for info, data in entries:
+                            member = copy.copy(info)
+                            if member.name == 'package/bin/cli.mjs':
+                                self.assertEqual(data.count(marker), 1)
+                                injection = f'if (process.argv[2] === "{broken_command}") process.exit(42);\n'.encode()
+                                data = data.replace(marker, injection + marker)
+                                member.size = len(data)
+                            dest.addfile(member, io.BytesIO(data))
+                    with self.assertRaisesRegex(ValueError, r'Smoke command failed: node \(exit 42\)'):
+                        release.smoke_archive(altered, 'v' + metadata['version'])
 
 
 class TokenCheckOutputTests(unittest.TestCase):

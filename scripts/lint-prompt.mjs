@@ -15,6 +15,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
 
 const ASCII_TREE_RE = /[├└│─]{2,}|\+--\s|\|--\s/;
 const CONCLUSION_FIRST_RE =
@@ -238,7 +239,8 @@ function runSelfTest() {
   console.log("[PASS] scripts/lint-prompt.mjs self-test verified all 6 deterministic rules (DILUTION-01..HARNESS-06).");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && fs.existsSync(process.argv[1]) &&
+    import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href) {
   let parsed;
   try {
     parsed = parseLintArgs(process.argv.slice(2));

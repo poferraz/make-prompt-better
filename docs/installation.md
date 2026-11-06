@@ -1,14 +1,33 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). These instructions describe v4.4.0. The quickstart pins that release so an installation is repeatable.
+For a first installation, start with the [quickstart](quickstart.md). Its source-install commands pin v4.4.0 so an installation is repeatable.
 
 ## Distribution status
 
-The GitHub source route is supported. The GitHub npm environment and credential are configured, with separate preflight, token-check, and publish operations. npm still returned 404 on 2026-11-06; a stored token is not a published package. Follow the [maintainer runbook](npm-publishing.md) for registry rollout. Future public npm users will need Node and Bash, but no publisher token; installing an npm package alone will still require explicit `init` to activate the skill.
+The GitHub source route is supported. Public npm availability and installation require separate verification for each release; consult the [maintainer runbook](npm-publishing.md) for the recorded status and registry checks. An npm installation requires Node and Bash and does not activate the skill by itself. Public consumers do not need a publisher token.
+
+## Node CLI
+
+These commands require Node.js 22+ and Bash. They work from a source checkout that contains the named CLI commands; the pinned v4.4.0 release does not include all of them. Run these examples from such a checkout:
+
+```bash
+node bin/cli.mjs install --runtime codex --global --dry-run
+node bin/cli.mjs install --runtime codex --global
+node bin/cli.mjs check --runtime codex --global
+node bin/cli.mjs update --runtime codex --global
+node bin/cli.mjs uninstall --runtime codex --global --dry-run
+node bin/cli.mjs uninstall --runtime codex --global
+```
+
+Replace `codex` and `--global` with your chosen host and scope. To target a project, run the CLI by its absolute path from that project's directory and use `--project`. `init` and the direct `install.sh` commands remain supported. The CLI delegates to the same installer, so the backup, conflict, and recovery rules below still apply.
+
+On a terminal, the new commands can prompt for a host and scope. For noninteractive `check`, `update`, and `uninstall` commands, pass both `--runtime` and either `--global` or `--project`, as shown above. Existing noninteractive `install` and `init` defaults remain available for compatibility; explicit options are recommended in scripts.
+
+`update` uses the skill files in the checkout or package running the command; it does not download a new version. Select the source version first using the [update instructions](#update), then run `update` for the same host and scope. Copy mode is the default: if you installed with `--symlink`, pass `--symlink` again to `update` and `check`. Otherwise, an update backs up the existing link and replaces it with a copy. `check` compares the selected installation against that source; it does not test host discovery or model behavior.
 
 ## Choose a scope and host
 
-A global installation is available to your user account. A project installation writes to the current working directory. Pick one scope for a given host: Codex can show separate project and global skills with the same name.
+A global installation is available to your user account. A project installation writes to the current working directory. Pick one scope for a given host: Codex can show separate project and global skills with the same name. In a Gemini CLI 0.63.0 working-tree test, a project copy took precedence over a global copy and the host reported a conflict. [Host evidence and limits](compatibility.md).
 
 ```bash
 # Preview, install, and check one user installation.
@@ -36,7 +55,7 @@ The cleanup covers direct children of the selected discovery roots. It does not 
 
 ## Update
 
-Choose the version you want from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. For the current release, run these commands from your checkout:
+Choose the version you want from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. To select v4.4.0, run these commands from your checkout:
 
 ```bash
 git status --short
@@ -74,6 +93,8 @@ Backups of symlinks retain the link itself, not a snapshot of its referent. Rest
 The installer stages new skill files outside discovery before replacing an existing target. A staged copy failure leaves the previous install in place; a final move failure may leave it in recovery storage. Multi-target installation is per target, so some targets may complete before another fails. Locks reduce concurrent collisions, but hostile filesystem races and every interruption point are not proven safe.
 
 Cursor rules are written only when Cursor is selected. An unmanaged rule needs `--backup` before replacement or removal. Symlinked rule files, destination parents, and recovery parents are refused.
+
+In checkouts containing the Cursor rule path fix, generated rules identify reference files relative to the rule's `.cursor/rules/` directory. Tests check that those paths resolve to the installed skill in project and global scopes; actual Cursor rule loading and reference access are unverified. The v4.4.0 source release predates this fix. Cursor also documents discovery from both `.cursor/skills/` and `.agents/skills/`. Installing the same skill in both roots could lead to duplicates; this has not been confirmed in a host test. [Cursor skills documentation](https://cursor.com/docs/skills).
 
 ## Troubleshooting
 

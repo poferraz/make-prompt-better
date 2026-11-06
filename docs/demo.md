@@ -1,6 +1,6 @@
 # Example: rewrite a code-review request
 
-This example was produced in the current Codex conversation on 2026-11-06 by applying the working repository's skill instructions. It is an illustration of one rewrite, not an independently repeated host-discovery test or a benchmark. No code or tests were executed as part of this example.
+This example was produced in a Codex conversation on 2026-11-06 by applying the skill instructions in the checkout being developed at that time. It is an illustration of one rewrite, not an independently repeated host-discovery test or a benchmark. No code or tests were executed as part of this example.
 
 ## Input
 

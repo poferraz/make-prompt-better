@@ -4,6 +4,7 @@
 This file follows **Template 11 (`[CONTEXT-FILES]`, Gloaguen et al., 2026, arXiv:2602.11988)** from `make-prompt-better/references/domain-templates.md`.
 
 ## 1. Non-Inferable Validation & Sync Commands
+- Full source verification, including CLI, installer and npm archive tests: `npm run verify`. For structural, release metadata, lint and Bash syntax checks only: `npm run verify:fast`. CI additionally requires the Linux/macOS coverage and mutation matrix before `validate` can pass. These commands do not synchronize real agent installations or publish.
 - Sync skill across local coding agents (`~/.agents`, `~/.claude`, `~/.qwen`, `~/.gemini`): `./install.sh`
 - Test npm packaging and release gates without publishing: `python3 -m unittest discover -s tests -p test_npm_release.py -v`. Use the explicit Actions operation for token checks; keep credentials out of local fixtures.
 - Run CI validation check locally (strictly enforces `<500` line limit on `SKILL.md`, universal YAML frontmatter, 12 templates in `domain-templates.md`, and zero em/en dashes across all core Markdown files):

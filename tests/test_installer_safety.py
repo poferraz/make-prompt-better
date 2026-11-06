@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -96,6 +97,33 @@ class InstallerSafetyTests(unittest.TestCase):
             self.assertEqual(install(project, "--runtime", "cursor").returncode, 0)
             self.assertEqual(install(project, "--runtime", "cursor").returncode, 0)
             self.assertEqual(list((project / ".make-prompt-better/backups").glob("make-prompt-better.mdc.*/payload")), [])
+
+    def test_cursor_rule_reference_paths_resolve_in_project_and_global_scopes(self):
+        with tempfile.TemporaryDirectory(prefix="cursor paths # % ") as tmp:
+            base = Path(tmp)
+            for scope in ("project", "global"):
+                with self.subTest(scope=scope):
+                    root = base / (scope + " home with spaces")
+                    root.mkdir()
+                    env = dict(os.environ, HOME=str(root))
+                    rule = root / ".cursor/rules/make-prompt-better.mdc"
+                    rule.parent.mkdir(parents=True)
+                    old_rule = "<!-- Managed by make-prompt-better installer -->\nprevious rule\n"
+                    rule.write_text(old_rule)
+                    command = ["bash", str(INSTALLER), "--runtime", "cursor", "--" + scope]
+                    if scope == "global":
+                        command.append("--symlink")
+                    result = subprocess.run(command, cwd=root, env=env, text=True, capture_output=True)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    contents = rule.read_text()
+                    self.assertIn("Resolve reference paths in this rule relative to this rule file", contents)
+                    refs = re.findall(r"\.\./skills/make-prompt-better/references/[\w.-]+\.md", contents)
+                    self.assertGreaterEqual(len(set(refs)), 3)
+                    for ref in refs:
+                        self.assertTrue((rule.parent / ref).is_file(), ref)
+                    backups = list((root / ".make-prompt-better/backups").glob("make-prompt-better.mdc.*/payload"))
+                    self.assertEqual(len(backups), 1)
+                    self.assertEqual(backups[0].read_text(), old_rule)
 
     def test_parent_symlink_does_not_redirect_project_install(self):
         with tempfile.TemporaryDirectory() as tmp:

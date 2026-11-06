@@ -34,6 +34,8 @@ def summarize(results_dir: Path) -> dict:
         self_judged = manifest["judge_model"] == model
         identity = {key: value for key, value in manifest.items() if key not in {"model", "judge_model"}}
         identity["judge"] = "self" if self_judged else manifest["judge_model"]
+        if data.get("previous_manifests"):
+            identity["previous_runner_sha256"] = [old["runner_sha256"] for old in data["previous_manifests"]]
         group_key = json.dumps(identity, sort_keys=True)
         group = groups.setdefault(group_key, {"protocol": identity, "models": set(), "deltas": []})
         for test_id, test in data.get("tests", {}).items():

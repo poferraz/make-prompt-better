@@ -220,7 +220,8 @@ generate_cursor_rule() {
   echo "---"
   echo ""
   echo "<!-- Managed by make-prompt-better installer -->"
-  awk 'BEGIN{fm=0} /^---$/{fm++; next} fm>=2{print}' "${SKILL_SRC}/SKILL.md"
+  echo 'Resolve reference paths in this rule relative to this rule file, inside `.cursor/rules/`.'
+  awk 'BEGIN{fm=0} /^---$/{fm++; next} fm>=2{gsub(/references\//, "../skills/make-prompt-better/references/"); print}' "${SKILL_SRC}/SKILL.md"
 }
 
 CURSOR_RULE="${BASE_DIR}/.cursor/rules/make-prompt-better.mdc"

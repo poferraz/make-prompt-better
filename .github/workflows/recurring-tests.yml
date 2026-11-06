@@ -4,19 +4,11 @@ on:
   schedule:
     - cron: '23 4 * * *'
     - cron: '43 5 * * 0'
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/recurring-tests.yml'
-      - '.github/workflows/publish-npm.yml'
-      - 'install.sh'
-      - 'bin/**'
-      - 'scripts/**'
-      - 'lint_context.py'
-      - 'tests/**'
-      - 'research/benchmark/v4/*.py'
-      - 'package.json'
-      - 'make-prompt-better/**'
+  workflow_call:
+    inputs:
+      seed:
+        type: string
+        default: '42'
   workflow_dispatch:
     inputs:
       seed:
@@ -26,6 +18,10 @@ on:
 
 permissions:
   contents: read
+
+defaults:
+  run:
+    shell: bash
 
 concurrency:
   group: recurring-${{ github.workflow }}-${{ github.ref }}-${{ github.event.schedule || github.run_id }}
@@ -89,13 +85,16 @@ jobs:
           python -m coverage run -a research/benchmark/v4/rejudge_saved_outputs.py --self-test
           python -m coverage run -a research/benchmark/v4/blind_stats_engine.py
           python -m coverage run -a scripts/check-release.py
+          python -m coverage run -a scripts/validate_repo.py
+          python -m coverage run -a -m unittest discover -s tests -p test_validation_gate.py -v
           python -m coverage run -a -m unittest discover -s tests -p test_npm_release.py -v
+          python -m coverage run -a -m unittest discover -s tests -p test_public_npm_smoke.py -v
           python -m coverage xml -o test-artifacts/coverage.xml
           python -m coverage json -o test-artifacts/coverage.json
           python tests/check_python_coverage.py test-artifacts/coverage.json | tee test-artifacts/module-coverage.txt
           python -m coverage report --fail-under=81 | tee test-artifacts/coverage.txt
       - name: Targeted mutation probe
-        if: github.event.schedule == '43 5 * * 0' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
+        if: github.event.schedule == '43 5 * * 0' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' || github.event_name == 'push'
         run: python tests/mutation_probe.py 2>&1 | tee test-artifacts/mutation.log
       - name: Upload reports
         if: always()
