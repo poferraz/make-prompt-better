@@ -3,7 +3,7 @@
 Aggregates all benchmark results across session-based evaluations (Antigravity, OpenAI Codex)
 and isolated Ollama Cloud models in research/benchmark/v4/results/*/ into a unified dataset and Markdown matrix.
 
-Methodological safeguards (v4.3.0):
+Methodological safeguards:
 - Separates session-based self-evaluations from isolated runner evaluations instead of pooling them without qualification.
 - Records exact evaluation provenance (`protocol`, `judge_model`, `self_judged`, `completed_tests`).
 - Never fabricates synthetic `100`-token placeholders when API `eval_count` telemetry is absent; uses `None` for missing token counts.
@@ -310,7 +310,7 @@ def main() -> int:
     )
 
     lines = [
-        "# Aggregated Cross-Architecture Benchmark Data (v4.3.0 Audited Provenance)",
+        "# Aggregated Cross-Architecture Benchmark Data (Historical Runs by Protocol)",
         "",
         "Methodological Disclosures: All runs in this directory are self-evaluated (`judge_model == generator_model`) unless otherwise noted in the `Judge` column. In-session runs (`argon-4-low`, `gemini-3.8`, `gpt-6-astra-max`) were generated and scored in session contexts (`gpt-6-astra-max` explicitly notes unblinded in-session self-scoring across 11 of 12 cases) and should not be pooled with isolated API runner calls as a single controlled experiment. Isolated Ollama Cloud runs isolate each generation call and randomize candidate order (`Candidate A` vs. `Candidate B`), though historical Oct 31 runs retained `Baseline`/`Optimized` column labels in the judge prompt and visible certificate tags. Partial runs (`gpt-oss:20b-cloud` 9/12, `kimi-k3:cloud` 11/12) cover subsets of the 12-task suite. Word Overhead is an output word-count ratio, not an end-to-end token-cost ratio (prompt compilation tokens and missing API token counts are excluded rather than synthesized).",
         "",

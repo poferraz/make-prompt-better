@@ -1,6 +1,6 @@
 # Follow-up outcome evaluation
 
-No new model-quality evaluation was run for the unreleased changes. Select the primary host, model versions, independent judge, compute budget, data-handling rules, and stopping conditions before making live requests.
+No new model-quality evaluation was run for v4.4.0. Select the primary host, model versions, independent judge, compute budget, data-handling rules, and stopping conditions before making live requests.
 
 1. Freeze a code revision and a run ID. Record model/provider revisions where available, host version, skill and suite hashes, and all protocol flags. The runner's manifest records identifiers but cannot establish a mutable provider model's actual weights.
 2. Predeclare the existing twelve tasks and a separately authored held-out set. Include exact deliverables, output order, deadlines, missing data, quoted adversarial instructions, and tasks where no added structure is needed. Keep held-out prompts and expected checks versioned before observing results.

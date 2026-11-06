@@ -19,6 +19,8 @@ Thumbs.db
 # Credentials and secrets
 .env
 .env.*
+.npmrc
+*.tgz
 *.key
 *.pem
 *.p12

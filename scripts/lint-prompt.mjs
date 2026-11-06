@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Deterministic Static Prompt & Context Linter (v4.2.0)
+ * Deterministic Static Prompt & Context Linter
  *
  * Audits prompts, SKILL.md files, and CLAUDE.md / AGENTS.md context files
  * against 6 deterministic heuristic rules (0-100 score, not certification):

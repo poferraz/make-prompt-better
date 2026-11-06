@@ -23,7 +23,7 @@ This confirms files in the selected locations. Next, open the skill picker and c
 A terminal is the app where you run the commands below. Git downloads the repository. Bash runs its installer. On Windows, use a WSL terminal; native PowerShell installation is untested.
 
 ```bash
-git clone https://github.com/poferraz/make-prompt-better.git
+git clone --branch v4.4.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
 cd make-prompt-better
 ./install.sh --runtime codex --dry-run
 ./install.sh --runtime codex

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.4.0] - 2026-11-06
 
 ### Changed
 - Keep one canonical Codex copy in `.agents/skills`; migrate duplicate identities and legacy `.bak.*` folders into recovery storage outside discovery. Add a read-only `--check` command.
@@ -16,9 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Correct template mappings, qualify research and distribution claims, and add a first-use example and recovery instructions.
 - Describe linter results as heuristic signals; reject unknown CLI options and propagate process failures.
 - Include installer integration tests in `npm test` and configure Node.js 22 in CI.
+- Synchronize active release metadata, check the skill receipt and documentation versions, and pin the beginner source-install commands to this release. Historical research and audit records retain their original labels.
 
 ### Evidence limits
-- These changes are not part of the published v4.3.0 tag. Fresh model outcomes, host discovery, remote CI on a release commit, and npm publication remain unverified.
+- Codex CLI 0.163.0 discovery on macOS was checked separately from filesystem fixtures; desktop picker refresh and full prompt execution remain untested. See [host compatibility](docs/compatibility.md).
+- No new model-outcome evaluation was run. npm returned 404 on 2026-11-06; a GitHub release does not publish an npm package. See the [npm rollout plan](docs/npm-publishing.md).
 
 ## [4.3.0] - 2026-10-31
 

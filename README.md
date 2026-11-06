@@ -47,7 +47,7 @@ If your agent can access repositories and run local commands, paste this into it
 
 ```text
 Install make-prompt-better from https://github.com/poferraz/make-prompt-better
-for my user account in this agent. Inspect install.sh first and choose this
+at release v4.4.0 for my user account in this agent. Inspect install.sh and choose this
 host's --runtime option. Keep one active copy of this skill in the selected
 scope, with recovery copies outside skill folders. Run the installer's
 --check command, show me its result, and explain how to invoke the skill.
@@ -60,7 +60,7 @@ Your host may request permission to write its skill directory. [First-time setup
 You need Git and Bash on macOS or Linux, or in WSL on Windows. From a folder where you keep projects:
 
 ```bash
-git clone https://github.com/poferraz/make-prompt-better.git
+git clone --branch v4.4.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
 cd make-prompt-better
 ./install.sh --runtime codex
 ./install.sh --runtime codex --check
@@ -70,7 +70,7 @@ Replace `codex` with `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. Run
 
 Codex uses one copy at `~/.agents/skills/make-prompt-better`. The installer removes older entries from the selected skill folders and keeps recovery copies outside them. Check your host's picker after installation; if Codex still shows old entries, restart it. [Update, uninstall, and recovery](docs/installation.md) · [Host compatibility](docs/compatibility.md)
 
-**Source status:** these installer and documentation improvements are [unreleased](CHANGELOG.md#unreleased). The [v4.3.0 tag](https://github.com/poferraz/make-prompt-better/releases/tag/v4.3.0) contains the earlier implementation. Registry publication and ownership are unverified for this working tree; use the source installation path.
+**Current release:** [v4.4.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.4.0) includes these installation and onboarding improvements. npm returned 404 on 2026-11-06; use the source installation above. Maintainers can follow the [npm rollout plan](docs/npm-publishing.md).
 
 ## Use it on your next request
 

@@ -8,7 +8,7 @@ This register covers the consequential claims reviewed in the 2026-11-06 audit. 
 | Skill metadata uses attention | [Yin et al. (2026)](https://arxiv.org/html/2608.12610v1) examines skill metadata and attention | Source finding; the previously attributed negative-versus-positive wording experiment was not located |
 | Context language models report accuracy and compute changes | [Shao et al. (2026)](https://arxiv.org/abs/2609.37725) reports the cited result on BrowseComp-Plus | Source finding for that experiment, not evidence for this project's scratchpad rule |
 | Earlier project evaluations contain both positive and negative results | [Historical v4.2.0 summary](../research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md) and saved aggregate | Reproducible descriptive results under mixed protocols and self-judging; not a current efficacy estimate |
-| The current skill improves outcomes | No new controlled outcome study has been run for these unreleased changes | Unknown |
+| The current skill improves outcomes | No new controlled outcome study has been run for v4.4.0 | Unknown |
 | All listed hosts discover and run the skill correctly | Filesystem targets and isolated installer tests are available | End-to-end host behavior unknown until individually tested |
 | `npx make-prompt-better` is a working registry install | Registry lookup returned 404 on 2026-11-06 | Unpublished at that check; future publication and package ownership unknown |
 | Positive observable-predicate recipes and the creative typicality threshold | Project rules, informed by the research groups | Adaptations; their exact effects and the model's probability calibration are not established |

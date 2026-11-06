@@ -21,4 +21,4 @@ For completed new-style runs, `python3 research/benchmark/v4/summarize_runs.py -
 
 The rejudge script accepts `--results-dir` for either historical model folders or one new run directory. Use `--dry-run` and, optionally, `--max-requests` to inspect and bound the estimated request count. A live rejudge requires a separate `--output` JSON file, which retains each judge prompt, response, position mapping, and manifest; repeat the same command to resume. A changed input or protocol requires a new output file. If the original task text was not saved, live rejudging refuses to substitute today's suite unless `--allow-missing-original-task` is explicitly passed; that fallback remains unverified.
 
-No live-model efficacy, cost, availability, or safety claim follows from a dry run or fixture test. No new v4.3.0 evaluation was performed for this change.
+No live-model efficacy, cost, availability, or safety claim follows from a dry run or fixture test. No new model evaluation was performed for v4.4.0.

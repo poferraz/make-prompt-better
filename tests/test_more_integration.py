@@ -97,10 +97,15 @@ class GlobalInstallerTests(unittest.TestCase):
 
 class ReleaseCheckTests(unittest.TestCase):
     def test_each_release_surface_rejects_mismatch_or_missing_file(self):
-        files = ['package.json', '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json',
+        surfaces = ['package.json', '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json',
                  'pyproject.toml', 'CITATION.cff', 'install.sh', 'CHANGELOG.md', 'README.md',
-                 'assets/hero-banner.svg', 'make-prompt-better/SKILL.md', 'bin/cli.mjs',
+                 'make-prompt-better/SKILL.md', 'AGENTS.md', 'CLAUDE.md',
+                 'make-prompt-better/references/domain-templates.md', 'docs/methodology.md',
+                 'docs/tradeoffs.md', 'docs/quickstart.md', 'docs/installation.md',
+                 'research/benchmark/v4/run_ollama_benchmarks.py']
+        files = surfaces + ['bin/cli.mjs',
                  'scripts/lint-prompt.mjs', 'scripts/check-release.py']
+        version = json.loads((ROOT / 'package.json').read_text())['version']
         with tempfile.TemporaryDirectory(prefix='release checks ') as tmp:
             root = Path(tmp)
             for name in files:
@@ -110,14 +115,26 @@ class ReleaseCheckTests(unittest.TestCase):
             def check():
                 return run('python3', str(root / 'scripts/check-release.py'), cwd=root)
             self.assertEqual(check().returncode, 0)
-            for name in files[:10]:
+            for name in surfaces:
                 with self.subTest(name=name):
                     path = root / name
                     original = path.read_text()
-                    path.write_text(original.replace('4.3.0', '9.9.9'))
+                    path.write_text(original.replace(version, '9.9.9'))
                     self.assertNotEqual(check().returncode, 0, name)
                     path.write_text(original)
-            for name in files[:10]:
+            # Secondary labels must agree even when other version labels are correct.
+            for name, marker in [
+                ('make-prompt-better/SKILL.md', f'better v{version}]'),
+                ('README.md', f'--branch v{version}'),
+                ('docs/installation.md', f'--detach v{version}'),
+            ]:
+                path = root / name
+                original = path.read_text()
+                self.assertIn(marker, original)
+                path.write_text(original.replace(marker, marker.replace(version, '9.9.9')))
+                self.assertNotEqual(check().returncode, 0, f'stale secondary label in {name}')
+                path.write_text(original)
+            for name in surfaces:
                 with self.subTest(missing=name):
                     path = root / name
                     backup = path.with_name(path.name + '.fixture-backup')

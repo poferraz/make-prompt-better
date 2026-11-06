@@ -10,9 +10,9 @@ Large language models produce better output when they show their work. This is n
 
 Semi-formal reasoning is a prompting method that asks a model to state conditions, trace evidence, and present a conclusion with references. The resulting "reasoning certificate" is a review aid, not proof of the model's internal reasoning or that the cited evidence was checked.
 
-Ugare and Chandra (2026) studied structured reasoning on code analysis tasks. An earlier project benchmark reported relative improvements and additional overhead across four model families; these historical observations do not establish a reliable improvement for the current skill or unrelated tasks. No fresh v4.3.0 outcome evaluation has been completed.
+Ugare and Chandra (2026) studied structured reasoning on code analysis tasks. An earlier project benchmark reported relative improvements and additional overhead across four model families; these historical observations do not establish a reliable improvement for the current skill or unrelated tasks. No fresh v4.4.0 outcome evaluation has been completed.
 
-This document describes the full v4.3.0 methodology: Requirement Preservation as the first compiler invariant, the proportional certificate structure, Dual Context Binding (`Portable` vs. `Working-Context`), the eleven research constraints that shape it across analytical, agentic, and creative tasks, the prompt framework that operationalizes it, and the optimization process that applies it across any LLM or coding agent.
+This document describes the full v4.4.0 methodology: Requirement Preservation as the first compiler invariant, the proportional certificate structure, Dual Context Binding (`Portable` vs. `Working-Context`), the eleven research constraints that shape it across analytical, agentic, and creative tasks, the prompt framework that operationalizes it, and the optimization process that applies it across any LLM or coding agent.
 
 For quick-reference versions of the research constraints, see `make-prompt-better/references/research-principles.md`. For ready-to-use certificate templates across twelve domains, see `make-prompt-better/references/domain-templates.md`.
 

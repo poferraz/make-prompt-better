@@ -2,7 +2,7 @@
 
 ## Repository Purpose
 
-This repository is a research-informed prompt, context, and harness optimization skill (`v4.3.0`). It groups fourteen papers into eleven principles and project-specific adaptations; publication status and host behavior vary. The repo serves as an installable skill and standalone reference.
+This repository is a research-informed prompt, context, and harness optimization skill (`v4.4.0`). It groups fourteen papers into eleven principles and project-specific adaptations; publication status and host behavior vary. The repo serves as an installable skill and standalone reference.
 
 ## File Organization
 

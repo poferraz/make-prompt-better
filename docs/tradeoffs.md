@@ -49,12 +49,12 @@ The academic findings above have been tested across three benchmark iterations (
 | Dimension | v1.0 4-Model Avg | v4.2.0 Frontier Track (`36` pairs) | v4.2.0 Isolated Cloud Track (`128` pairs) | Interpretation |
 |-----------|------------------|------------------------------------|-------------------------------------------|----------------|
 | Traceability | **+1.9** | **+0.90 / 5.0** (4.07 to 4.97) | **+0.75 / 5.0** (3.62 to 4.37) | Positive across every stratum; core traceability claim holds under anonymized evaluation |
-| Accuracy | **+0.6** | **+0.39 / 5.0** | **-0.29 / 5.0** | Gains on Financial (+1.50) and Concurrency (+1.83); cloud compiler drift fixed in v4.3.0 `[REQ-PRESERVE]` |
-| Completeness | **+0.9** | **+0.36 / 5.0** | **-0.60 / 5.0** | Cloud penalty driven by Test 11 (`CLAUDE.md`) dropping 3 requested sections (-8.91); fixed in v4.3.0 `Section 0` |
+| Accuracy | **+0.6** | **+0.39 / 5.0** | **-0.29 / 5.0** | Gains on Financial (+1.50) and Concurrency (+1.83); v4.3.0 added `[REQ-PRESERVE]` to address drift; its effect is unmeasured |
+| Completeness | **+0.9** | **+0.36 / 5.0** | **-0.60 / 5.0** | Cloud penalty driven by Test 11 (`CLAUDE.md`) dropping 3 requested sections (-8.91); v4.3.0 added `Section 0` to address this; its effect is unmeasured |
 | Actionability | **+0.4** | **+0.36 / 5.0** | **-0.80 / 5.0** | Verbose Mode 1 cloud essays buried takeaways; fixed via anti-redundancy & acuity-first clinical ordering |
 | Structure | **+1.4** | **+0.35 / 5.0** | **-1.40 / 5.0** | Anonymized cloud judges penalized 3.57x bureaucratic `[P]`/`[T]` repetition; fixed via proportional Mode 2 Lite defaults |
 
-**Ceiling, floor, and protocol-stratum effects.** Frontier models (`gemini-3.8` +3.29, `argon-4-low` +2.88, `gpt-6-astra-max` +0.92) kept Mode 1 expansion to 1.65x words because they treat `[P]` and `[T]` items as concise analytical indexes. When a model already scores near the rubric ceiling at baseline (`gpt-6-astra-max` at 22.75/25 or `glm-5.3:cloud` at 23.08/25), heavy scaffolding offers smaller upside and can cause regressions if compilation drops secondary requirements or repeats facts across sections. In v4.3.0, **Requirement Preservation (`[REQ-PRESERVE]`)** and **Proportional Structure** prevent scope loss and cross-section repetition.
+**Ceiling, floor, and protocol-stratum effects.** Frontier models (`gemini-3.8` +3.29, `argon-4-low` +2.88, `gpt-6-astra-max` +0.92) kept Mode 1 expansion to 1.65x words because they treat `[P]` and `[T]` items as concise analytical indexes. When a model already scores near the rubric ceiling at baseline (`gpt-6-astra-max` at 22.75/25 or `glm-5.3:cloud` at 23.08/25), heavy scaffolding offers smaller upside and can cause regressions if compilation drops secondary requirements or repeats facts across sections. Since v4.3.0, **Requirement Preservation (`[REQ-PRESERVE]`)** and **Proportional Structure** instruct the model to preserve scope and reduce repetition. Whether those changes reliably improve outcomes remains unmeasured.
 
 ---
 
@@ -73,7 +73,7 @@ Note: Token overhead ranges from ~1.7x (Qwen, most efficient) to ~2.7x (Kimi). T
 
 A Max certificate block adds roughly 150 to 300 tokens of prompt overhead depending on task complexity. Lite mode restricts this by capping premises at 3 items, using single-line causal arrow traces, and limiting conclusion fields to 1-2 sentences each. Over a session with many prompts, the difference between Lite and Max compounds significantly.
 
-**Historical trade-off:** An earlier four-model suite reported these overheads and self-judged gains. They are not a reliable prediction for current versions, models, or tasks. The later isolated v4.2.0 track declined on average, and v4.3.0 outcomes have not been newly measured.
+**Historical trade-off:** An earlier four-model suite reported these overheads and self-judged gains. They are not a reliable prediction for current versions, models, or tasks. The later isolated v4.2.0 track declined on average, and current v4.4.0 outcomes have not been newly measured.
 
 ### Latency
 
@@ -187,7 +187,7 @@ The historical benchmarks include positive and negative self-judged outcomes und
 
 The costs are real: ~1.65x to 2.2x word overhead on Frontier models in Max mode (~1.45x in Lite mode, up to 3.57x words / 5.22x tokens when Max mode is forced onto open cloud models), proportional latency increase, diminishing returns on near-ceiling baselines (>22.5/25), and completeness penalties if prompt compilation drops user-requested sections or leaks backstage planning notes.
 
-**Decision framework (v4.3.0):**
+**Decision framework (v4.4.0):**
 - High-stakes multi-constraint audit (financial, legal, clinical, compliance, deep code review) where full premise-to-conclusion traceability is required? **Mode 1: Max Certificate (with anti-redundancy and acuity-first clinical ordering).**
 - Standard analytical task, code debugging, comparative trade-offs, or compact/flash model? **Mode 2: Lite Certificate (~1.45x word overhead, default for standard analytical tasks).**
 - Large Reasoning Model (o3, R1, Extended Thinking), async concurrency coding, or `AGENTS.md` / `CLAUDE.md` context file? **Mode 3: LRM / Harness Mode (Code-First `[V1] -> [V2]` verification with `<25%` overhead ceiling for Template 12, and compact `Section 0` requirement fulfillment + non-inferable gates for Template 11 per Lee et al., 2026 and Gloaguen et al., 2026).**
