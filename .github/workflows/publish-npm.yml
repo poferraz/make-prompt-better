@@ -15,6 +15,11 @@ on:
         options: [oidc, bootstrap-token]
         default: oidc
         required: true
+      release_tag:
+        description: 'Existing stable release tag; required when publishing from main'
+        type: string
+        default: ''
+        required: false
 
 permissions:
   contents: read
@@ -24,7 +29,7 @@ defaults:
     shell: bash
 
 concurrency:
-  group: npm-${{ github.event_name == 'workflow_dispatch' && inputs.operation || 'preflight' }}-${{ github.ref }}
+  group: npm-${{ github.event_name == 'workflow_dispatch' && inputs.operation || 'preflight' }}-${{ inputs.release_tag || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -36,6 +41,7 @@ jobs:
       actions: read
     with:
       publishing: ${{ github.event_name == 'workflow_dispatch' && inputs.operation == 'publish' }}
+      release_tag: ${{ inputs.release_tag }}
 
   token-check:
     if: github.event_name == 'workflow_dispatch' && inputs.operation == 'check-token' && github.ref == 'refs/heads/main' && github.repository == 'poferraz/make-prompt-better'
@@ -115,14 +121,14 @@ jobs:
           JS
       - name: Publish with trusted OIDC identity
         if: inputs.auth_mode == 'oidc'
-        run: npm publish dist/package.tgz --ignore-scripts --access public --registry=https://registry.npmjs.org --provenance
+        run: npm publish ./dist/package.tgz --ignore-scripts --access public --registry=https://registry.npmjs.org --provenance
       - name: Publish with temporary bootstrap token
         if: inputs.auth_mode == 'bootstrap-token'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           test -n "$NODE_AUTH_TOKEN"
-          npm publish dist/package.tgz --ignore-scripts --access public --registry=https://registry.npmjs.org --provenance
+          npm publish ./dist/package.tgz --ignore-scripts --access public --registry=https://registry.npmjs.org --provenance
       - name: Verify public registry identity and integrity
         env:
           EXPECTED_INTEGRITY: ${{ needs.verify.outputs.integrity }}
@@ -148,6 +154,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ needs.verify.outputs.tag }}
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'

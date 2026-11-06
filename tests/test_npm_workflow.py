@@ -1,8 +1,11 @@
 """Exercise the public smoke job's publication gate without publishing."""
 import ast
+import json
 import os
 from pathlib import Path
 import re
+import shlex
+import shutil
 import subprocess
 import tempfile
 import textwrap
@@ -14,6 +17,83 @@ WORKFLOW = ROOT / '.github/workflows/publish-npm.yml'
 
 
 class PublicSmokeWorkflowTests(unittest.TestCase):
+    def test_publish_arguments_resolve_to_the_local_tarball_in_real_npm(self):
+        commands = re.findall(r'\bnpm publish [^\n]+', WORKFLOW.read_text())
+        self.assertEqual(len(commands), 2)
+        npm_cli = str(Path(shutil.which('npm')).resolve())
+        script = """
+const {createRequire} = require('node:module');
+const resolve = createRequire(process.argv[1])('npm-package-arg');
+const spec = resolve(process.argv[2]);
+console.log(JSON.stringify({type: spec.type, path: spec.fetchSpec}));
+"""
+        with tempfile.TemporaryDirectory(prefix='npm publish argument ') as tmp:
+            artifact = Path(tmp) / 'dist/package.tgz'
+            artifact.parent.mkdir()
+            artifact.write_bytes(b'argument resolution fixture')
+            for command in commands:
+                with self.subTest(command=command):
+                    argument = shlex.split(command)[2]
+                    result = subprocess.run(['node', '-e', script, npm_cli, argument],
+                                            cwd=tmp, text=True, capture_output=True, timeout=10)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    resolved = json.loads(result.stdout)
+                    self.assertEqual(resolved['type'], 'file', 'npm must not interpret the artifact as a Git dependency')
+                    self.assertEqual(Path(resolved['path']).resolve(), artifact.resolve())
+
+    def test_existing_release_input_selects_source_and_serializes_the_same_version(self):
+        workflow = WORKFLOW.read_text()
+        preflight = (ROOT / '.github/workflows/npm-preflight.yml').read_text()
+        self.assertIn('release_tag: ${{ inputs.release_tag }}', workflow)
+        self.assertIn('${{ inputs.release_tag || github.ref_name }}', workflow)
+        self.assertIn('ref: ${{ inputs.release_tag || github.ref }}', preflight)
+        self.assertEqual(preflight.count('RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}'), 2)
+
+    def test_release_guard_allows_main_or_matching_tag_and_rejects_other_contexts(self):
+        preflight = (ROOT / '.github/workflows/npm-preflight.yml').read_text()
+        match = re.search(r'(?ms)^      - name: Require a published stable tag.*?^        run: \|\n((?:          [^\n]*\n)+)', preflight)
+        self.assertIsNotNone(match)
+        script = textwrap.dedent(match.group(1))
+        sha = 'a' * 40
+        cases = [
+            ('refs/heads/main', 'v4.5.0', 'poferraz/make-prompt-better', sha, 0, True),
+            ('refs/tags/v4.5.0', 'v4.5.0', 'poferraz/make-prompt-better', sha, 0, True),
+            ('refs/heads/main', 'main', 'poferraz/make-prompt-better', sha, 0, False),
+            ('refs/heads/main', '', 'poferraz/make-prompt-better', sha, 0, False),
+            ('refs/heads/topic', 'v4.5.0', 'poferraz/make-prompt-better', sha, 0, False),
+            ('refs/tags/v4.5.1', 'v4.5.0', 'poferraz/make-prompt-better', sha, 0, False),
+            ('refs/heads/main', 'v4.5.0', 'fork/make-prompt-better', sha, 0, False),
+            ('refs/heads/main', 'v4.5.0', 'poferraz/make-prompt-better', 'b' * 40, 0, False),
+            ('refs/heads/main', 'v4.5.0', 'poferraz/make-prompt-better', sha, 1, False),
+            ('refs/heads/main', 'v4.5.0; touch bad', 'poferraz/make-prompt-better', sha, 0, False),
+        ]
+        for ref, tag, repository, tag_commit, ancestry, expected in cases:
+            with self.subTest(ref=ref, tag=tag, repository=repository, tag_commit=tag_commit, ancestry=ancestry), tempfile.TemporaryDirectory(prefix='npm release guard ') as tmp:
+                root = Path(tmp)
+                commands = {
+                    'git': '#!/bin/sh\ncase "$*" in\n"rev-parse HEAD") printf "%s\\n" "$TEST_HEAD" ;;\nrev-parse*) printf "%s\\n" "$TEST_TAG_COMMIT" ;;\nmerge-base*) exit "$TEST_ANCESTRY_EXIT" ;;\n*) exit 2 ;;\nesac\n',
+                    'gh': '#!/bin/sh\nprintf "{}\\n"\n',
+                    'python3': '#!/bin/sh\nprintf "%s\\n" "$*" >> "$VERIFY_CALLS"\n',
+                }
+                for name, content in commands.items():
+                    path = root / name
+                    path.write_text(content)
+                    path.chmod(0o755)
+                calls = root / 'verification-calls'
+                env = dict(os.environ, PATH=str(root) + os.pathsep + os.environ['PATH'],
+                           GITHUB_REF=ref, GITHUB_REF_TYPE='tag' if ref.startswith('refs/tags/') else 'branch',
+                           GITHUB_REPOSITORY=repository, RELEASE_TAG=tag, RUNNER_TEMP=tmp,
+                           TEST_HEAD=sha, TEST_TAG_COMMIT=tag_commit, TEST_ANCESTRY_EXIT=str(ancestry),
+                           VERIFY_CALLS=str(calls))
+                result = subprocess.run(['bash', '-e', '-o', 'pipefail', '-c', script], env=env,
+                                        cwd=root, text=True, capture_output=True, timeout=10)
+                self.assertEqual(result.returncode == 0, expected, result.stderr)
+                if expected:
+                    self.assertIn(f'scripts/npm_release.py release --tag {tag} --commit {sha}', calls.read_text())
+                    self.assertIn(f'scripts/npm_release.py registry --tag {tag}', calls.read_text())
+                else:
+                    self.assertFalse(calls.exists(), 'Invalid context must stop before release or registry verification')
+
     def test_publisher_requires_preflight_with_release_evidence_enabled(self):
         workflow = WORKFLOW.read_text()
         verify = re.search(r'(?ms)^  verify:\n(.*?)(?=^  [\w-]+:\n|\Z)', workflow).group(1)
@@ -112,6 +192,7 @@ class PublicSmokeWorkflowTests(unittest.TestCase):
 
     def test_step_passes_verified_tag_and_integrity_as_literal_arguments(self):
         job = self.job()
+        self.assertIn('ref: ${{ needs.verify.outputs.tag }}', job)
         self.assertIn('RELEASE_TAG: ${{ needs.verify.outputs.tag }}', job)
         self.assertIn('EXPECTED_INTEGRITY: ${{ needs.verify.outputs.integrity }}', job)
         match = re.search(r'(?ms)^      - name: Verify public installation\n.*?^        run: \|\n((?:          [^\n]*\n)+)', job)
