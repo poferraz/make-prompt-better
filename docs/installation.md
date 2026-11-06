@@ -1,6 +1,6 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). Its source-install commands pin v4.5.0 so an installation is repeatable once that GitHub release is published. Until then, the existing v4.4.0 tag remains available.
+For a first installation, start with the [quickstart](quickstart.md). Its source-install commands pin v4.5.0 so an installation is repeatable. The existing v4.4.0 tag remains available for earlier installations.
 
 ## Distribution status
 
@@ -8,7 +8,7 @@ The GitHub source route is supported. Public npm availability and installation r
 
 ## Node CLI
 
-These commands require Node.js 22+ and Bash. They are available in the v4.5.0 source candidate; the earlier v4.4.0 release does not include all of them. Run these examples from a checkout or installed package that contains them:
+These commands require Node.js 22+ and Bash. They are available in the v4.5.0 source release; the earlier v4.4.0 release does not include all of them. Run these examples from a checkout or installed package that contains them:
 
 ```bash
 node bin/cli.mjs install --runtime codex --global --dry-run
@@ -55,7 +55,7 @@ The cleanup covers direct children of the selected discovery roots. It does not 
 
 ## Update
 
-Choose a published version from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. To select v4.5.0 after its release is published, run these commands from your checkout:
+Choose a published version from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. To select v4.5.0, run these commands from your checkout:
 
 ```bash
 git status --short

@@ -10,6 +10,7 @@ repository-code: "https://github.com/poferraz/make-prompt-better"
 url: "https://github.com/poferraz/make-prompt-better"
 license: MIT
 version: 4.5.0
+date-released: "2026-11-06"
 keywords:
   - prompt-engineering
   - context-engineering

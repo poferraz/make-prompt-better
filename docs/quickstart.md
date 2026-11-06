@@ -6,7 +6,7 @@ You can [try the starter in the README](../README.md#try-it-without-installing) 
 
 Use the source route below to install without a publisher token. For other distribution routes and their verification status, see the [distribution guide](npm-publishing.md).
 
-The commands target v4.5.0 after its [GitHub release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) is published. If that release is not available yet, use the existing v4.4.0 tag instead. A prepared version is not evidence of a published release or a verified npm installation.
+The commands select [v4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) for a repeatable source installation. A GitHub release does not publish an npm package; public npm installation remains unverified.
 
 Choose one route and one scope. A user installation works across your projects; a project installation belongs to one repository. Installing both can produce two entries in a host that loads both scopes.
 
