@@ -16,7 +16,71 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / '.github/workflows/publish-npm.yml'
 
 
+def evaluate_condition(expression, context):
+    """Evaluate only the boolean/comparison subset used by these job gates."""
+    source = expression.replace('&&', ' and ').replace('||', ' or ').replace('always()', 'True')
+    for key, value in context.items():
+        source = source.replace(key, repr(value))
+    def visit(node):
+        if isinstance(node, ast.Constant):
+            return node.value
+        if isinstance(node, ast.BoolOp):
+            values = [visit(value) for value in node.values]
+            return all(values) if isinstance(node.op, ast.And) else any(values)
+        if isinstance(node, ast.Compare) and len(node.ops) == 1 and isinstance(node.ops[0], ast.Eq):
+            return visit(node.left) == visit(node.comparators[0])
+        raise AssertionError(f'Unsupported workflow condition: {ast.dump(node)}')
+    return visit(ast.parse(source, mode='eval').body)
+
+
 class PublicSmokeWorkflowTests(unittest.TestCase):
+    def test_public_verification_reuses_release_evidence_without_a_publish(self):
+        workflow = WORKFLOW.read_text()
+        preflight = (ROOT / '.github/workflows/npm-preflight.yml').read_text()
+        self.assertIn('options: [preflight, check-token, publish, verify-public]', workflow)
+        self.assertIn("verify_public: ${{ github.event_name == 'workflow_dispatch' && inputs.operation == 'verify-public' }}", workflow)
+        self.assertIn('if: inputs.publishing || inputs.verify_public', preflight)
+        self.assertIn('REQUIRE_RELEASE: ${{ inputs.publishing || inputs.verify_public }}', preflight)
+        self.assertIn('if [[ "$REQUIRE_RELEASE" == \'true\' ]]; then [[ "$tag" == "$RELEASE_TAG" ]] || exit 1; fi', preflight)
+        publisher = re.search(r'(?ms)^  publish:\n(.*?)(?=^  [\w-]+:\n|\Z)', workflow).group(1)
+        self.assertNotIn('Verify public registry', publisher)
+
+    def test_registry_readback_retries_only_missing_versions_and_bounds_waiting(self):
+        job = self.job()
+        match = re.search(r"(?ms)^      - name: Verify public registry identity and integrity\n.*?node --input-type=module <<'JS'\n(.*?)^          JS$", job)
+        self.assertIsNotNone(match)
+        script = textwrap.dedent(match.group(1))
+        valid = {'name': 'make-prompt-better', 'version': '4.5.0', 'dist': {'integrity': 'sha512-reviewed'}}
+        cases = [
+            ([404, 404, 200], valid, True, 3),
+            ([200], valid, True, 1),
+            ([404] * 20, valid, False, 20),
+            ([403, 200], valid, False, 1),
+            ([500, 200], valid, False, 1),
+            ([200], dict(valid, name='wrong-package'), False, 1),
+            ([200], dict(valid, version='4.4.0'), False, 1),
+            ([200], dict(valid, dist={'integrity': 'sha512-unreviewed'}), False, 1),
+        ]
+        for statuses, data, expected, calls in cases:
+            with self.subTest(statuses=statuses, data=data):
+                fixture = f"""
+const statuses = {json.dumps(statuses)};
+const body = {json.dumps(data)};
+let calls = 0;
+globalThis.setTimeout = (resolve) => resolve();
+globalThis.fetch = async (url, options) => {{
+  if (url !== 'https://registry.npmjs.org/make-prompt-better/4.5.0' || options.headers) throw new Error('Unexpected registry request');
+  const status = statuses[calls++];
+  console.log('FETCH_CALL');
+  return {{ok: status === 200, status, json: async () => body}};
+}};
+"""
+                result = subprocess.run(['node', '--input-type=module', '-e', fixture + script],
+                                        env=dict(os.environ, RELEASE_TAG='v4.5.0', EXPECTED_INTEGRITY='sha512-reviewed'),
+                                        text=True, capture_output=True, timeout=10)
+                self.assertEqual(result.returncode == 0, expected, result.stderr)
+                self.assertEqual(result.stdout.count('FETCH_CALL'), calls)
+
     def test_publish_arguments_resolve_to_the_local_tarball_in_real_npm(self):
         commands = re.findall(r'\bnpm publish [^\n]+', WORKFLOW.read_text())
         self.assertEqual(len(commands), 2)
@@ -67,7 +131,7 @@ console.log(JSON.stringify({type: spec.type, path: spec.fetchSpec}));
             ('refs/heads/main', 'v4.5.0', 'poferraz/make-prompt-better', sha, 1, False),
             ('refs/heads/main', 'v4.5.0; touch bad', 'poferraz/make-prompt-better', sha, 0, False),
         ]
-        for ref, tag, repository, tag_commit, ancestry, expected in cases:
+        for ref, tag, repository, tag_commit, ancestry, expected, publishing in [(*case, mode) for case in cases for mode in ('true', 'false')]:
             with self.subTest(ref=ref, tag=tag, repository=repository, tag_commit=tag_commit, ancestry=ancestry), tempfile.TemporaryDirectory(prefix='npm release guard ') as tmp:
                 root = Path(tmp)
                 commands = {
@@ -84,13 +148,13 @@ console.log(JSON.stringify({type: spec.type, path: spec.fetchSpec}));
                            GITHUB_REF=ref, GITHUB_REF_TYPE='tag' if ref.startswith('refs/tags/') else 'branch',
                            GITHUB_REPOSITORY=repository, RELEASE_TAG=tag, RUNNER_TEMP=tmp,
                            TEST_HEAD=sha, TEST_TAG_COMMIT=tag_commit, TEST_ANCESTRY_EXIT=str(ancestry),
-                           VERIFY_CALLS=str(calls))
+                           VERIFY_CALLS=str(calls), PUBLISHING=publishing)
                 result = subprocess.run(['bash', '-e', '-o', 'pipefail', '-c', script], env=env,
                                         cwd=root, text=True, capture_output=True, timeout=10)
                 self.assertEqual(result.returncode == 0, expected, result.stderr)
                 if expected:
                     self.assertIn(f'scripts/npm_release.py release --tag {tag} --commit {sha}', calls.read_text())
-                    self.assertIn(f'scripts/npm_release.py registry --tag {tag}', calls.read_text())
+                    self.assertEqual(f'scripts/npm_release.py registry --tag {tag}' in calls.read_text(), publishing == 'true')
                 else:
                     self.assertFalse(calls.exists(), 'Invalid context must stop before release or registry verification')
 
@@ -161,33 +225,28 @@ console.log(JSON.stringify({type: spec.type, path: spec.fetchSpec}));
         self.assertIsNotNone(match, 'A separate public installation verification job is required')
         return match.group(1)
 
-    def test_job_is_gated_by_explicit_publish_and_successful_dependencies(self):
+    def test_job_requires_successful_release_verification_and_valid_operation(self):
         job = self.job()
         self.assertRegex(job, r'(?m)^    needs: \[verify, publish\]$')
         condition = re.search(r'(?m)^    if: (.+)$', job)
         self.assertIsNotNone(condition)
-        def eligible(event, operation, repository, successful):
+        def eligible(event, operation, repository, verify, publish):
             context = {'github.event_name': event, 'inputs.operation': operation,
-                       'github.repository': repository}
-            clauses = condition.group(1).split(' && ')
-            self.assertEqual(len(clauses), 3)
-            matches = []
-            for clause in clauses:
-                left, right = clause.split(' == ', 1)
-                self.assertIn(left, context)
-                matches.append(context[left] == ast.literal_eval(right))
-            return successful and all(matches)
-        self.assertTrue(eligible('workflow_dispatch', 'publish', 'poferraz/make-prompt-better', True))
-        for event, operation, repository, successful in [
-            ('push', 'publish', 'poferraz/make-prompt-better', True),
-            ('workflow_dispatch', 'preflight', 'poferraz/make-prompt-better', True),
-            ('workflow_dispatch', 'check-token', 'poferraz/make-prompt-better', True),
-            ('workflow_dispatch', 'publish', 'fork/make-prompt-better', True),
-            ('workflow_dispatch', 'publish', 'poferraz/make-prompt-better', False),
-        ]:
-            with self.subTest(event=event, operation=operation, repository=repository, successful=successful):
-                self.assertFalse(eligible(event, operation, repository, successful))
-        self.assertNotRegex(job, r'secrets\.|NODE_AUTH_TOKEN|id-token:\s*write')
+                       'github.repository': repository, 'needs.verify.result': verify,
+                       'needs.publish.result': publish}
+            return evaluate_condition(condition.group(1), context)
+        self.assertIn('always()', condition.group(1), 'Read-only recovery must run after its publish dependency is skipped')
+        for event in ('workflow_dispatch', 'push'):
+            for operation in ('publish', 'verify-public', 'preflight', 'check-token'):
+                for repository in ('poferraz/make-prompt-better', 'fork/make-prompt-better'):
+                    for verify in ('success', 'failure', 'skipped', 'cancelled'):
+                        for publish in ('success', 'failure', 'skipped', 'cancelled'):
+                            expected = (event == 'workflow_dispatch' and repository == 'poferraz/make-prompt-better'
+                                        and verify == 'success' and ((operation == 'publish' and publish == 'success')
+                                        or (operation == 'verify-public' and publish == 'skipped')))
+                            self.assertEqual(eligible(event, operation, repository, verify, publish), expected,
+                                             (event, operation, repository, verify, publish))
+        self.assertNotRegex(job, r'secrets\.|NODE_AUTH_TOKEN|id-token:\s*write|npm publish|environment:')
         self.assertIn('persist-credentials: false', job)
 
     def test_step_passes_verified_tag_and_integrity_as_literal_arguments(self):

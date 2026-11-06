@@ -5,9 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Release operations
+- Resolve npm archive paths explicitly and allow the verified main workflow to publish an existing immutable source tag.
+- Separate publication from public read-back, tolerate bounded npm processing delays, and add credential-free `verify-public` recovery with regression tests.
+- Document public npm 4.5.0 installation only after its unauthenticated installation, update, uninstall, and recovery test passed on macOS on 2026-11-06. See [distribution evidence](docs/npm-publishing.md).
+
 ## [4.5.0] - 2026-11-06
 
-This GitHub source release does not publish an npm package. npm publication requires separate authorization, and public npm installation remains unverified. The existing `v4.4.0` tag remains unchanged.
+At GitHub source release time, npm publication awaited separate authorization and public installation was unverified. Later on 2026-11-06, npm 4.5.0 was published with authorization and passed the public installation test; see [dated evidence](docs/evidence/2026-11-06/v4.5.0-npm-verification.json). Both existing release tags and the published package remain unchanged. The entries below describe the original source release.
 
 ### Added
 - Add `install`, `check`, `update`, and `uninstall` CLI commands with terminal prompts for host and scope. Preserve `init` and existing installer flags, copy and symlink modes, and recovery behavior. Noninteractive checking, updating, and uninstalling require an explicit host and scope.

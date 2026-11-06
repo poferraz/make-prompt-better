@@ -4,9 +4,7 @@ You can [try the starter in the README](../README.md#try-it-without-installing) 
 
 ## Install the full skill
 
-Use the source route below to install without a publisher token. For other distribution routes and their verification status, see the [distribution guide](npm-publishing.md).
-
-The commands select [v4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) for a repeatable source installation. A GitHub release does not publish an npm package; public npm installation remains unverified.
+The commands pin [v4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0), available from GitHub and npm. Public npm installation passed on macOS on 2026-11-06. Neither route needs a publisher token. See the [distribution evidence](npm-publishing.md).
 
 Choose one route and one scope. A user installation works across your projects; a project installation belongs to one repository. Installing both can produce two entries in a host that loads both scopes.
 
@@ -22,7 +20,18 @@ Check passed. Selected installations match this checkout; no duplicate entries i
 
 This confirms files in the selected locations. Next, open the skill picker and confirm that the host can actually load the skill. A filesystem check alone cannot establish that.
 
-### With a terminal
+### With npm
+
+You need Node.js 22+ and Bash. Run:
+
+```bash
+npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.0 check --runtime codex --global --copy
+```
+
+Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. These commands install for your user account. For one project, run them inside that project and replace `--global` with `--project`. Choose one scope. `--yes` accepts npm's execution prompt; copy mode keeps the skill after the npm cache is cleared. [Update, uninstall, and recovery](installation.md).
+
+### From source
 
 A terminal is the app where you run the commands below. Git downloads the repository. Bash runs its installer. On Windows, use a WSL terminal; native PowerShell installation is untested.
 

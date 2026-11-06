@@ -1,10 +1,37 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). Its source-install commands pin v4.5.0 so an installation is repeatable. The existing v4.4.0 tag remains available for earlier installations.
+For a first installation, start with the [quickstart](quickstart.md). Its npm and source commands pin v4.5.0 so an installation is repeatable. The existing v4.4.0 tag remains unchanged and available for earlier source installations.
 
 ## Distribution status
 
-The GitHub source route is supported. Public npm availability and installation require separate verification for each release; consult the [maintainer runbook](npm-publishing.md) for the recorded status and registry checks. An npm installation requires Node and Bash and does not activate the skill by itself. Public consumers do not need a publisher token.
+GitHub source and public npm version 4.5.0 are available. The unauthenticated public package lifecycle passed on macOS on 2026-11-06; see the [evidence and limits](npm-publishing.md). An npm installation requires Node.js 22+ and Bash and does not activate the skill by itself. Public consumers do not need a publisher token.
+
+## Install from npm
+
+```bash
+npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.0 check --runtime codex --global --copy
+```
+
+Choose your host and one scope. For a project, run from that project's directory and replace `--global` with `--project`. Add `--dry-run` to preview installation. Copy mode prevents the skill from depending on the npm cache. `--yes` accepts npm's execution prompt for this pinned package.
+
+To reinstall or update the selected copy, select the desired published package version and run:
+
+```bash
+npx --yes make-prompt-better@4.5.0 update --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.0 check --runtime codex --global --copy
+```
+
+`update` uses that selected package's files. For a future release, replace `4.5.0` in both commands with the desired published version. `npm update` alone does not refresh a copied skill. Existing edits are preserved in [recovery storage](#recovery).
+
+To remove the selected installation:
+
+```bash
+npx --yes make-prompt-better@4.5.0 uninstall --runtime codex --global --dry-run
+npx --yes make-prompt-better@4.5.0 uninstall --runtime codex --global
+```
+
+Use the same host and scope as your installation. Uninstall preserves recovery copies and does not clear npm's cache.
 
 ## Node CLI
 

@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: 'preflight never uses npm credentials; check-token only authenticates; publish writes to npm'
+        description: 'preflight and verify-public use no npm credentials; check-token authenticates; publish writes to npm'
         type: choice
-        options: [preflight, check-token, publish]
+        options: [preflight, check-token, publish, verify-public]
         default: preflight
         required: true
       auth_mode:
@@ -16,7 +16,7 @@ on:
         default: oidc
         required: true
       release_tag:
-        description: 'Existing stable release tag; required when publishing from main'
+        description: 'Existing stable release tag; required for publish or verify-public from main'
         type: string
         default: ''
         required: false
@@ -41,6 +41,7 @@ jobs:
       actions: read
     with:
       publishing: ${{ github.event_name == 'workflow_dispatch' && inputs.operation == 'publish' }}
+      verify_public: ${{ github.event_name == 'workflow_dispatch' && inputs.operation == 'verify-public' }}
       release_tag: ${{ inputs.release_tag }}
 
   token-check:
@@ -129,22 +130,9 @@ jobs:
         run: |
           test -n "$NODE_AUTH_TOKEN"
           npm publish ./dist/package.tgz --ignore-scripts --access public --registry=https://registry.npmjs.org --provenance
-      - name: Verify public registry identity and integrity
-        env:
-          EXPECTED_INTEGRITY: ${{ needs.verify.outputs.integrity }}
-          RELEASE_TAG: ${{ needs.verify.outputs.tag }}
-        run: |
-          node --input-type=module <<'JS'
-          const version = process.env.RELEASE_TAG.slice(1);
-          const response = await fetch(`https://registry.npmjs.org/make-prompt-better/${version}`, {redirect: 'error', signal: AbortSignal.timeout(30000)});
-          if (!response.ok) throw new Error(`Registry read-back failed: ${response.status}`);
-          const data = await response.json();
-          if (data.name !== 'make-prompt-better' || data.version !== version || data.dist?.integrity !== process.env.EXPECTED_INTEGRITY) throw new Error('Registry artifact mismatch');
-          console.log(`Public registry identity and integrity verified for ${version}.`);
-          JS
 
   public-install-smoke:
-    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'publish' && github.repository == 'poferraz/make-prompt-better'
+    if: always() && github.event_name == 'workflow_dispatch' && github.repository == 'poferraz/make-prompt-better' && needs.verify.result == 'success' && ((inputs.operation == 'publish' && needs.publish.result == 'success') || (inputs.operation == 'verify-public' && needs.publish.result == 'skipped'))
     needs: [verify, publish]
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -162,6 +150,27 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: Verify public registry identity and integrity
+        env:
+          EXPECTED_INTEGRITY: ${{ needs.verify.outputs.integrity }}
+          RELEASE_TAG: ${{ needs.verify.outputs.tag }}
+        run: |
+          node --input-type=module <<'JS'
+          const version = process.env.RELEASE_TAG.slice(1);
+          for (let attempt = 1; attempt <= 20; attempt++) {
+            const response = await fetch(`https://registry.npmjs.org/make-prompt-better/${version}`, {redirect: 'error', signal: AbortSignal.timeout(30000)});
+            if (response.status === 404 && attempt < 20) {
+              console.log(`npm is still processing ${version}; retrying public lookup (${attempt}/20).`);
+              await new Promise(resolve => setTimeout(resolve, 15000));
+              continue;
+            }
+            if (!response.ok) throw new Error(`Registry read-back failed: ${response.status}. Use verify-public to retry verification; do not publish again.`);
+            const data = await response.json();
+            if (data.name !== 'make-prompt-better' || data.version !== version || data.dist?.integrity !== process.env.EXPECTED_INTEGRITY) throw new Error('Registry artifact mismatch');
+            console.log(`Public registry identity and integrity verified for ${version}.`);
+            break;
+          }
+          JS
       - name: Verify public installation
         env:
           RELEASE_TAG: ${{ needs.verify.outputs.tag }}

@@ -41,7 +41,7 @@ This starter demonstrates the approach. Install the full skill for its task rout
 
 ## Install in your agent
 
-The source commands below select [v4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) for a repeatable installation. GitHub source releases and npm packages are published separately. Public npm installation remains unverified; see the [distribution guide](docs/npm-publishing.md).
+Version [4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) is available from GitHub and npm. Its unauthenticated public installation passed on macOS on 2026-11-06, including update, uninstall, and recovery. See the [verification evidence and limits](docs/npm-publishing.md).
 
 ### Let your coding agent help
 
@@ -60,7 +60,16 @@ Your host may request permission to write its skill directory. [First-time setup
 
 ### Prefer the terminal?
 
-You need Git and Bash on macOS or Linux, or in WSL on Windows. From a folder where you keep projects:
+With Node.js 22+ and Bash, install a copy for your user account:
+
+```bash
+npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.0 check --runtime codex --global --copy
+```
+
+Replace `codex` with `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. For one project, run the commands in that project and replace `--global` with `--project`. Choose one scope. Public installation needs no token. `--yes` accepts npm's package execution prompt; `--copy` keeps the installed skill independent of the npm cache.
+
+For the source route, you need Git and Bash on macOS or Linux. From a folder where you keep projects:
 
 ```bash
 git clone --branch v4.5.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
@@ -72,16 +81,7 @@ cd make-prompt-better
 
 The first installer command previews the changes. Replace `codex` with `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. The commands above install for your user account; for a project installation, choose `--project` as described in the [installation guide](docs/installation.md#choose-a-scope-and-host). The source installer needs neither Node nor Python.
 
-The [installation guide](docs/installation.md#node-cli) also describes the Node CLI. Available commands can differ by version; run `node bin/cli.mjs --help` from your checkout to see its options.
-
-If you already have a package installed in your project's `node_modules` and its help lists `install` and `check`, activate and verify the skill from that project:
-
-```bash
-./node_modules/.bin/make-prompt-better install --runtime codex --project --copy
-./node_modules/.bin/make-prompt-better check --runtime codex --project --copy
-```
-
-Replace `codex` with your host. If the executable is on your `PATH`, use `make-prompt-better --help` to check the available commands. Installing the package and activating the skill are separate steps.
+Installing the npm package alone does not activate the skill; the explicit `install` command does. See the [CLI guide](docs/installation.md#node-cli) for checking, updating, and uninstalling. Windows users need WSL; WSL and native PowerShell installation have not been verified by these public tests.
 
 Codex uses `~/.agents/skills/make-prompt-better` for user scope and `.agents/skills/make-prompt-better` in the selected project. The installer removes older entries from the selected skill folders and keeps recovery copies outside them. Check your host's picker after installation; if Codex still shows old entries, restart it. [Update, uninstall, and recovery](docs/installation.md) · [Host compatibility](docs/compatibility.md)
 
@@ -142,7 +142,7 @@ The source is MIT licensed. The installer and linters need no API key. Your AI h
 <details>
 <summary><strong>Can I install with npm or npx?</strong></summary>
 
-Use the source commands above to install without a publisher token. See the [distribution status](docs/npm-publishing.md) for the latest recorded registry status and any verified installation guidance. Installing an npm package alone does not activate the skill in your agent; activation is a separate step.
+Yes. The pinned `npx` commands above install and check version 4.5.0 without a token. Installing an npm package alone does not activate the skill in your agent; run its explicit `install` command. See the [distribution evidence](docs/npm-publishing.md) for the tested scope.
 
 </details>
 
