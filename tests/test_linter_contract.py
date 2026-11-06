@@ -13,6 +13,25 @@ class LinterContractTests(unittest.TestCase):
     def run_command(self, *args, **kwargs):
         return subprocess.run(args, text=True, capture_output=True, timeout=30, **kwargs)
 
+    def test_standalone_javascript_linter_runs_from_special_character_path(self):
+        with tempfile.TemporaryDirectory(prefix="linter space # % ") as tmp:
+            root = Path(tmp)
+            script = root / "lint-prompt.mjs"
+            shutil.copy2(ROOT / "scripts/lint-prompt.mjs", script)
+            prompt = root / "prompt.md"
+            prompt.write_text("You are a world-class expert. Do not hallucinate.")
+            for entry, cwd in [(str(script), None), ("lint-prompt.mjs", root)]:
+                with self.subTest(entry=entry):
+                    self_test = self.run_command("node", entry, "--self-test", cwd=cwd)
+                    self.assertEqual(self_test.returncode, 0, self_test.stderr)
+                    self.assertIn("self-test verified", self_test.stdout)
+                    invalid = self.run_command("node", entry, "--unknown", cwd=cwd)
+                    self.assertNotEqual(invalid.returncode, 0)
+                    self.assertIn("Unknown lint option", invalid.stderr)
+                    finding = self.run_command("node", entry, "--fail-on-findings", str(prompt), cwd=cwd)
+                    self.assertEqual(finding.returncode, 1)
+                    self.assertIn("Score:", finding.stdout)
+
     def test_legitimate_deadline_and_answer_order_are_not_instructed_away(self):
         with tempfile.TemporaryDirectory() as tmp:
             prompt = Path(tmp) / "prompt.md"

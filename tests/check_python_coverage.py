@@ -11,6 +11,8 @@ FLOORS = {
     'research/benchmark/v4/summarize_runs.py': 75,
     'scripts/check-release.py': 98,
     'scripts/npm_release.py': 80,
+    'scripts/public_npm_smoke.py': 75,
+    'scripts/validate_repo.py': 90,
 }
 report = json.load(open(sys.argv[1], encoding='utf-8'))['files']
 failed = False

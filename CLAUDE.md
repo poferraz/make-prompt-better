@@ -67,5 +67,6 @@ When incorporating a new paper:
 ## Mandatory Verification Gate
 
 Before completing any modification to this repository:
+- Run `npm run verify` from the source checkout for structural checks, release metadata, linters, Bash syntax, benchmark tests, and installer/package integration. CI's required `validate` check also waits for the Linux/macOS regression matrix and artifact preflight.
 - Run `python3 lint_context.py --self-test && python3 lint_context.py CLAUDE.md AGENTS.md` and `node scripts/lint-prompt.mjs --self-test && node scripts/lint-prompt.mjs CLAUDE.md AGENTS.md`.
 - Run `./install.sh` to synchronize `make-prompt-better/SKILL.md` across all local coding agent directories and confirm exit code 0.

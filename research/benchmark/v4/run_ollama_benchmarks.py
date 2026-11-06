@@ -55,6 +55,27 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_ROOT = REPO_ROOT / "research" / "benchmark" / "v4" / "runs"
 DEFAULT_MAX_RETRIES = 5
 DEFAULT_MAX_RESPONSE_BYTES = 8 * 1024 * 1024
+# The audited predecessor saved judge output before validating it.
+PRE_FIX_RUNNER_SHA256 = "79d5ea515b51233080ef7be05ee431c3a3ff837117682c1e80e075969018b635"
+
+
+def migration_code_is_approved(manifest: dict, *, rejudge: bool = False) -> bool:
+    try:
+        approved = json.loads(Path(__file__).with_name("checkpoint-migration-hashes.json").read_text())
+        return (manifest["runner_sha256"] == approved["runner_sha256"] and
+                (not rejudge or manifest["code_sha256"] == approved["rejudge_sha256"]))
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+
+
+def has_invalid_judge_response(stages: dict) -> bool:
+    for name in ("judge_1", "judge_2"):
+        if name in stages:
+            try:
+                parse_scores(stages[name]["response"]["content"])
+            except (ValueError, KeyError, TypeError):
+                return True
+    return False
 
 DEFAULT_CLOUD_MODELS = [
     "glm-5.3:cloud",
@@ -595,7 +616,15 @@ def _run_model_benchmark(
             raise FileExistsError(f"Refusing to overwrite existing results: {metrics_path}; choose a new run")
         metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
         if metrics.get("manifest") != manifest:
-            raise ValueError(f"Experiment manifest missing or mismatched: {metrics_path}; choose a new run")
+            previous = metrics.get("manifest")
+            expected_old = dict(manifest, runner_sha256=PRE_FIX_RUNNER_SHA256)
+            damaged = any(has_invalid_judge_response(stages) for stages in metrics.get("in_progress", {}).values())
+            if previous != expected_old or not damaged or not migration_code_is_approved(manifest):
+                raise ValueError(f"Experiment manifest missing or mismatched: {metrics_path}; choose a new run")
+            metrics.setdefault("previous_manifests", []).append(previous)
+            metrics.setdefault("manifest_migrations", []).append("Migrated audited pre-fix runner to retry invalid judge output")
+            metrics["manifest"] = manifest
+            atomic_write(metrics_path, json.dumps(metrics, indent=2))
     else:
         if out_dir.exists() and any(out_dir.iterdir()):
             raise FileExistsError(f"Refusing to overwrite nonempty result directory: {out_dir}")
@@ -640,16 +669,36 @@ def _run_model_benchmark(
         try:
             stages = metrics["in_progress"].setdefault(str(tid), {})
 
-            def stage_call(name: str, stage_model: str, messages: list[dict[str, str]]) -> dict[str, Any]:
+            def stage_call(name: str, stage_model: str, messages: list[dict[str, str]],
+                           validate_judge: bool = False) -> dict[str, Any]:
                 request = {"model": stage_model, "messages": messages, "seed": seed}
                 if name in stages:
                     if stages[name]["request"] != request:
                         raise ValueError(f"Saved stage request differs: test {tid}, {name}")
-                    return stages[name]["response"]
+                    if not validate_judge:
+                        return stages[name]["response"]
+                    try:
+                        parse_scores(stages[name]["response"]["content"])
+                    except (ValueError, KeyError, TypeError) as exc:
+                        failed = stages.pop(name)
+                        failed["error"] = str(exc)
+                        stages.setdefault("failed_judge_attempts", {}).setdefault(name, []).append(failed)
+                        atomic_write(metrics_path, json.dumps(metrics, indent=2))
+                    else:
+                        return stages[name]["response"]
                 result = call_ollama_chat(model=stage_model, messages=messages, host=host,
                                           timeout=timeout, seed=seed)
                 stages[name] = {"request": request, "response": result}
                 atomic_write(metrics_path, json.dumps(metrics, indent=2))
+                if validate_judge:
+                    try:
+                        parse_scores(result["content"])
+                    except (ValueError, KeyError, TypeError) as exc:
+                        failed = stages.pop(name)
+                        failed["error"] = str(exc)
+                        stages.setdefault("failed_judge_attempts", {}).setdefault(name, []).append(failed)
+                        atomic_write(metrics_path, json.dumps(metrics, indent=2))
+                        raise
                 return result
 
             # Step A: Baseline Response (isolated context)
@@ -717,7 +766,7 @@ def _run_model_benchmark(
                 eval_instruction_p1 = build_blind_eval_instruction(
                     tc, resp_a_p1, resp_b_p1, strip_markers=strip_cert_markers
                 )
-                eval_res = stage_call("judge_1", effective_judge, [{"role": "user", "content": eval_instruction_p1}])
+                eval_res = stage_call("judge_1", effective_judge, [{"role": "user", "content": eval_instruction_p1}], validate_judge=True)
                 parsed_p1 = unblind_parsed_scores(parse_scores(eval_res["content"]), mapping_p1)
 
                 if swap_positions:
@@ -725,7 +774,7 @@ def _run_model_benchmark(
                     eval_instruction_p2 = build_blind_eval_instruction(
                         tc, resp_b_p1, resp_a_p1, strip_markers=strip_cert_markers
                     )
-                    eval_res_p2 = stage_call("judge_2", effective_judge, [{"role": "user", "content": eval_instruction_p2}])
+                    eval_res_p2 = stage_call("judge_2", effective_judge, [{"role": "user", "content": eval_instruction_p2}], validate_judge=True)
                     parsed_p2 = unblind_parsed_scores(parse_scores(eval_res_p2["content"]), mapping_p2)
                     parsed = merge_position_swapped_scores(parsed_p1, parsed_p2)
                 else:
@@ -750,7 +799,7 @@ def _run_model_benchmark(
                     "| Traceability  | X        | Y         | +Z    |\n"
                     "| TOTAL         | XX/25    | YY/25     | +ZZ   |\n"
                 )
-                eval_res = stage_call("judge_1", effective_judge, [{"role": "user", "content": eval_instruction}])
+                eval_res = stage_call("judge_1", effective_judge, [{"role": "user", "content": eval_instruction}], validate_judge=True)
                 parsed = parse_scores(eval_res["content"])
 
             b_tokens = max(base_res.get("eval_count", 0) or base_res["words"], 1)

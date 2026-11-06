@@ -39,6 +39,7 @@ try:
         TEST_CASES,
         DEFAULT_MAX_RETRIES,
         atomic_write,
+        migration_code_is_approved,
         call_ollama_chat,
         parse_scores,
         validate_host,
@@ -58,6 +59,7 @@ except ImportError:
         TEST_CASES,
         DEFAULT_MAX_RETRIES,
         atomic_write,
+        migration_code_is_approved,
         call_ollama_chat,
         parse_scores,
         validate_host,
@@ -254,8 +256,25 @@ def main(argv: list[str] | None = None) -> int:
         if output.exists():
             state = json.loads(output.read_text(encoding="utf-8"))
             if state.get("manifest") != manifest:
-                print("Error: rejudge manifest mismatch; choose a new output", file=sys.stderr)
-                return 1
+                previous = state.get("manifest")
+                expected_old = dict(manifest,
+                                    runner_sha256="79d5ea515b51233080ef7be05ee431c3a3ff837117682c1e80e075969018b635",
+                                    code_sha256="9e0ea1aa46922f92f2c85204df45c8ab81fc32e75f7e34ad01c684679275bcea")
+                def invalid_pass(entry):
+                    try:
+                        parse_scores(entry["response"]["content"])
+                    except (ValueError, KeyError, TypeError):
+                        return True
+                    return False
+                damaged = any(invalid_pass(entry) for pair in state.get("pairs", {}).values()
+                              for entry in pair.get("passes", []))
+                if previous != expected_old or not damaged or not migration_code_is_approved(manifest, rejudge=True):
+                    print("Error: rejudge manifest mismatch; choose a new output", file=sys.stderr)
+                    return 1
+                state.setdefault("previous_manifests", []).append(previous)
+                state.setdefault("manifest_migrations", []).append("Migrated audited pre-fix rejudge to retry invalid judge output")
+                state["manifest"] = manifest
+                atomic_write(output, json.dumps(state, indent=2))
         else:
             state = {"manifest": manifest, "pairs": {}}
             atomic_write(output, json.dumps(state, indent=2))
@@ -272,10 +291,26 @@ def main(argv: list[str] | None = None) -> int:
                     result = saved["passes"][index]
                     if result["prompt"] != prompt or result["mapping"] != mapping:
                         raise ValueError(f"Saved judge request differs for {key}")
-                    return result["response"]
+                    try:
+                        parse_scores(result["response"]["content"])
+                    except (ValueError, KeyError, TypeError) as exc:
+                        failed = saved["passes"].pop(index)
+                        failed.update({"index": index, "error": str(exc)})
+                        saved.setdefault("failed_passes", []).append(failed)
+                        atomic_write(output, json.dumps(state, indent=2))
+                    else:
+                        return result["response"]
                 result = call_ollama_chat(model=args.judge_model, messages=[{"role": "user", "content": prompt}], host=args.host, seed=args.seed)
                 saved["passes"].append({"prompt": prompt, "mapping": mapping, "response": result})
                 atomic_write(output, json.dumps(state, indent=2))
+                try:
+                    parse_scores(result["content"])
+                except (ValueError, KeyError, TypeError) as exc:
+                    failed = saved["passes"].pop(index)
+                    failed.update({"index": index, "error": str(exc)})
+                    saved.setdefault("failed_passes", []).append(failed)
+                    atomic_write(output, json.dumps(state, indent=2))
+                    raise
                 return result
 
             try:

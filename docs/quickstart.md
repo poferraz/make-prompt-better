@@ -4,7 +4,7 @@ You can [try the starter in the README](../README.md#try-it-without-installing) 
 
 ## Install the full skill
 
-Use the source route below. npm setup is being completed, but registry installation has not been verified. You do not need a publisher token to install the skill.
+Use the source route below to install without a publisher token. For other distribution routes and their verification status, see the [distribution guide](npm-publishing.md).
 
 Choose one route and one scope. A user installation works across your projects; a project installation belongs to one repository. Installing both can produce two entries in a host that loads both scopes.
 
@@ -32,7 +32,9 @@ cd make-prompt-better
 ./install.sh --runtime codex --check
 ```
 
-The first install command previews changes. Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. You do not need Node or Python for installation. [Full installation guide](installation.md).
+The first installer command previews changes. Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. These commands install for your user account. For a single project, follow the [project installation instructions](installation.md#choose-a-scope-and-host). You do not need Node or Python for the source installer.
+
+The [Node CLI guide](installation.md#node-cli) describes commands available in checkouts and packages that include them. Commands vary by version; run `node bin/cli.mjs --help` from your checkout to see its options.
 
 ## Invoke it
 

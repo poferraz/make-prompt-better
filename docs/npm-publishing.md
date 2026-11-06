@@ -1,15 +1,15 @@
 # npm publishing setup and runbook
 
-Status checked on 2026-11-06. The GitHub v4.4.0 release is published and source installation is supported. The environment and secret are now configured; automation added after v4.4.0 is on main and needs a subsequent version tag before it can publish. The existing release tag is unchanged.
+Status recorded on 2026-11-06; this is a historical snapshot, not a live registry check. At that time, the GitHub v4.4.0 release was published and source installation was supported. The environment and secret had been configured; automation added after v4.4.0 was on main and needed a subsequent version tag before it could publish. The existing release tag was unchanged.
 
-| Area | Verified state or remaining requirement |
+| Area | Observation or requirement at the time |
 | --- | --- |
 | GitHub environment | `npm-publish`, reviewer `poferraz`, version tags `v*`, and protected `main` for the read-only token check |
 | Secret | `NPM_TOKEN` is present; its update timestamp changed to `2026-11-06T19:25:28Z`. The value was not read. Presence is not authentication or publishing proof. |
 | Authentication | [Live check passed](https://github.com/poferraz/make-prompt-better/actions/runs/42280955141) using the replacement secret. The publish job was skipped; no package was published. |
 | Automation | `.github/workflows/publish-npm.yml` separates preflight, authentication-only checking, and explicit publishing |
 | Registry | Public lookup returned 404. Ownership, name availability, first publication, and registry installation remain unverified. |
-| Current install route | The pinned GitHub source instructions in the README |
+| Source install route | The pinned GitHub source instructions in the README |
 
 [Configuration observation](evidence/2026-11-06/npm-setup.json) records metadata only. Current run results are in [npm workflow runs](https://github.com/poferraz/make-prompt-better/actions/workflows/publish-npm.yml).
 
@@ -58,11 +58,11 @@ Create that configuration when the workflow is ready: npm currently requires its
 From a full source checkout, not an installed npm package, local checks are:
 
 ```bash
-npm test
+npm run verify
 python3 -m unittest discover -s tests -p test_npm_release.py -v
 ```
 
-The workflow runs credential-free package checks on relevant pushes and pull requests. To run them manually on main:
+The required `validate` workflow calls `npm-preflight.yml` on every main push and PR, alongside source validation and the regression/coverage matrix. `publish-npm.yml` remains manual and calls the same preflight. Neither preflight path receives npm credentials. To run preflight manually on main:
 
 ```bash
 gh workflow run publish-npm.yml --ref main -f operation=preflight -f auth_mode=oidc --repo poferraz/make-prompt-better
@@ -93,7 +93,7 @@ For actual publication, first create a new stable version that includes this wor
 gh workflow run publish-npm.yml --ref vX.Y.Z -f operation=publish -f auth_mode=bootstrap-token --repo poferraz/make-prompt-better
 ```
 
-After OIDC is configured, use `-f auth_mode=oidc` instead. There is no automatic npm publish on a GitHub release or normal push. The job checks a stable tag, main ancestry, published GitHub release, exact-commit validation, unused registry version, package identity, executable modes, file boundaries, lifecycle hooks, credential patterns, and archive size. It installs and exercises the actual tarball in temporary directories, then uploads that artifact. The publishing job downloads the same run's artifact, checks its integrity, waits for environment review, and publishes with lifecycle scripts disabled. A final public lookup checks the registry identity and integrity. OIDC and bootstrap publishing request provenance; its actual registry attestation must be inspected after publication.
+After OIDC is configured, use `-f auth_mode=oidc` instead. There is no automatic npm publish on a GitHub release or normal push. The job checks a stable tag, main ancestry, published GitHub release, exact-commit validation, unused registry version, package identity, executable modes, file boundaries, lifecycle hooks, credential patterns, and archive size. Exact-commit validation now includes source, the Linux/macOS coverage and mutation matrix, and package preflight. The guard reads all workflow-run pages and rejects incomplete evidence or a non-successful latest run/attempt. It installs and exercises the actual tarball in temporary directories, then uploads that artifact. The publishing job downloads the same run's artifact, checks its integrity, waits for environment review, and publishes with lifecycle scripts disabled. A final public lookup checks registry identity and integrity, followed by the separate unauthenticated installation smoke. OIDC and bootstrap publishing request provenance; its actual registry attestation must be inspected after publication.
 
 The workflow's read-only metadata token is separate from `NPM_TOKEN`. npm credentials are unavailable to pull-request tests, source validation, and packaging. If publication succeeds but read-back fails, inspect the registry before retrying; the version may already be immutable. Revoke the replaced token after the new credential check succeeds, and retire the temporary publishing token after OIDC works.
 
@@ -137,6 +137,9 @@ Effort estimates are hands-on engineering time, excluding account approvals and 
 
 - **Owner / effort:** maintainer; 1 to 2 hours. **Dependency:** successful publication.
 - **Files:** `tests/test_integration.py` or a new manual registry-smoke script, `docs/compatibility.md`, `docs/claims.md`, release evidence under `docs/evidence/`.
+- **Read-only public smoke:** after publication, run `python3 scripts/public_npm_smoke.py --tag vX.Y.Z --integrity 'sha512-REVIEWED_BASE64_DIGEST'`, replacing both placeholders with the stable tag and the SHA-512 integrity from the previously reviewed release artifact. The digest must come from that independent artifact, not solely from the registry response being checked. The command does not publish or use a token.
+- **What it checks:** from empty isolated homes, npm configs and caches, download the exact public package with lifecycle scripts disabled; inspect its archive and compare its digest with the supplied trusted value. Install the exact public registry version into a separate temporary prefix with lifecycle scripts disabled, compare every installed package file against that verified archive, check the npm executable link, and exercise project installation, checking, update, backup restoration and uninstall. It does not prove host discovery or model behavior. Failed lookups, network errors, identity mismatches and integrity mismatches stop the test before package code executes.
+- **Availability:** on 2026-11-06, anonymous public registry lookups still returned 404. Until an authorized publication exists, this public smoke cannot pass; the local registry fixture and tarball checks remain separate evidence.
 - **Commands:** `npm view make-prompt-better@PUBLISHED_VERSION version dist.integrity dist.attestations --json`, followed by the proposed commands below in a temporary home and a disposable project. Substitute the actually published version if it differs.
 - **Positive tests:** unauthenticated download with an empty user npm config/cache; `--version`; clean install; repeat; six-copy migration; fresh Codex discovery; update from a previously published package when one exists; uninstall and manual recovery. Record macOS and Linux separately, and WSL only when actually tested.
 - **Negative tests:** nonexistent version fails without modifying skills; unavailable network fails without replacing the active skill; unknown options fail; an edited skill makes `--check` fail. Do not declare native Windows support from Linux tests.
@@ -160,9 +163,9 @@ Effort estimates are hands-on engineering time, excluding account approvals and 
 - **Steps and tests:** design each separately. A future update command must show the chosen version, preserve edits, and fail safely offline; a Windows route needs native host discovery and recovery tests; social material must only advertise the verified public command. Require positive and negative tests before expanding support claims.
 - **Acceptance / rollback:** independently documented host/version evidence and a working source fallback; remove an experimental route if its checks fail. No adoption, efficacy, or universal safety claim follows from publishing.
 
-## Proposed customer commands, not yet available on npm
+## Customer command template
 
-Do not use these until registry verification passes. Replace `PUBLISHED_VERSION` with the version actually published and tested:
+These commands are a template for a release that has passed registry verification. Replace `PUBLISHED_VERSION` with the version actually published and tested:
 
 ```bash
 npx --yes make-prompt-better@PUBLISHED_VERSION --version
@@ -172,7 +175,9 @@ npx --yes make-prompt-better@PUBLISHED_VERSION init --runtime codex --check
 
 `--yes` accepts npm's package-execution prompt, so use only after verifying the package identity. Explicit `--copy` avoids linking a skill into an evictable npx cache. A later update selects the desired package version and runs `init` again. Use one scope. For uninstall, run that version's `init --runtime codex --uninstall`; recovery remains in the installer's documented backup location.
 
-## Unverified until the rollout is performed
+## Verification gaps recorded on 2026-11-06
+
+At that status check, these items had not been verified. Consult later release evidence for any changes.
 
 - Package name availability/ownership, effective token write scope/expiry, and publishing permission. Authentication succeeded in the linked run; that observation is not a guarantee of future validity.
 - First npm publication, public download, OIDC identity binding, registry provenance, and an npm-to-npm upgrade.

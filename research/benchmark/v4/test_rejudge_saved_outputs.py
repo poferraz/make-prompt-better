@@ -8,6 +8,53 @@ import rejudge_saved_outputs as rejudge
 
 
 class SavedPairsTests(unittest.TestCase):
+    def test_malformed_second_pass_is_retained_and_retried_on_resume(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model = root / 'model'
+            model.mkdir()
+            (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
+                '1': {'raw_prompt': 'task', 'baseline': {'content': 'base'}, 'optimized_response': {'content': 'opt'}}
+            }}))
+            rows = '\n'.join(f'| {name} | 3 | 5 |' for name in
+                             ['Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'])
+            output = root / 'rejudge.json'
+            args = ['--results-dir', tmp, '--output', str(output), '--swap-positions']
+            with mock.patch.object(rejudge, 'call_ollama_chat', side_effect=[{'content': rows}, {'content': 'bad score'}]):
+                self.assertNotEqual(rejudge.main(args), 0)
+            state = json.loads(output.read_text())
+            before = state['pairs']['model:1']
+            valid_first = before['passes'][0]
+            self.assertEqual(before['failed_passes'][0]['response']['content'], 'bad score')
+            old = before.pop('failed_passes')[0]
+            old.pop('index')
+            old.pop('error')
+            before['passes'].append(old)
+            old_manifest = dict(state['manifest'],
+                                runner_sha256='79d5ea515b51233080ef7be05ee431c3a3ff837117682c1e80e075969018b635',
+                                code_sha256='9e0ea1aa46922f92f2c85204df45c8ab81fc32e75f7e34ad01c684679275bcea')
+            state['manifest'] = old_manifest
+            output.write_text(json.dumps(state))
+            with mock.patch.object(rejudge, 'call_ollama_chat', side_effect=AssertionError('network used')):
+                self.assertNotEqual(rejudge.main(args + ['--seed', '18']), 0)
+            self.assertEqual(json.loads(output.read_text())['manifest'], old_manifest)
+            read_bytes = Path.read_bytes
+            def altered_source(path):
+                data = read_bytes(path)
+                return data + b'changed' if path == Path(rejudge.__file__) else data
+            with mock.patch.object(Path, 'read_bytes', altered_source), \
+                 mock.patch.object(rejudge, 'call_ollama_chat', side_effect=AssertionError('network used')):
+                self.assertNotEqual(rejudge.main(args), 0)
+            self.assertEqual(json.loads(output.read_text())['manifest'], old_manifest)
+            with mock.patch.object(rejudge, 'call_ollama_chat', return_value={'content': rows}) as chat:
+                self.assertEqual(rejudge.main(args), 0)
+            self.assertEqual(chat.call_count, 1)
+            state = json.loads(output.read_text())
+            self.assertIn(old_manifest, state['previous_manifests'])
+            after = state['pairs']['model:1']
+            self.assertEqual(after['passes'][0], valid_first)
+            self.assertEqual(after['failed_passes'][0]['response']['content'], 'bad score')
+
     def test_empty_live_rejudge_is_not_reported_as_success(self):
         with tempfile.TemporaryDirectory() as tmp:
             self.assertNotEqual(rejudge.main(['--results-dir', tmp, '--output', str(Path(tmp) / 'out.json')]), 0)

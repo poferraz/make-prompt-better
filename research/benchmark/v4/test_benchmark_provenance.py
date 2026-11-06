@@ -23,6 +23,49 @@ def response(content):
 
 
 class ProvenanceTests(unittest.TestCase):
+    def test_malformed_second_judge_pass_is_preserved_and_retried_on_resume(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = iter(map(response, ['baseline', 'prompt', 'answer', SCORES, 'bad score']))
+            with mock.patch.object(runner, 'RESULTS_ROOT', root), \
+                 mock.patch.object(runner, 'call_ollama_chat', side_effect=lambda **kw: next(first)):
+                self.assertFalse(runner.run_model_benchmark('model', 'skill', [1], resume=False, swap_positions=True))
+            path = root / 'model/metrics.json'
+            state = json.loads(path.read_text())
+            before = state['in_progress']['1']
+            valid_first = before['judge_1']
+            self.assertEqual(before['failed_judge_attempts']['judge_2'][0]['response']['content'], 'bad score')
+            # Emulate the audited pre-fix checkpoint, which cached invalid judge output.
+            old = before['failed_judge_attempts'].pop('judge_2')[0]
+            old.pop('error')
+            before['judge_2'] = old
+            old_manifest = dict(state['manifest'], runner_sha256='79d5ea515b51233080ef7be05ee431c3a3ff837117682c1e80e075969018b635')
+            state['manifest'] = old_manifest
+            path.write_text(json.dumps(state))
+            with mock.patch.object(runner, 'RESULTS_ROOT', root), \
+                 mock.patch.object(runner, 'call_ollama_chat', side_effect=AssertionError('network used')):
+                with self.assertRaisesRegex(ValueError, 'manifest'):
+                    runner.run_model_benchmark('model', 'changed skill', [1], resume=True, swap_positions=True)
+            self.assertEqual(json.loads(path.read_text())['manifest'], old_manifest)
+            build = runner.build_manifest
+            def altered_runner(*args, **kwargs):
+                return dict(build(*args, **kwargs), runner_sha256='f' * 64)
+            with mock.patch.object(runner, 'RESULTS_ROOT', root), \
+                 mock.patch.object(runner, 'build_manifest', side_effect=altered_runner), \
+                 mock.patch.object(runner, 'call_ollama_chat', side_effect=AssertionError('network used')):
+                with self.assertRaisesRegex(ValueError, 'manifest'):
+                    runner.run_model_benchmark('model', 'skill', [1], resume=True, swap_positions=True)
+            self.assertEqual(json.loads(path.read_text())['manifest'], old_manifest)
+            with mock.patch.object(runner, 'RESULTS_ROOT', root), \
+                 mock.patch.object(runner, 'call_ollama_chat', side_effect=[response(SCORES), response('report')]) as chat:
+                self.assertTrue(runner.run_model_benchmark('model', 'skill', [1], resume=True, swap_positions=True))
+            self.assertEqual(chat.call_count, 2)  # second judge and final synthesis only
+            state = json.loads(path.read_text())
+            self.assertIn(old_manifest, state['previous_manifests'])
+            after = state['in_progress']['1']
+            self.assertEqual(after['judge_1'], valid_first)
+            self.assertEqual(after['failed_judge_attempts']['judge_2'][0]['response']['content'], 'bad score')
+
     def test_dry_run_estimates_calls_without_creating_results_or_using_network(self):
         with tempfile.TemporaryDirectory() as tmp:
             result_root = Path(tmp) / "runs"

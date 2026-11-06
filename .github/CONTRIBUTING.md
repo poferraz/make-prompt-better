@@ -79,7 +79,9 @@ Preserve requested deliverables and decision-relevant constraints such as deadli
 
 ## Local Verification
 
-Run `npm test`, `npm run lint`, `python3 scripts/check-release.py`, and `bash -n install.sh`. Before declaring changes complete, run the exact validation command in [AGENTS.md](../AGENTS.md) and `./install.sh`. The latter syncs your local agent installations. For a preview, use `./install.sh --dry-run`.
+From a full source checkout, run `npm run verify` for structural validation, release metadata, lint, Bash syntax, benchmark tests, and installer/package integration. `npm run verify:fast` is a shorter feedback loop, not release approval. Before declaring changes complete, run the exact validation command in [AGENTS.md](../AGENTS.md) and `./install.sh`. The latter syncs your local agent installations; use an isolated temporary home for testing-only work. For a preview, use `./install.sh --dry-run`.
+
+Every PR to main must pass `validate`, which waits for source verification, the complete Linux/macOS regression and coverage matrix, and npm artifact preflight. Failures, skipped jobs and cancellations block that check. There are no path filters, so documentation changes receive the same gate. A successful local run does not establish hosted CI or public npm installation.
 
 Packaging or workflow changes also require `python3 -m unittest discover -s tests -p test_npm_release.py -v`. Keep preflight credential-free, lifecycle hooks disabled, and public registry claims tied to observed publication. The protected `npm-publish` environment and its secret are maintainer infrastructure; contributors should not add their own token to tests. [Publishing runbook](../docs/npm-publishing.md).
 

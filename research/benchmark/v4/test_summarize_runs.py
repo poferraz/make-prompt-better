@@ -26,6 +26,20 @@ def record(model, skill, delta):
 
 
 class RunSummaryTests(unittest.TestCase):
+    def test_migrated_run_is_not_grouped_with_unmigrated_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, migrated in [('one', False), ('two', True)]:
+                folder = root / name
+                folder.mkdir()
+                data = record(name, 'same-skill', 1)
+                if migrated:
+                    data['previous_manifests'] = [dict(data['manifest'], runner_sha256='old-runner')]
+                (folder / 'metrics.json').write_text(json.dumps(data))
+            groups = summarizer.summarize(root)['groups']
+            self.assertEqual(len(groups), 2)
+            self.assertTrue(any(g['protocol'].get('previous_runner_sha256') == ['old-runner'] for g in groups))
+
     def test_incompatible_skills_are_kept_in_separate_groups(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -47,13 +47,27 @@ def validate_release(tag, commit, release, runs):
     require(release.get('tag_name') == tag and release.get('draft') is False
             and release.get('prerelease') is False and release.get('published_at'),
             'A published stable GitHub release for this tag is required')
-    matching = [run for run in runs.get('workflow_runs', [])
+    # gh --paginate --slurp supplies pages. Keep single-page fixtures compatible.
+    pages = runs if isinstance(runs, list) else [runs]
+    require(pages and all(isinstance(page, dict) and isinstance(page.get('workflow_runs'), list)
+                          for page in pages), 'Malformed workflow-run evidence')
+    all_runs = [run for page in pages for run in page['workflow_runs']]
+    require(all(isinstance(run, dict) and type(run.get('id')) is int and run['id'] > 0
+                and type(run.get('run_attempt', 1)) is int and run.get('run_attempt', 1) > 0
+                for run in all_runs), 'Invalid workflow-run identity or attempt')
+    count = len({run['id'] for run in all_runs})
+    require(all(type(page.get('total_count', count)) is int
+                and 0 <= page.get('total_count', count) <= count for page in pages),
+            'Incomplete workflow-run evidence; retrieve every page')
+    matching = [run for run in all_runs
                 if run.get('path') == '.github/workflows/validate-skill.yml'
                 and run.get('head_sha') == commit and run.get('event') == 'push'
                 and run.get('head_branch') == 'main']
     require(matching, 'No exact-commit main validation run found')
-    latest = max(matching, key=lambda run: run['id'])
-    require(latest.get('status') == 'completed' and latest.get('conclusion') == 'success',
+    identity = lambda run: (run['id'], run.get('run_attempt', 1))
+    newest = max(map(identity, matching))
+    latest = [run for run in matching if identity(run) == newest]
+    require(all(run.get('status') == 'completed' and run.get('conclusion') == 'success' for run in latest),
             'Latest exact-commit main validation must succeed')
     return version
 
@@ -161,8 +175,12 @@ def smoke_archive(archive, tag):
         target = project / '.agents/skills' / NAME
         def init(*args, expected=0):
             return run('node', str(cli), 'init', '--project', '--runtime', 'codex', '--copy', *args, expected=expected)
+        def lifecycle(command, *args, expected=0):
+            return run('node', str(cli), command, '--project', '--runtime', 'codex', '--copy', *args, expected=expected)
         init('--check', expected=1)
-        init()
+        lifecycle('install')
+        lifecycle('install')
+        lifecycle('check')
         init()
         init('--check')
         for root in ('.agents/skills', '.codex/skills'):
@@ -171,8 +189,10 @@ def smoke_archive(archive, tag):
                 old.mkdir(parents=True, exist_ok=True)
                 (old / 'SKILL.md').write_text('---\nname: make-prompt-better\ndescription: "Legacy fixture"\n---\n')
                 (old / 'keep.txt').write_text(root + suffix)
-        init('--check', expected=1)
-        init()
+        lifecycle('check', expected=1)
+        update_output = lifecycle('update')
+        require(metadata['version'] in update_output and 'no version is fetched' in update_output,
+                'Update must report its source version and no-fetch behavior')
         init('--check')
         backups = list((project / '.make-prompt-better/backups').glob('*/payload/keep.txt'))
         require(len(backups) == 6 and len({p.read_text() for p in backups}) == 6, 'Legacy payloads were not preserved')
@@ -181,17 +201,20 @@ def smoke_archive(archive, tag):
         init('--unknown', expected=1)
         current = (target / 'SKILL.md').read_bytes()
         (target / 'SKILL.md').write_bytes(current + b'\nLocal edit\n')
-        init('--check', expected=1)
-        init()
+        lifecycle('check', expected=1)
+        lifecycle('update')
         require(any((p / 'SKILL.md').read_bytes().endswith(b'Local edit\n')
                     for p in (project / '.make-prompt-better/backups').glob('*/payload')), 'Local edit lost')
         moved = base / 'moved-package'
         installed.rename(moved)
         cli = moved / 'bin/cli.mjs'
         require(not target.is_symlink() and (target / 'SKILL.md').read_bytes() == current, 'Copy depends on package/cache location')
-        init('--check')
-        init('--uninstall')
+        lifecycle('check')
+        lifecycle('uninstall')
         require(not target.exists(), 'Uninstall left an active copy')
+        init()
+        init('--uninstall')
+        require(not target.exists(), 'Legacy uninstall left an active copy')
         require(not (user_dir / '.agents').exists(), 'Project install changed user skills')
     return {'package_smoke': 'passed', 'host_discovery': 'not tested by filesystem smoke'}
 

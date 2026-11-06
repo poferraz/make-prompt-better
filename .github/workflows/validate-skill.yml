@@ -10,12 +10,16 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: validate-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  validate:
+  source:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -34,115 +38,35 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Check release metadata
-        run: python3 scripts/check-release.py
+      - name: Verify source and integration behavior
+        run: npm run verify
 
-      - name: Validate install.sh Syntax and Dry-Run
+  regression:
+    uses: ./.github/workflows/recurring-tests.yml
+
+  package:
+    uses: ./.github/workflows/npm-preflight.yml
+    permissions:
+      contents: read
+      actions: read
+
+  validate:
+    if: always()
+    needs: [source, regression, package]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require every release gate to succeed
+        env:
+          GATE_RESULTS: ${{ toJSON(needs) }}
         run: |
-          bash -n install.sh
-          ./install.sh --dry-run
-
-      - name: Validate Context Linter Self-Test and Repo Context Files
-        run: |
-          python3 lint_context.py --self-test
-          python3 lint_context.py CLAUDE.md AGENTS.md
-          node scripts/lint-prompt.mjs --self-test
-          node scripts/lint-prompt.mjs CLAUDE.md AGENTS.md
-
-      - name: Validate SKILL.md, Templates, Links, and Documentation Invariants
-        run: |
-          python3 - << 'EOF'
-          from pathlib import Path
-          import re
-          import sys
-
-          # 1. Progressive disclosure check (<500 lines)
-          skill_path = Path("make-prompt-better/SKILL.md")
-          skill_text = skill_path.read_text(encoding="utf-8")
-          strict_fm = re.match(r'^---\nname: make-prompt-better\ndescription: "(Use when [^\n:\"]+)"\n---\n', skill_text)
-          assert strict_fm and len(strict_fm.group(1)) < 450, "Frontmatter must match the agent contract"
-          skill_lines = skill_text.splitlines()
-          assert len(skill_lines) < 500, f"SKILL.md is {len(skill_lines)} lines (must be < 500)"
-          print(f"[PASS] SKILL.md line count: {len(skill_lines)} / 500")
-
-          # 2. Universal agentskills.io YAML frontmatter check
-          fm_match = re.match(r"^---\r?\n(.*?)\r?\n---", skill_text, re.S)
-          assert fm_match, "SKILL.md must begin with a valid YAML frontmatter block delimited by ---"
-          fm_block = fm_match.group(0)
-          fm_body = fm_match.group(1)
-          assert len(fm_block) <= 1024, f"Frontmatter is {len(fm_block)} chars (must be <= 1024)"
-
-          fields = {}
-          for line in fm_body.splitlines():
-              line = line.strip()
-              if not line or line.startswith("#"):
-                  continue
-              assert ":" in line, f"Invalid frontmatter line: {line}"
-              k, v = line.split(":", 1)
-              fields[k.strip()] = v.strip().strip('"').strip("'")
-
-          assert re.fullmatch(r"[a-z0-9-]+", fields.get("name", "")), (
-              f"Invalid skill name: {fields.get('name')!r}"
-          )
-          assert fields.get("description", "").startswith("Use when "), (
-              "Frontmatter description must start with 'Use when '"
-          )
-          print(f"[PASS] Universal frontmatter valid ({len(fm_block)} chars)")
-
-          # 3. Domain templates check (12 templates)
-          tmpl_path = Path("make-prompt-better/references/domain-templates.md")
-          tmpl_text = tmpl_path.read_text(encoding="utf-8")
-          headings = re.findall(r"^## \d+\. .+$", tmpl_text, re.M)
-          assert len(headings) == 12, f"Expected 12 domain templates, found {len(headings)}"
-          print(f"[PASS] Found all {len(headings)} domain templates")
-
-          # 4. No em/en dashes in core documentation
-          target_files = [
-              "make-prompt-better/SKILL.md",
-              "make-prompt-better/references/domain-templates.md",
-              "make-prompt-better/references/research-principles.md",
-              "make-prompt-better/references/examples.md",
-              "docs/methodology.md",
-              "docs/tradeoffs.md",
-              "docs/when-to-use.md",
-              "docs/task-classification.md",
-              "README.md",
-              "CLAUDE.md",
-              "AGENTS.md",
-              "research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md",
-          ]
-          for rel_path in target_files:
-              txt = Path(rel_path).read_text(encoding="utf-8")
-              bad = re.findall(r"[\u2014\u2013]", txt)
-              assert not bad, f"Found {len(bad)} em/en dash(es) in {rel_path}"
-          print("[PASS] Zero em/en dashes across all core files")
-
-          # 5. Relative local link integrity check (prevent 404 internal links)
-          link_pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
-          for rel_path in target_files:
-              src_file = Path(rel_path)
-              txt = src_file.read_text(encoding="utf-8")
-              # Strip fenced code blocks before scanning links
-              txt_no_code = re.sub(r"```.*?```", "", txt, flags=re.S)
-              for raw_target in link_pattern.findall(txt_no_code):
-                  target = raw_target.strip().split()[0]
-                  if target.startswith(("http://", "https://", "mailto:", "#")):
-                      continue
-                  file_part = target.split("#", 1)[0]
-                  if not file_part:
-                      continue
-                  resolved = (src_file.parent / file_part).resolve()
-                  repo_Wait = (Path.cwd() / file_part).resolve()
-                  assert resolved.exists() or repo_Wait.exists(), (
-                      f"Broken relative link in {rel_path}: {raw_target!r} -> file not found"
-                  )
-          print("[PASS] All relative links in core documentation resolve cleanly")
-          EOF
-
-      - name: Run CLI, installer, and package integration tests
-        run: python3 -m unittest discover -s tests -v
-
-      - name: Run Benchmark & Aggregation Unit Tests
-        run: |
-          python3 -m unittest discover -s research/benchmark/v4 -p "test_*.py" -v
-          python3 research/benchmark/v4/blind_stats_engine.py
+          python3 - <<'PYTHON'
+          import json, os, sys
+          results = json.loads(os.environ['GATE_RESULTS'])
+          expected = {'source', 'regression', 'package'}
+          failed = {name: results.get(name, {}).get('result', 'missing')
+                    for name in expected if results.get(name, {}).get('result') != 'success'}
+          if set(results) != expected or failed:
+              sys.exit(f'Release gates failed: {failed}; received {sorted(results)}')
+          print('All release gates passed: source, regression, package')
+          PYTHON

@@ -50,6 +50,8 @@
     "node": ">=22"
   },
   "scripts": {
+    "verify": "npm run verify:fast && npm test",
+    "verify:fast": "python3 scripts/validate_repo.py && python3 scripts/check-release.py && npm run lint && bash -n install.sh",
     "test": "python3 -m unittest discover -s research/benchmark/v4 -p 'test_*.py' -v && node scripts/lint-prompt.mjs --self-test && python3 research/benchmark/v4/blind_stats_engine.py && python3 -m unittest discover -s tests -v",
     "lint": "python3 lint_context.py --self-test && python3 lint_context.py CLAUDE.md AGENTS.md && node scripts/lint-prompt.mjs CLAUDE.md AGENTS.md"
   },
