@@ -29,5 +29,17 @@
     "Registry ownership and first publication unverified",
     "OIDC setup unverified",
     "Authentication outcomes are recorded in the protected Actions check, not inferred from this snapshot"
-  ]
+  ],
+  "authentication_check": {
+    "run_url": "https://github.com/poferraz/make-prompt-better/actions/runs/42280955141",
+    "run_id": 42280955141,
+    "commit": "5dfabc300b1957d9ab6c39efc9b42deb51902e29",
+    "job_id": 128109453251,
+    "operation": "check-token",
+    "conclusion": "success",
+    "secret_updated_at_before_and_after": "2026-11-06T19:25:28Z",
+    "publish_job": "skipped",
+    "token_value_logged": false,
+    "publishing_permission_proven": false
+  }
 }
