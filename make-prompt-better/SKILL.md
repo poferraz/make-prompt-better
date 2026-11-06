@@ -3,7 +3,7 @@ name: make-prompt-better
 description: "Use when improving or rewriting prompts, system instructions, AGENTS.md or CLAUDE.md files, or agent workflows while preserving requirements and choosing clear task-appropriate structure."
 ---
 
-# Make Prompt Better (v4.5.0)
+# Make Prompt Better (v4.5.1)
 
 ## Overview
 
@@ -216,7 +216,7 @@ Verify that every conclusion claim cites a `[T]` or `[V]` identifier and that al
 Unless the user requests only a prompt, creative artifact, or other specific format, present the output in three clean tiers. Apply the Step 0 short-return path when it is selected. Clearly distinguish a rewritten prompt from the downstream task's completed result (Zhang, Hu et al., 2026; Ugare & Chandra, 2026):
 1. **Compact 6-Line Compiler Receipt**:
    ```text
-   [COMPILER RECEIPT // make-prompt-better v4.5.0]
+   [COMPILER RECEIPT // make-prompt-better v4.5.1]
    [MODE]         : Mode <1|2|3|4> (<Max|Lite|LRM-Harness|Creative-v2>) | Template <#>: <Name>
    [PERSONA]      : <Omitted (Accuracy/LRM) | Minimal <=5w (Mixed) | Full (Alignment)> [PRISM]
    [PRESERVATION] : <Checked requirements | Missing inputs | Not checked> [ACE, GOAL-BLIND]

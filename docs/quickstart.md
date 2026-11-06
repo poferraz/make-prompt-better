@@ -4,13 +4,15 @@ You can [try the starter in the README](../README.md#try-it-without-installing) 
 
 ## Install the full skill
 
-The commands pin [v4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0), available from GitHub and npm. Public npm installation passed on macOS on 2026-11-06. Neither route needs a publisher token. See the [distribution evidence](npm-publishing.md).
+The guided installer is prepared for v4.5.1, which is not published yet. From this checkout, run `node bin/cli.mjs` in a terminal. After v4.5.1 is published and publicly verified, the same guide will start with:
+
+```bash
+npx make-prompt-better
+```
+
+You need Node.js 22+ and Bash. Choose your coding agent and whether the skill should be available in this project or across your user account. Enter a number or name; `q` cancels. The guide installs a copy, verifies it, and prints the next step. No publisher token is needed.
 
 Choose one route and one scope. A user installation works across your projects; a project installation belongs to one repository. Installing both can produce two entries in a host that loads both scopes.
-
-### With help from your coding agent
-
-Copy the [installation request](../README.md#let-your-coding-agent-help) into the agent where you want the skill. It should identify the host, inspect the installer, install the appropriate target, and show its check result. This route requires an agent with repository and terminal access; a text-only chat can use the starter instead.
 
 A successful filesystem check says:
 
@@ -20,9 +22,9 @@ Check passed. Selected installations match this checkout; no duplicate entries i
 
 This confirms files in the selected locations. Next, open the skill picker and confirm that the host can actually load the skill. A filesystem check alone cannot establish that.
 
-### With npm
+### Install the published version now
 
-You need Node.js 22+ and Bash. Run:
+Public npm 4.5.0 has passed installation checks. Its bare command shows help, so use:
 
 ```bash
 npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
@@ -35,8 +37,10 @@ Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or 
 
 A terminal is the app where you run the commands below. Git downloads the repository. Bash runs its installer. On Windows, use a WSL terminal; native PowerShell installation is untested.
 
+After the [v4.5.1 source release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.1) exists, run the commands below. For a published source release today, substitute `v4.5.0`.
+
 ```bash
-git clone --branch v4.5.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
+git clone --branch v4.5.1 --depth 1 https://github.com/poferraz/make-prompt-better.git
 cd make-prompt-better
 ./install.sh --runtime codex --dry-run
 ./install.sh --runtime codex

@@ -1,12 +1,16 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). Its npm and source commands pin v4.5.0 so an installation is repeatable. The existing v4.4.0 tag remains unchanged and available for earlier source installations.
+For a first installation, start with the [quickstart](quickstart.md). This checkout prepares v4.5.1; the published version remains v4.5.0. Both existing release tags remain unchanged.
 
 ## Distribution status
 
 GitHub source and public npm version 4.5.0 are available. The unauthenticated public package lifecycle passed on macOS on 2026-11-06; see the [evidence and limits](npm-publishing.md). An npm installation requires Node.js 22+ and Bash and does not activate the skill by itself. Public consumers do not need a publisher token.
 
 ## Install from npm
+
+The two-choice guided installer is prepared for v4.5.1. After publication and public verification, run `npx make-prompt-better` in a terminal, choose your agent and scope, and wait for the automatic file check. To try it now from this source checkout, run `node bin/cli.mjs`. It installs a copy, accepts numbers or names, and allows `q` to cancel before installation. With redirected input or output it shows help and changes no skill files.
+
+For the published 4.5.0 package today, use:
 
 ```bash
 npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
@@ -35,7 +39,7 @@ Use the same host and scope as your installation. Uninstall preserves recovery c
 
 ## Node CLI
 
-These commands require Node.js 22+ and Bash. They are available in the v4.5.0 source release; the earlier v4.4.0 release does not include all of them. Run these examples from a checkout or installed package that contains them:
+These commands require Node.js 22+ and Bash. The named commands remain compatible with v4.5.0. v4.5.1 adds bare interactive installation and verification; it is currently unpublished. Run these examples from this checkout:
 
 ```bash
 node bin/cli.mjs install --runtime codex --global --dry-run
@@ -48,7 +52,7 @@ node bin/cli.mjs uninstall --runtime codex --global
 
 Replace `codex` and `--global` with your chosen host and scope. To target a project, run the CLI by its absolute path from that project's directory and use `--project`. `init` and the direct `install.sh` commands remain supported. The CLI delegates to the same installer, so the backup, conflict, and recovery rules below still apply.
 
-On a terminal, the new commands can prompt for a host and scope. For noninteractive `check`, `update`, and `uninstall` commands, pass both `--runtime` and either `--global` or `--project`, as shown above. Existing noninteractive `install` and `init` defaults remain available for compatibility; explicit options are recommended in scripts.
+In a terminal, named commands can prompt for a host and scope. Only the bare guided flow automatically checks after installation; explicit commands retain their existing behavior. For noninteractive `check`, `update`, and `uninstall`, pass both `--runtime` and either `--global` or `--project`, as shown above. Existing noninteractive `install` and `init` defaults remain available for compatibility; explicit options are recommended in scripts. `--help` and `--version` do not install anything.
 
 `update` uses the skill files in the checkout or package running the command; it does not download a new version. Select the source version first using the [update instructions](#update), then run `update` for the same host and scope. Copy mode is the default: if you installed with `--symlink`, pass `--symlink` again to `update` and `check`. Otherwise, an update backs up the existing link and replaces it with a copy. `check` compares the selected installation against that source; it does not test host discovery or model behavior.
 
@@ -82,17 +86,17 @@ The cleanup covers direct children of the selected discovery roots. It does not 
 
 ## Update
 
-Choose a published version from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. To select v4.5.0, run these commands from your checkout:
+Choose a published version from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. Once v4.5.1 is released, select it with these commands. Until then, use the published `v4.5.0` tag instead:
 
 ```bash
 git status --short
-git fetch --depth 1 origin tag v4.5.0
-git switch --detach v4.5.0
+git fetch --depth 1 origin tag v4.5.1
+git switch --detach v4.5.1
 ./install.sh --runtime codex
 ./install.sh --runtime codex --check
 ```
 
-For a later release, replace `v4.5.0` in both Git commands with that release's tag. A detached checkout is expected when selecting a tag; `git pull` is not the update path for that checkout. If Git reports a conflict, preserve your local changes and resolve it before updating the installation. A copy install uses a stable snapshot until you run the installer again. `--symlink` is optional for maintainers who want local edits to take effect immediately; it requires keeping the checkout at the same location. Use the same mode when checking a symlink installation: `./install.sh --runtime codex --symlink --check`.
+For a different release, replace `v4.5.1` in both Git commands with its published tag. A detached checkout is expected when selecting a tag; `git pull` is not the update path for that checkout. If Git reports a conflict, preserve your local changes and resolve it before updating the installation. A copy install uses a stable snapshot until you run the installer again. `--symlink` is optional for maintainers who want local edits to take effect immediately; it requires keeping the checkout at the same location. Use the same mode when checking a symlink installation: `./install.sh --runtime codex --symlink --check`.
 
 ## Check or uninstall
 
@@ -127,6 +131,7 @@ In checkouts containing the Cursor rule path fix, generated rules identify refer
 
 | What you see | What to do |
 | --- | --- |
+| Bare command shows help | Check `--version`. Published 4.5.0 needs `install`. The prepared 4.5.1 guide needs an interactive terminal for both input and output; in automation, use explicit commands with runtime and scope. |
 | Several entries in Codex | Run the current Codex installer and `--check`. Restart Codex if its picker is stale. Check for a separate project, admin, or plugin copy if it persists. |
 | No skill in the picker | Confirm the target exists, restart the host, and check its discovery instructions. Filesystem placement alone does not prove the host loaded it. |
 | `Missing or different from this checkout` | Confirm you are checking the intended checkout, runtime, scope, and copy/symlink mode. Reinstall if this source is the version you want. |
