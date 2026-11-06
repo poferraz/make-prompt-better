@@ -7,6 +7,10 @@ on:
         description: 'Require published-tag and exact-commit CI evidence before preparing a publish artifact'
         type: boolean
         default: false
+      release_tag:
+        description: 'Existing source release tag when the publishing workflow runs from main'
+        type: string
+        default: ''
     outputs:
       tag:
         value: ${{ jobs.verify.outputs.tag }}
@@ -39,6 +43,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          ref: ${{ inputs.release_tag || github.ref }}
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
@@ -50,15 +55,15 @@ jobs:
         if: inputs.publishing
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$GITHUB_REPOSITORY" == 'poferraz/make-prompt-better' ]]
-          [[ "$GITHUB_REF_TYPE" == 'tag' ]]
-          [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          [[ "$GITHUB_REPOSITORY" == 'poferraz/make-prompt-better' ]] || exit 1
+          [[ "$GITHUB_REF" == 'refs/heads/main' || "$GITHUB_REF" == "refs/tags/$RELEASE_TAG" ]] || exit 1
+          [[ "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || exit 1
           release_commit="$(git rev-parse HEAD)"
-          [[ "$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")" == "$release_commit" ]]
+          [[ "$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")" == "$release_commit" ]] || exit 1
           git merge-base --is-ancestor "$release_commit" refs/remotes/origin/main
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/npm-release.json"
           gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$release_commit&event=push&per_page=100" > "$RUNNER_TEMP/npm-runs.json"
@@ -70,12 +75,12 @@ jobs:
         id: package
         env:
           PUBLISHING: ${{ inputs.publishing }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         shell: bash
         run: |
           set -euo pipefail
           tag="v$(node -p "require('./package.json').version")"
-          if [[ "$PUBLISHING" == 'true' ]]; then [[ "$tag" == "$RELEASE_TAG" ]]; fi
+          if [[ "$PUBLISHING" == 'true' ]]; then [[ "$tag" == "$RELEASE_TAG" ]] || exit 1; fi
           mkdir -p "$RUNNER_TEMP/mpb-pack" dist
           npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/mpb-pack"
           mv "$RUNNER_TEMP/mpb-pack/"*.tgz dist/package.tgz
