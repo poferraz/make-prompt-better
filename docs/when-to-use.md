@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-Semi-formal reasoning in prompts, structured as specification-certification proofs or step-by-step verification chains, can improve accuracy by 10 to 15 percentage points on technical tasks (Ugare & Chandra, 2026). But it comes at a cost: higher token usage, longer latency, and potential over-constraint on tasks where the model already performs well.
+Structured reasoning is inspired by code-analysis results studied by Ugare and Chandra (2026). Effects for this skill and other tasks are not established. More structure can increase token use and latency or over-constrain a task.
 
 Not every prompt needs a certificate. This framework helps you decide when the structure helps and when it gets in the way.
 
@@ -10,15 +10,15 @@ Not every prompt needs a certificate. This framework helps you decide when the s
 
 ### Accuracy gains are worth the latency cost
 
-Semi-formal prompting (specification, then certification, then answer) produces 10 to 15 percentage point improvements on benchmarks like MBPP and HumanEval compared to standard prompting (Ugare & Chandra, 2026). If the task is technical and errors are acceptable but costly, the latency tradeoff is worth it.
+For technical tasks, explicit inputs and verification steps can make a proposed answer easier to review. The result and the cost trade-off still need to be evaluated for the actual model and task (Ugare & Chandra, 2026).
 
 ### Mistakes are costly
 
-In domains where a wrong answer has real consequences (compliance audits, medical triage, legal analysis, financial calculations, security review), the verification step in semi-formal reasoning acts as a safety net. The certification phase catches errors that standard prompting misses (Ugare & Chandra, 2026).
+In domains where a wrong answer has real consequences, request evidence and review the result with appropriate domain expertise. A generated verification section is not proof that an error was caught (Ugare & Chandra, 2026).
 
 ### Input complexity exceeds surface pattern matching
 
-When the input contains multiple interacting constraints, conditional logic, or nested dependencies, the model needs a structured reasoning path to avoid losing track of variables. Semi-formal prompting forces the model to articulate its reasoning chain, reducing omission errors (Ugare & Chandra, 2026).
+When the input contains multiple interacting constraints, conditional logic, or nested dependencies, the model needs a structured reasoning path to avoid losing track of variables. Semi-formal prompting asks the model to articulate a reasoning chain, which still requires review (Ugare & Chandra, 2026).
 
 ### Auditable reasoning is required
 
@@ -26,7 +26,7 @@ If you need to show how the model arrived at its answer (for regulatory review, 
 
 ### Hallucination risk is high
 
-Tasks that ask the model to synthesize information from multiple sources, recall specific details, or make fine-grained distinctions are prone to hallucination. The certification step in semi-formal prompting forces the model to verify each claim against the specification, reducing fabricated content (Ugare & Chandra, 2026).
+Tasks involving multiple sources or fine distinctions can invite unsupported claims. Ask for source references and check them; the prompt cannot establish that the model actually verified each claim (Ugare & Chandra, 2026).
 
 ### Multiple competing interpretations exist
 
@@ -74,7 +74,7 @@ START
 │
 ├─► Is the task creative, editorial, or divergent ideation?
 │   ├─► YES → Use Mode 4 (Creative & Divergent v2).
-│   │         Apply internal [NT0] Verbalized Sampling (p <= 0.15, Zhang et al., 2025)
+│   │         Apply internal [NT0] Verbalized Sampling (p <= 0.20, Zhang et al., 2025)
 │   │         + Anti-SlopShape rules (Madler, 2026); output clean finished copy.
 │   └─► NO → Continue below.
 │
@@ -96,7 +96,7 @@ START
 
 **Recommendation:** Use semi-formal reasoning.
 
-**Reasoning:** Accuracy-critical. Mistakes are costly (regulatory penalties). Baseline accuracy on AML pattern detection is not at ceiling. The input contains multiple interacting data points that require structured reasoning. The certification step catches missed violations. No persona needed (accuracy task).
+**Reasoning:** Accuracy-critical. Mistakes are costly (regulatory penalties). Baseline accuracy on AML pattern detection is not at ceiling. The input contains multiple interacting data points that require structured reasoning. The requested verification may highlight omissions, but it does not prove violations were caught. No persona needed (accuracy task).
 
 ### Scenario 2: Blog post generation
 
@@ -112,7 +112,7 @@ START
 
 **Recommendation:** Use semi-formal reasoning.
 
-**Reasoning:** Accuracy-critical with high mistake cost. The input is complex (authentication logic with multiple edge cases). Hallucination risk is moderate (the model might miss subtle vulnerabilities or invent false ones). The certification step forces the model to verify each claimed vulnerability against the actual code. No persona needed.
+**Reasoning:** Accuracy-critical with high mistake cost. The input is complex (authentication logic with multiple edge cases). Hallucination risk is moderate (the model might miss subtle vulnerabilities or invent false ones). The prompt asks the model to check each claimed vulnerability against the code; a human must verify the claims. No persona needed.
 
 ### Scenario 4: Formatting a spreadsheet as a table
 
@@ -128,7 +128,7 @@ START
 
 **Recommendation:** Use semi-formal reasoning.
 
-**Reasoning:** Accuracy-critical with life-and-death stakes. Baseline accuracy on differential diagnosis is not at ceiling. Multiple competing interpretations exist (Lyme disease, Rocky Mountain spotted fever, viral illness). The specification phase forces the model to consider each symptom explicitly. The certification phase checks that each diagnosis accounts for all reported symptoms. No persona (accuracy task).
+**Reasoning:** Accuracy-critical with life-and-death stakes. Baseline accuracy on differential diagnosis is not at ceiling. Multiple competing interpretations exist (Lyme disease, Rocky Mountain spotted fever, viral illness). The prompt asks for each symptom to be considered and for diagnoses to be checked against the reported symptoms; the result still requires clinical review. No persona (accuracy task).
 
 ### Scenario 6: Quick email draft
 
@@ -144,7 +144,7 @@ START
 
 **Recommendation:** Use semi-formal reasoning.
 
-**Reasoning:** Accuracy-critical. The input has multiple interacting constraints (join logic, date filter, aggregation). Mistakes in SQL logic can corrupt data downstream. Baseline accuracy on multi-join queries is below 95%. The specification phase forces the model to articulate the join conditions and filter logic before writing the query. The certification phase checks that the query matches the specification. No persona.
+**Reasoning:** Accuracy-critical. The input has multiple interacting constraints (join logic, date filter, aggregation). Mistakes in SQL logic can corrupt data downstream. Baseline accuracy on multi-join queries is below 95%. The prompt asks for join conditions and filter logic to be stated and checked; the resulting query still needs independent verification. No persona.
 
 ### Scenario 8: Brand voice style guide creation
 
@@ -160,7 +160,7 @@ START
 
 **Recommendation:** Use semi-formal reasoning.
 
-**Reasoning:** Accuracy-critical with high mistake cost. The input is long and requires careful reading. Multiple competing interpretations exist for legal language. The certification step forces the model to justify why each flagged clause is unusual rather than just listing anything that looks different. No persona (accuracy task per Hu, Rostami & Thomason, 2026).
+**Reasoning:** Accuracy-critical with high mistake cost. The input is long and requires careful reading. Multiple competing interpretations exist for legal language. The prompt asks the model to justify each flagged clause; legal review is still required. No persona (accuracy task per Hu, Rostami & Thomason, 2026).
 
 ### Scenario 10: Using a reasoning-distilled model for code generation
 

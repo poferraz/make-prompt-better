@@ -22,4 +22,4 @@ strict = true
 warn_unused_configs = true
 
 [tool.pytest.ini_options]
-testpaths = ["research/benchmark/v4"]
+testpaths = ["research/benchmark/v4", "tests"]

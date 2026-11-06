@@ -2,7 +2,7 @@
 
 ## Repository Purpose
 
-This repository is a research-grounded prompt, context, and harness optimization skill (`v4.3.0`). It synthesizes eleven peer-reviewed papers into an actionable methodology called semi-formal reasoning. The repo serves as both a universal installable agent skill (`agentskills.io` standard for Claude Code, Antigravity, Gemini CLI, OpenAI Codex CLI, Qwen Code, Copilot CLI, Cursor, Windsurf, and AdaL) and a standalone reference.
+This repository is a research-informed prompt, context, and harness optimization skill (`v4.3.0`). It groups fourteen papers into eleven principles and project-specific adaptations; publication status and host behavior vary. The repo serves as an installable skill and standalone reference.
 
 ## File Organization
 
@@ -19,15 +19,15 @@ This repository is a research-grounded prompt, context, and harness optimization
 - **Requirement preservation (`[REQ-PRESERVE]`)**: Preserve every user-requested deliverable, sub-question, output ordering rule, and decision-relevant operational constraint (budget, latency, timeline, target audience). When optimizing `CLAUDE.md` / `AGENTS.md`, fulfill any explicitly requested overview/layout/style items compactly (`Section 0`, `<= 5` lines) rather than silently deleting them.
 - **No dashes as punctuation**: No em/en dashes as sentence punctuation anywhere. Use commas, colons, semicolons. Hyphens in compounds (goal-blind, semi-formal) are fine.
 - **Universal cross-tool compatibility**: `SKILL.md` frontmatter must contain only `name` and a single-line quoted `description` starting with `"Use when..."` (no colons or multi-line YAML folding markers that break cross-runtime parsers).
-- **Attribution is paramount**: Every claim must trace to a cited paper. Never claim originality for ideas from the 11 papers or severity1's architecture.
+- **Attribution is paramount**: Cite methodological rules and distinguish a paper's measured result from this project's adaptation. The eleven principle groups include fourteen cited papers.
 - **Goal-blind**: Strip evaluative pressure, sycophancy triggers, and presupposed verdicts from prompt templates while retaining operational constraints.
 - **Positive recipes over prohibitions**: Express template rules as positive structural contracts and observable-predicate conditionals rather than bare "Do NOT" anti-pattern lists (avoid the negative prohibition trap).
 - **Progressive disclosure**: `SKILL.md` under 500 lines. Heavy content goes in `references/`.
 
 ## Adding a New Domain Template
 
-1. Open `make-prompt-better/references/domain-templates.md`
-2. Add a new numbered section following the established pattern:
+1. The current contract requires exactly 12 numbered templates. Propose an expansion before changing the count; update `AGENTS.md`, the skill, README, and CI together if the contract is deliberately revised.
+2. When an expansion is accepted, open `make-prompt-better/references/domain-templates.md` and follow the established pattern:
    - Authority-framed preamble (per Geng et al., 2025)
    - PREMISES with `[P1]`, `[P2]` identifiers (per Zhang, Hu et al., 2026)
    - EVIDENCE TRACES with `[T1]`, `[T2]` identifiers (or `[V1]` Verification Gates for LRM/Harness templates)
@@ -35,7 +35,7 @@ This repository is a research-grounded prompt, context, and harness optimization
    - FORMAL CONCLUSION with trace references
    - REMEDIATION / NEXT ACTION block and TRACEABILITY SELF-CHECK
    - Persona guidance line (OMIT/MINIMAL/FULL per Hu, Rostami & Thomason, 2026)
-3. Update the template count in `SKILL.md` and `README.md`
+3. Update the template count consistently across the agreed contract and validation surfaces.
 4. Add a before/after example in `make-prompt-better/references/examples.md` if the domain is commonly used
 
 ## Adding a New Research Paper
@@ -50,7 +50,7 @@ When incorporating a new paper:
 6. Add to `docs/tradeoffs.md` if the paper has cost/benefit implications
 7. Verify the paper is consistently cited across all files using the format: `(Author, Year)`
 
-## Current Papers (11)
+## Current Principle Groups (11)
 
 1. Ugare & Chandra (2026) - META - arXiv:2603.01896
 2. Cao, Jiang & Xu (2026) - GOAL-BLIND - arXiv:2602.09504

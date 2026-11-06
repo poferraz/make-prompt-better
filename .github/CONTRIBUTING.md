@@ -29,7 +29,7 @@ To contribute a new domain certificate template:
    - **Authority-framed preamble**: Establish domain expertise in the opening lines (per Geng et al., 2025)
    - **PREMISES**: Numbered with `[P1]`, `[P2]` identifiers (per ACE framework from Zhang, Hu et al., 2026)
    - **EVIDENCE TRACES**: Numbered with `[T1]`, `[T2]` identifiers (or `[V1]` Verification Gates for LRM/Harness templates)
-   - **Positive grounding rule**: Observable-predicate conditionals that prevent common failure modes without brittle "Do NOT" lists (per Yin et al., 2026)
+   - **Positive grounding rule**: Observable-predicate conditionals as a project design choice informed by work on skill attention; preserve necessary restrictions (Yin et al., 2026)
    - **FORMAL CONCLUSION**: Must reference traces and remain goal-blind (per Cao, Jiang & Xu, 2026)
    - **REMEDIATION / NEXT ACTION** and **TRACEABILITY SELF-CHECK** blocks
    - **Persona guidance line**: State whether to OMIT, use MINIMAL, or use FULL persona (per PRISM: Hu, Rostami & Thomason, 2026)

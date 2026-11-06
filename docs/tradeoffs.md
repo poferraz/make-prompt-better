@@ -42,7 +42,7 @@ The academic findings above have been tested across three benchmark iterations (
    - **Stratum B: Isolated Runner Anonymized Self-Judged Cloud Track (`11` Ollama Cloud models, `128` pairs)**: When forced into prescribed modes (`TEST_MODE_OVERRIDES`) and evaluated under randomized `Response A` / `Response B` presentation (self-judged), the 11 cloud models recorded a **-2.35 / 25 mean delta** (`Model-Cluster 95% CI: [-3.13, -1.57]`, `Two-Way Block 95% CI: [-4.11, -0.66]`, `38W-5T-85L`, **29.7% win rate**) accompanied by **3.57x** word expansion (`5.22x` measured API output token expansion).
 
 **The value is structural and traceable, provided structure stays proportional.** Across all 164 pairs in v4.2.0:
-- **Traceability increased across both strata (+0.78 / 5.0 overall**: **+0.90 / 5.0** on Frontier models and **+0.75 / 5.0** on Isolated Cloud models), confirming that explicit premise-to-conclusion references consistently improve auditability (Ugare & Chandra, 2026; Zhang, Hu et al., 2026).
+- **Historical traceability scores increased across both strata (+0.78 / 5.0 overall**: **+0.90 / 5.0** on Frontier models and **+0.75 / 5.0** on Isolated Cloud models). These self-judged scores do not establish that identifiers consistently improve auditability (Ugare & Chandra, 2026; Zhang, Hu et al., 2026).
 - **Code-First Concurrency Harnesses (`Test 12`, Template 12) achieved the highest lift in the suite (+1.83 / 25 across all 14 models**: **+3.67** on Frontier, **+1.22** on Cloud, with +7.0 breakthroughs on `beam:cloud`, `gemma4:31b-cloud`, and `deepseek-v4.1-flash:1017-cloud`), reversing the v4.0 pre-code table token-starvation failure (-1.85).
 - **Financial Due Diligence (`Test 2`, Template 9) won across both strata (+1.50 / 25 overall, 8W-1T-4L**: **+1.83** on Frontier, **+1.40** on Cloud).
 
@@ -73,7 +73,7 @@ Note: Token overhead ranges from ~1.7x (Qwen, most efficient) to ~2.7x (Kimi). T
 
 A Max certificate block adds roughly 150 to 300 tokens of prompt overhead depending on task complexity. Lite mode restricts this by capping premises at 3 items, using single-line causal arrow traces, and limiting conclusion fields to 1-2 sentences each. Over a session with many prompts, the difference between Lite and Max compounds significantly.
 
-**The cost/benefit equation:** ~2.2x token overhead (Max mode) reliably buys a ~26% accuracy and traceability improvement for analytical tasks, with a 96.3% win rate over unstructured prompts across all four model families tested. Lite mode trades approximately 20% of that traceability for a ~25% reduction in overhead.
+**Historical trade-off:** An earlier four-model suite reported these overheads and self-judged gains. They are not a reliable prediction for current versions, models, or tasks. The later isolated v4.2.0 track declined on average, and v4.3.0 outcomes have not been newly measured.
 
 ### Latency
 
@@ -127,13 +127,13 @@ Average creative delta: **+1.0**, compared to +6.3 for code review and +5.8 for 
 
 The naive solution, skipping the certificate entirely for creative tasks, throws away the benefits of structured reasoning. The model goes back to freeform generation, which means no systematic thinking about audience, tone, or emotional arc before writing.
 
-**V3/V4 mitigation and Mode 4 backstage visibility findings:** V3 introduced **Narrative Traces**, and v4.0 upgraded this to **Mode 4: Creative & Divergent v2**, combining `[NT0]` **Verbalized Sampling** (generating candidate angles with typicality `p <= 0.15` per Zhang et al., 2025) with `[SC0]` **Anti-SlopShape Structural Rarity Contract** (Delayed Thesis, Direct Evidence Progression, Practitioner Voice, Actionable Close per Madler, 2026).
+**V3/V4 mitigation and Mode 4 backstage visibility findings:** V3 introduced **Narrative Traces**, and v4.0 upgraded this to **Mode 4: Creative & Divergent v2**, combining `[NT0]` **Verbalized Sampling** (generating candidate angles with typicality `p <= 0.20` per Zhang et al., 2025) with `[SC0]` **Anti-SlopShape Structural Rarity Contract** (Delayed Thesis, Direct Evidence Progression, Practitioner Voice, Actionable Close per Madler, 2026).
 
 In the v4.2.0 benchmark, Mode 4 achieved **+2.00 / 25 on Frontier models (`2W-1T-0L`)** and **+4.0 / 25 on `mistral-large-4:cloud` (`0.63x` words)** when the output remained clean. However, 9 of 10 isolated cloud models lost (`-2.50 / 25` mean delta) because they emitted 150 to 300 words of visible `[NT0]`-`[NT3]` backstage probability tables above the product description, which anonymized judges penalized as unrequested meta-commentary. In **v4.3.0**, Mode 4 and Template 10 keep `[NT0]`-`[NT3]` backstage preparation **strictly internal by default**, outputting only the finished creative deliverable unless the user explicitly asks for planning notes.
 
 ### v4.2.0 Benchmark Findings & v4.3.0 Architectural Upgrades
 
-Comparing the October 30 v4.0 unblinded cloud run (+1.06 mean delta) against the October 31 v4.2.0 anonymized cloud run (-2.35 mean delta) revealed an observational shift of **-3.41 / 25** (+1.53 on Baseline and -1.88 on Optimized; confounded by skill edits, regenerated responses, self-judging, and residual `"Baseline"`/`"Optimized"` column headers in the v4.2.0 judge table). Inspecting the 164 v4.2.0 pairs surfaced four concrete product and harness failure modes, all resolved in **v4.3.0**:
+Comparing the October 30 v4.0 unblinded cloud run (+1.06 mean delta) against the October 31 v4.2.0 anonymized cloud run (-2.35 mean delta) revealed an observational shift of **-3.41 / 25** (+1.53 on Baseline and -1.88 on Optimized; confounded by skill edits, regenerated responses, self-judging, and residual `"Baseline"`/`"Optimized"` column headers in the v4.2.0 judge table). Inspecting the 164 v4.2.0 pairs suggested four failure modes. The v4.3.0 changes below are proposed mitigations; their effectiveness remains unverified:
 
 1. **Test 12 (`AsyncTokenBucket`) Code-First Turnaround (-1.85 in v4.0 to +1.83 in v4.2.0)**:
    - *Finding*: Placing the complete executable implementation *before* the post-hoc `[V1] -> [V2]` verification gate (`<25%` commentary ceiling) turned Test 12 into the **highest-scoring task across all 14 models (+1.83 / 25 overall, +3.67 on Frontier, +1.22 on Cloud, with +7.0 gains on `beam:cloud`, `gemma4:31b-cloud`, and `deepseek-v4.1-flash:1017-cloud`)**. In v4.3.0, Template 12 also adds an exact integer/rational accounting check to prevent floating-point capacity drift (`2**53 + 1`).
@@ -171,7 +171,7 @@ The takeaway: personas trade accuracy for alignment. If you need the model to fo
 
 There are situations where semi-formal reasoning is the wrong tool:
 
-**Simple tasks where the model is already highly accurate.** If baseline performance is above 85%, structured prompting adds overhead without measurable improvement (Ugare & Chandra, 2026, arXiv 2603.01896). Consider Lite mode if you still want traceability for audit purposes on these tasks.
+**Simple tasks where the model is already highly accurate.** Additional structure can add overhead with little benefit. The 85% threshold is not a universal cutoff; evaluate the actual task (Ugare & Chandra, 2026, arXiv 2603.01896).
 
 **Creative generation where you want zero scaffolding.** The Creative Pivot (Narrative Traces) now handles creative tasks within the methodology, but for fully unconstrained brainstorming, open-ended ideation, or stream-of-consciousness generation, even narrative traces add unnecessary overhead. Use unstructured prompting for these.
 
@@ -183,7 +183,7 @@ There are situations where semi-formal reasoning is the wrong tool:
 
 ## Bottom Line
 
-Semi-formal reasoning is a precision tool, not a default setting. Across the v1.0 4-model analytical benchmark (+25.9% average relative improvement, 96.3% win rate) and the v4.2.0 14-model protocol-stratified benchmark (`N = 164` pairs: **+2.36 / 25 delta and 86.1% win rate on the In-Session Frontier Track at 1.65x words**, **+0.78 / 5.0 Traceability gain across all 164 pairs**, **+1.83 / 25 overall delta on Code-First Template 12**, and **-2.35 / 25 on the Isolated Anonymized Cloud Track when forced into disproportionate Mode 1 scaffolding or Test 11 section deletion**), structured certificates deliver high value when proportional to the task and grounded in full requirement preservation.
+The historical benchmarks include positive and negative self-judged outcomes under different protocols. They suggest that proportional structure and requirement preservation deserve further testing; they do not establish current efficacy or the causes of individual score changes.
 
 The costs are real: ~1.65x to 2.2x word overhead on Frontier models in Max mode (~1.45x in Lite mode, up to 3.57x words / 5.22x tokens when Max mode is forced onto open cloud models), proportional latency increase, diminishing returns on near-ceiling baselines (>22.5/25), and completeness penalties if prompt compilation drops user-requested sections or leaks backstage planning notes.
 
@@ -191,7 +191,7 @@ The costs are real: ~1.65x to 2.2x word overhead on Frontier models in Max mode 
 - High-stakes multi-constraint audit (financial, legal, clinical, compliance, deep code review) where full premise-to-conclusion traceability is required? **Mode 1: Max Certificate (with anti-redundancy and acuity-first clinical ordering).**
 - Standard analytical task, code debugging, comparative trade-offs, or compact/flash model? **Mode 2: Lite Certificate (~1.45x word overhead, default for standard analytical tasks).**
 - Large Reasoning Model (o3, R1, Extended Thinking), async concurrency coding, or `AGENTS.md` / `CLAUDE.md` context file? **Mode 3: LRM / Harness Mode (Code-First `[V1] -> [V2]` verification with `<25%` overhead ceiling for Template 12, and compact `Section 0` requirement fulfillment + non-inferable gates for Template 11 per Lee et al., 2026 and Gloaguen et al., 2026).**
-- Creative, editorial, or divergent writing task? **Mode 4: Creative & Divergent v2 (Internal `[NT0]` Verbalized Sampling `p <= 0.15` + `[SC0]` Anti-SlopShape rules, outputting clean finished prose by default per Zhang et al., 2025 and Madler, 2026).**
+- Creative, editorial, or divergent writing task? **Mode 4: Creative & Divergent v2 (Internal `[NT0]` Verbalized Sampling `p <= 0.20` + `[SC0]` Anti-SlopShape rules, outputting clean finished prose by default per Zhang et al., 2025 and Madler, 2026).**
 - Simple factual lookup or pure stream-of-consciousness generation? **Skip the certificate entirely.**
 
 Use it when traceable reasoning matters. Scale it across the 4 modes. Do not use Max mode for every prompt.

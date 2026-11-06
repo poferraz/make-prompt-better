@@ -465,7 +465,7 @@ is preserved for executable code.
 - [P2] Target invariants: [atomic state transitions, lock release before suspension/await, cross-thread/event-loop safety, timeout=0 and deadline semantics, cancellation safety, and large-integer/float boundary behavior]
 
 ### 1. COMPLETE EXECUTABLE IMPLEMENTATION (Generated First)
-Provide the complete, production-ready, copy-pasteable implementation satisfying
+Provide a complete, reviewable, copy-pasteable implementation intended to satisfy
 [P1] and [P2] first, before emitting any verification tables or test prose.
 
 ### 2. POST-HOC VERIFICATION GATE ([V1] -> [V2] -> [V3])

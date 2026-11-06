@@ -8,7 +8,7 @@
     {
       "name": "make-prompt-better",
       "source": "./",
-      "description": "Compile vague prompts and bloated CLAUDE.md/AGENTS.md files into verifiable Semi-Formal Certificates across 4 model-aware modes (11 arXiv papers).",
+      "description": "Rewrite prompts and agent instructions with task-appropriate structure, requirement checks, and research-informed guidance.",
       "version": "4.3.0"
     }
   ]

@@ -1,6 +1,6 @@
 # Support
 
-For installation, start with the [README](README.md). Preview local changes with `./install.sh --dry-run`. For mode selection and limitations, read [when to use](docs/when-to-use.md).
+For installation, start with the [quickstart](docs/quickstart.md). Preview local changes with `./install.sh --dry-run`; inspect selected installations with `./install.sh --check`. For duplicates or recovery, use [troubleshooting](docs/installation.md#troubleshooting). For mode selection and limitations, read [when to use](docs/when-to-use.md).
 
 Search [existing issues](https://github.com/poferraz/make-prompt-better/issues) before opening a bug report or question. Include the version or commit, operating system, agent runtime, command, expected behavior, and sanitized output. A small reproducible example helps more than a screenshot of a long conversation.
 

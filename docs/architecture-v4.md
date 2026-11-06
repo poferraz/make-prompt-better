@@ -26,9 +26,9 @@ Upgrade `make-prompt-better` from v3.0 (6 papers, Claude-centric packaging) to v
 6. `[PRISM]` Hu, Rostami & Thomason (2026), arXiv:2603.18507 (Persona calibration by task type)
 7. `[VS]` Zhang, Yu, Chong, Sicilia, Tomz, Manning & Shi (2025), arXiv:2510.01171 (Verbalized Sampling to mitigate mode collapse and typicality bias, 1.6x to 2.1x diversity gain)
 8. `[SLOPSHAPE]` Madler (2026), arXiv:2609.15369; extending Russell et al. (2026) (Discourse-level structural signatures of AI text; 98.0 macro-F1 detection across 187 structural features, 93.5 macro-F1 on 10 core features)
-9. `[CONTEXT-FILES]` Gloaguen, Mundler, Muller, Raychev & Vechev (2026), arXiv:2602.11988 (Evaluating `AGENTS.md` and `CLAUDE.md`; LLM-generated context files reduce success by 3% and raise cost by >20%; directory overviews do not help file localization)
+9. `[CONTEXT-FILES]` Gloaguen, Mundler, Muller, Raychev & Vechev (2026), arXiv:2602.11988 (Evaluating `AGENTS.md` and `CLAUDE.md`; v3 reports non-significant average accuracy differences and increased cost in the evaluated settings; the pruning recipe is a project adaptation)
 10. `[HARNESS]` Lee, Nair, Zhang, Lee, Khattab & Finn (2026), arXiv:2603.28052; Zhang et al. (2026), arXiv:2606.09498; Shao et al. (2026), arXiv:2609.37725; Nam et al. (2025), arXiv:2509.21825 (Meta-Harness, Self-Harness, Context Language Models, and DS-STAR iterative verification)
-11. `[SKILLS-SDO]` Yin, Li, Shi, Zhang, Seong & Wang (2026), arXiv:2608.12610 (Skill attention budget residency and positive structural recipes over negative prohibitions)
+11. `[SKILLS-SDO]` Yin, Li, Shi, Zhang, Seong & Wang (2026), arXiv:2608.12610 (Skill attention and residency; positive structural recipes are a project adaptation)
 
 ## 4. Four Certificate Modes
 

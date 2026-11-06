@@ -129,7 +129,7 @@ Do not infer or estimate figures not present in the source materials.
 #### What Changed and Why
 
 - **Removed investment decision context:** Per GOAL-BLIND (Cao, Jiang & Xu, 2026), eliminating "investing $500K" prevents the model from orienting analysis toward justifying or discouraging a specific investment.
-- **Declared evidence base [P1]-[P4]:** Per META (Ugare & Chandra, 2026), specifying source materials as premises forces the model to ground every claim in provided data rather than generating plausible financials from training knowledge.
+- **Declared evidence base [P1]-[P4]:** The prompt asks for claims to be grounded in provided data. This does not guarantee that the model follows the instruction (Ugare & Chandra, 2026).
 - **Explicit "do not render an investment recommendation":** Replaces the implicit "is this a good bet?" with a goal-blind directive that the output should be analytical, not advisory.
 - **Incomplete-data handling instruction:** Per ACE (Zhang, Hu et al., 2026), requiring the model to state when data is missing rather than guessing reduces hallucinated financial figures, a critical risk in numerical domains.
 - **Full certificate chain (premises, traces, conclusion):** Each [T] trace references specific [P] premises, making it auditable which claims derive from which data.
@@ -505,7 +505,7 @@ counsel for compliance determinations.
 #### What Changed and Why
 
 - **Removed complaint context ("user in Germany," "before we respond"):** Per GOAL-BLIND (Cao, Jiang & Xu, 2026), the model now performs an objective gap analysis rather than one oriented toward managing a specific incident.
-- **Article-level framework mapping [T1]-[T5]:** Per ACE (Zhang, Hu et al., 2026), structuring the analysis around specific GDPR article clusters ensures systematic, comprehensive coverage instead of ad hoc flagging.
+- **Article-level framework mapping [T1]-[T5]:** The prompt requests analysis by GDPR article cluster; comprehensive coverage still requires review (Zhang, Hu et al., 2026).
 - **Replaced "non-compliant" with "regulatory mapping and gaps":** Per GOAL-BLIND, the model maps practices to articles and identifies gaps rather than rendering compliance judgments, which require legal interpretation beyond the model's scope.
 - **Evidence premises [P1]-[P4]:** Per META (Ugare & Chandra, 2026), defining what documentation the model should work from prevents it from evaluating hypothetical practices or generating findings based on assumed organizational behavior.
 - **Incomplete analysis handling:** Per ACE, explicitly instructing the model to flag when source materials are missing prevents it from silently skipping article clusters or making assumptions about undocumented practices.
@@ -533,7 +533,7 @@ Make sure we don't break anything because we have a critical investor audit next
 
 #### Problems Identified
 
-1. **Codebase overview bloat:** Enumerating standard directories (`src/api/`, `src/models/`, `tests/`) does not speed up agent file localization, increases token costs by over 20%, and reduces task resolution success when auto-generated (Gloaguen et al., 2026).
+1. **Codebase overview bloat:** An automatically generated directory overview can add context cost; whether it helps depends on the task. Preserve an explicitly requested overview (Gloaguen et al., 2026).
 2. **Redundant persona and CoT instructions:** "Elite 10x Staff Principal Architect" and "think step by step" add noise for coding agents and trigger overthinking loops on reasoning-distilled models (Hu, Rostami & Thomason, 2026; Lee et al., 2026).
 3. **Goal leakage:** "critical investor audit next week" leaks downstream business pressure rather than specifying technical invariants (Cao, Jiang & Xu, 2026).
 4. **Missing non-inferable tooling commands:** The agent is not given the exact environment manager (`uv`), test runner flags, or database migration invariants that actually prevent failures (Gloaguen et al., 2026).
@@ -571,9 +571,9 @@ Before declaring any task complete:
 
 #### What Changed and Why
 
-- **Compacted requested directory overview and PEP8 rules into Section 0 instead of silently deleting them:** Per CONTEXT-FILES (Gloaguen et al., 2026) and Requirement Preservation (`[ACE]`, Zhang, Hu et al., 2026), keeping a 3-line summary of explicitly requested layout and style items fulfills the user's deliverables while avoiding the >20% token cost penalty and -3% resolution drop caused by verbose directory tutorials.
+- **Compacted requested directory overview and PEP8 rules into Section 0 instead of silently deleting them:** Per CONTEXT-FILES (Gloaguen et al., 2026) and Requirement Preservation (`[ACE]`, Zhang, Hu et al., 2026), keeping a 3-line summary of explicitly requested layout and style items fulfills the user's deliverables while keeping the project adaptation concise; the cited study does not establish a universal accuracy effect for this section.
 - **Replaced persona and "think step by step" with executable invariants [I1]-[I3]:** Per PRISM (Hu, Rostami & Thomason, 2026) and HARNESS (Lee et al., 2026), coding agents and reasoning models need non-inferable tooling commands (`uv run`) and hard boundary rules (`Decimal` only, router-to-service session boundary).
-- **Added Context-as-a-File scratchpad rule and Verification Gate:** Per CLM (Shao et al., 2026) and DS-STAR (Nam et al., 2025), externalizing multi-file plans to a scratchpad file and enforcing a pre-completion verification gate improves accuracy while lowering compute overhead.
+- **Added Context-as-a-File scratchpad rule and Verification Gate:** This project adapts ideas from CLM and DS-STAR; their results do not measure this exact rule or establish its cost (Shao et al., 2026; Nam et al., 2025).
 
 ---
 

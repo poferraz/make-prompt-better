@@ -1,6 +1,6 @@
 {
   "name": "make-prompt-better",
-  "description": "Research-grounded Prompt, Context & Harness Compiler (11 arXiv papers, 4 Certificate Modes). Compiles vague prompts and CLAUDE.md/AGENTS.md files into verifiable execution certificates.",
+  "description": "Rewrite prompts and agent instructions with task-appropriate structure, requirement checks, and research-informed guidance.",
   "version": "4.3.0",
   "author": {
     "name": "Paulo Ferraz",

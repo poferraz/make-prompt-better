@@ -8,6 +8,115 @@ import rejudge_saved_outputs as rejudge
 
 
 class SavedPairsTests(unittest.TestCase):
+    def test_empty_live_rejudge_is_not_reported_as_success(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertNotEqual(rejudge.main(['--results-dir', tmp, '--output', str(Path(tmp) / 'out.json')]), 0)
+
+    def test_invalid_test_filter_is_reported_without_exception(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            try:
+                result = rejudge.main(['--results-dir', tmp, '--tests', 'not-a-number', '--dry-run'])
+            except Exception as exc:
+                self.fail(f'Invalid filter raised an exception: {exc}')
+            self.assertNotEqual(result, 0)
+
+    def test_request_limit_is_checked_during_dry_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            model = Path(tmp) / 'model'
+            model.mkdir()
+            (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
+                '1': {'raw_prompt': 'task', 'baseline': {'content': 'base'}, 'optimized_response': {'content': 'opt'}}
+            }}))
+            args = ['--results-dir', tmp, '--swap-positions', '--dry-run', '--max-requests', '1']
+            try:
+                result = rejudge.main(args)
+            except SystemExit as exc:
+                self.fail(f'Request limit option was rejected: {exc}')
+            self.assertNotEqual(result, 0)
+    def test_saved_prompt_takes_precedence_over_current_test_suite(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            model = Path(tmp) / 'model'
+            model.mkdir()
+            (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
+                '1': {'raw_prompt': 'historic task', 'domain': 'old domain',
+                      'baseline': {'content': 'base'}, 'optimized_response': {'content': 'opt'}}
+            }}))
+            pair = rejudge.load_saved_pairs(Path(tmp))[0]
+            self.assertEqual(pair['tc']['raw_prompt'], 'historic task')
+            self.assertEqual(pair['tc']['domain'], 'old domain')
+
+    def test_rejudge_requires_durable_output_before_network(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            model = Path(tmp) / 'model'
+            model.mkdir()
+            (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
+                '1': {'baseline': {'content': 'base'}, 'optimized_response': {'content': 'opt'}}
+            }}))
+            with mock.patch.object(rejudge, 'call_ollama_chat', return_value={'content': ''}) as chat:
+                try:
+                    result = rejudge.main(['--results-dir', tmp])
+                except Exception as exc:
+                    self.fail(f'Rejudge attempted work without an output path: {exc}')
+                self.assertNotEqual(result, 0)
+                chat.assert_not_called()
+
+    def test_remote_http_rejudge_is_rejected_before_request(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            model = Path(tmp) / 'model'
+            model.mkdir()
+            (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
+                '1': {'baseline': {'content': 'base'}, 'optimized_response': {'content': 'opt'}}
+            }}))
+            with mock.patch.object(rejudge, 'call_ollama_chat', return_value={'content': ''}) as chat:
+                try:
+                    result = rejudge.main(['--results-dir', tmp, '--output', str(Path(tmp) / 'out.json'),
+                                           '--host', 'http://example.com'])
+                except Exception as exc:
+                    self.fail(f'Remote HTTP was not rejected before judging: {exc}')
+                self.assertNotEqual(result, 0)
+                chat.assert_not_called()
+
+    def test_missing_saved_task_cannot_be_silently_rejudged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            model = Path(tmp) / 'model'
+            model.mkdir()
+            (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
+                '1': {'baseline': {'content': 'base'}, 'optimized_response': {'content': 'opt'}}
+            }}))
+            with mock.patch.object(rejudge, 'call_ollama_chat', return_value={'content': ''}) as chat:
+                self.assertNotEqual(rejudge.main(['--results-dir', tmp, '--output', str(Path(tmp) / 'out.json')]), 0)
+                chat.assert_not_called()
+
+    def test_rejudge_resumes_completed_first_pass_and_rejects_changed_seed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model = root / 'model'
+            model.mkdir()
+            (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
+                '1': {'raw_prompt': 'saved task', 'baseline': {'content': 'BASE_TEXT'}, 'optimized_response': {'content': 'OPT_TEXT'}}
+            }}))
+            output = root / 'rejudge.json'
+            rows = '\n'.join(f'| {name} | 3 | 5 |' for name in
+                             ['Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'])
+            args = ['--results-dir', tmp, '--swap-positions', '--seed', '17', '--output', str(output)]
+            with mock.patch.object(rejudge, 'call_ollama_chat', side_effect=[{'content': rows}, RuntimeError('interrupted')]):
+                try:
+                    first = rejudge.main(args)
+                except SystemExit as exc:
+                    self.fail(f'Rejudge output option was rejected: {exc}')
+                self.assertNotEqual(first, 0)
+            saved = json.loads(output.read_text())
+            self.assertEqual(len(saved['pairs']['model:1']['passes']), 1)
+            with mock.patch.object(rejudge, 'call_ollama_chat', return_value={'content': rows}) as chat:
+                self.assertEqual(rejudge.main(args), 0)
+                self.assertEqual(chat.call_count, 1)
+            final = json.loads(output.read_text())
+            self.assertEqual(len(final['pairs']['model:1']['passes']), 2)
+            original = output.read_bytes()
+            with mock.patch.object(rejudge, 'call_ollama_chat', side_effect=AssertionError('network')):
+                self.assertNotEqual(rejudge.main(args + ['--seed', '18']), 0)
+            self.assertEqual(output.read_bytes(), original)
+
     def test_missing_empty_and_filtered_results(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -39,7 +148,7 @@ class SavedPairsTests(unittest.TestCase):
             model = Path(tmp) / 'model'
             model.mkdir()
             (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
-                '1': {'baseline': {'content': 'BASE_TEXT'}, 'optimized_response': {'content': 'OPT_TEXT'}}
+                '1': {'raw_prompt': 'saved task', 'baseline': {'content': 'BASE_TEXT'}, 'optimized_response': {'content': 'OPT_TEXT'}}
             }}))
             calls = []
             def judge(**kwargs):
@@ -53,7 +162,7 @@ class SavedPairsTests(unittest.TestCase):
                 return {'content': rows}
             with mock.patch.object(rejudge, 'call_ollama_chat', side_effect=judge), \
                  mock.patch.object(rejudge, 'compute_stratified_benchmark_summary', return_value={}) as summary:
-                self.assertEqual(rejudge.main(['--results-dir', tmp, '--swap-positions', '--seed', '17', '--judge-model', 'fake']), 0)
+                self.assertEqual(rejudge.main(['--results-dir', tmp, '--swap-positions', '--seed', '17', '--judge-model', 'fake', '--output', str(Path(tmp) / 'out.json')]), 0)
             self.assertEqual(len(calls), 2)
             self.assertEqual([c['seed'] for c in calls], [17, 17])
             self.assertEqual([c['model'] for c in calls], ['fake', 'fake'])

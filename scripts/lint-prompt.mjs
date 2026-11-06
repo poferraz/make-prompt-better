@@ -3,13 +3,13 @@
  * Deterministic Static Prompt & Context Linter (v4.2.0)
  *
  * Audits prompts, SKILL.md files, and CLAUDE.md / AGENTS.md context files
- * against 6 research-grounded deterministic rules (0-100 score):
+ * against 6 deterministic heuristic rules (0-100 score, not certification):
  * - DILUTION-01: Instruction dilution (>500 lines, ASCII directory trees, or >15 competing style directives)
  * - ORDER-02: Conclusion-first reversal ("state the final answer first" preceding reasoning blocks)
  * - PERSONA-03: Uncalibrated expert roleplay fluff ("You are a world-class 10x...") (arXiv:2603.18507)
  * - LEAKAGE-04: Goal-conditioned evaluation or business-stake leakage (arXiv:2602.09504)
  * - RECENCY-05: Edge-anchored verification / constraint placement in final segment (arXiv:2502.15851)
- * - HARNESS-06: Ungrounded negative prohibitions ("don't hallucinate") vs executable verification gates (arXiv:2608.12610)
+ * - HARNESS-06: Vague negative instructions that may need observable checks (project adaptation)
  */
 
 import fs from "node:fs";
@@ -22,7 +22,7 @@ const CONCLUSION_FIRST_RE =
 const PERSONA_BLOAT_RE =
   /\b(?:you\s+are\s+a(?:n)?\s+(?:world[- ]class|elite|10x|genius|master|top\s+1%|visionary|supreme)|act\s+as\s+a\s+world[- ]class)\b/gi;
 const GOAL_LEAKAGE_RE =
-  /\b(?:for\s+(?:tomorrow's|our|the)\s+(?:client\s+demo|board\s+meeting|investor\s+pitch)|so\s+we\s+can\s+prove\s+that|i\s+will\s+tip\s+you\s+\$\d+|my\s+career\s+depends\s+on)\b/gi;
+  /\b(?:so\s+we\s+can\s+prove\s+that|i\s+will\s+tip\s+you\s+\$\d+|my\s+career\s+depends\s+on)\b/gi;
 const UNGROUNDED_NEGATIVE_RE =
   /\b(?:do\s+not\s+hallucinate|don't\s+hallucinate|never\s+hallucinate|do\s+not\s+make\s+mistakes|never\s+make\s+bugs|be\s+100%\s+accurate)\b/gi;
 const VERIFICATION_ANCHOR_RE =
@@ -36,6 +36,11 @@ export function lintPromptText(text, filename = "prompt.md") {
 
   const findings = [];
   let score = 100;
+  if (!text.trim()) {
+    findings.push({rule: "EMPTY-INPUT", severity: "MEDIUM", paper: "Input validation",
+      issue: "No prompt content was supplied.", remediation: "Supply the text to be reviewed."});
+    score = 0;
+  }
 
   // Rule 1: DILUTION-01 (Line budget & static ASCII tree bloat)
   const treeLines = lines
@@ -50,7 +55,7 @@ export function lintPromptText(text, filename = "prompt.md") {
       paper: "[CONTEXT-FILES] arXiv:2602.11988",
       issue: `Detected ${treeLines.length} lines of static ASCII directory tree (lines ${treeLines.slice(0, 4).join(", ")}...).`,
       remediation:
-        "Remove static directory trees; agents discover file trees dynamically. Retain only non-inferable commands and hard invariants.",
+        "Review whether the tree is needed; preserve any explicitly requested overview and non-inferable commands.",
     });
   }
   if (lineCount > 500) {
@@ -58,7 +63,7 @@ export function lintPromptText(text, filename = "prompt.md") {
     findings.push({
       rule: "DILUTION-01",
       severity: "HIGH",
-      paper: "[SKILLS-SDO] arXiv:2608.12610",
+      paper: "Project heuristic; skill attention: arXiv:2608.12610",
       issue: `File length (${lineCount} lines, ~${estimatedTokens} tokens) exceeds the 500-line progressive disclosure ceiling.`,
       remediation:
         "Move heavy templates or examples into references/ so the core router stays under 500 lines.",
@@ -73,9 +78,9 @@ export function lintPromptText(text, filename = "prompt.md") {
       severity: "HIGH",
       paper: "[META] arXiv:2603.01896",
       issue:
-        "Detected conclusion-first directive forcing verdict emission prior to evidence tracing.",
+        "Detected a conclusion-first directive; presentation order does not establish whether evidence was checked.",
       remediation:
-        "Enforce Reason-Before-Conclude ordering: require [P] Premises and [T] Evidence Traces before the Formal Conclusion.",
+        "Preserve the requested presentation order and ask for evidence checks before forming the conclusion.",
     });
   }
 
@@ -103,7 +108,7 @@ export function lintPromptText(text, filename = "prompt.md") {
       paper: "[GOAL-BLIND] arXiv:2602.09504",
       issue: `Detected downstream goal/stake disclosure (${JSON.stringify(leakageMatches.slice(0, 2))}).`,
       remediation:
-        "Enforce Goal-Blind Isolation: specify what artifact or invariant to analyze, never downstream business stakes.",
+        "Review evaluative pressure while preserving requested deadlines, context, and operational constraints.",
     });
   }
 
@@ -130,7 +135,7 @@ export function lintPromptText(text, filename = "prompt.md") {
     findings.push({
       rule: "HARNESS-06",
       severity: "MEDIUM",
-      paper: "[SKILLS-SDO] arXiv:2608.12610",
+      paper: "Project heuristic; skill attention: arXiv:2608.12610",
       issue: `Detected ungrounded negative prohibitions (${JSON.stringify(negMatches.slice(0, 2))}).`,
       remediation:
         "Replace bare 'Do not hallucinate' rules with positive observable-predicate recipes and executable verification gates.",
@@ -138,11 +143,11 @@ export function lintPromptText(text, filename = "prompt.md") {
   }
 
   score = Math.max(0, score);
-  const grade =
+  const grade = !text.trim() ? "Not assessed (empty input)" :
     score >= 90
-      ? "A (Certified)"
+      ? "A (few heuristic matches)"
       : score >= 75
-        ? "B (Production-Ready)"
+        ? "B (some heuristic matches)"
         : score >= 60
           ? "C (Needs Compaction)"
           : "D (High Dilution / Bias Risk)";
@@ -163,7 +168,7 @@ export function formatReport(res) {
     `Score: ${res.total_score}/100 (${res.grade}) | Lines: ${res.lines} | Est. Tokens: ~${res.estimated_tokens}`,
   ];
   if (res.findings.length === 0) {
-    out.push("Status: PASS - Zero dilution, goal-leakage, or persona anti-patterns detected.");
+    out.push("Status: No configured patterns matched. This is not a correctness or safety assessment.");
   } else {
     out.push("Actionable Findings:");
     res.findings.forEach((f, idx) => {
@@ -172,6 +177,24 @@ export function formatReport(res) {
     });
   }
   return out.join("\n");
+}
+
+export function parseLintArgs(args) {
+  if (args.length === 1 && args[0] === "--self-test") {
+    return { selfTest: true, asJson: false, failOnFindings: false, files: [] };
+  }
+  let asJson = false;
+  let failOnFindings = false;
+  let optionsEnded = false;
+  const files = [];
+  for (const arg of args) {
+    if (!optionsEnded && arg === "--") optionsEnded = true;
+    else if (!optionsEnded && arg === "--json") asJson = true;
+    else if (!optionsEnded && arg === "--fail-on-findings") failOnFindings = true;
+    else if (!optionsEnded && arg.startsWith("-")) throw new Error(`Unknown lint option: ${arg}`);
+    else files.push(arg);
+  }
+  return { selfTest: false, asJson, failOnFindings, files };
 }
 
 function runSelfTest() {
@@ -195,7 +218,7 @@ function runSelfTest() {
   const flawedPrompt = [
     "You are a world-class 10x genius architect!",
     "State the final answer first before reasoning.",
-    "We need this for tomorrow's client demo, and do not hallucinate or make bugs!",
+    "My career depends on this, and do not hallucinate or make bugs!",
     "├── src/",
     "│   ├── index.ts",
     "│   ├── app.ts",
@@ -216,26 +239,35 @@ function runSelfTest() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const args = process.argv.slice(2);
-  if (args.includes("--self-test")) {
+  let parsed;
+  try {
+    parsed = parseLintArgs(process.argv.slice(2));
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
+  if (parsed.selfTest) {
     runSelfTest();
     process.exit(0);
   }
-  const asJson = args.includes("--json");
-  const files = args.filter((a) => !a.startsWith("-"));
-  if (files.length === 0) {
-    console.log("Usage: node scripts/lint-prompt.mjs [--json] [--self-test] <file1.md> [file2.md ...]");
+  if (parsed.files.length === 0) {
+    console.log("Usage: node scripts/lint-prompt.mjs [--json] [--fail-on-findings] [--] <file...>");
     process.exit(1);
   }
-  const results = files.map((file) => {
+  const results = parsed.files.map((file) => {
     const resolved = path.resolve(file);
     if (!fs.existsSync(resolved)) {
       console.error(`Error: File not found: ${file}`);
       process.exit(1);
     }
-    return lintPromptText(fs.readFileSync(resolved, "utf8"), file);
+    try {
+      return lintPromptText(fs.readFileSync(resolved, "utf8"), file);
+    } catch (error) {
+      console.error(`Error: Cannot read ${file}: ${error.message}`);
+      process.exit(1);
+    }
   });
-  if (asJson) {
+  if (parsed.asJson) {
     console.log(JSON.stringify(results, null, 2));
   } else {
     results.forEach((r) => {
@@ -243,4 +275,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log();
     });
   }
+  if (parsed.failOnFindings && results.some((result) => result.findings.length > 0)) process.exit(1);
 }

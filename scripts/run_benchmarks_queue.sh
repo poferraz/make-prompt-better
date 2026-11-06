@@ -2,13 +2,14 @@
 #
 # Sequential Ollama Cloud Benchmark Runner for make-prompt-better v4.2.0
 # Runs one model at a time, ordered from cheapest / smallest to flagship tier.
-# Automatically updates AGGREGATED_METRICS after each model completes.
+# Uses a separate run ID; historical aggregate artifacts are not rewritten.
 #
 
 set -u
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${REPO_ROOT}"
+RUN_ID="${1:-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 
 LOG_FILE="${REPO_ROOT}/research/benchmark/v4/BENCHMARK_QUEUE.log"
 exec > >(tee -a "${LOG_FILE}") 2>&1
@@ -18,6 +19,7 @@ echo " Starting Ollama Cloud Sequential Benchmark Suite"
 echo " Time: $(date)"
 echo " Log file: ${LOG_FILE}"
 echo " Repository: ${REPO_ROOT}"
+echo " Run ID: ${RUN_ID} (pass this ID to resume)"
 echo "================================================================================"
 
 # Models ordered from cheapest / smallest parameter to flagship tier:
@@ -75,11 +77,11 @@ for idx in "${!MODELS[@]}"; do
   
   START_MODEL=$(date +%s)
   
-  # Execute benchmark for this single model across all 12 tests with --no-resume
+  # Resume only when the runner's complete manifest matches this run.
   if python3 "${REPO_ROOT}/research/benchmark/v4/run_ollama_benchmarks.py" \
       --models "${MODEL}" \
       --tests "1,2,3,4,5,6,7,8,9,10,11,12" \
-      --no-resume; then
+      --run-id "${RUN_ID}"; then
     
     ELAPSED_MODEL=$(( $(date +%s) - START_MODEL ))
     echo ">>> SUCCESS: Completed ${MODEL} in $((ELAPSED_MODEL / 60))m $((ELAPSED_MODEL % 60))s"
@@ -90,10 +92,6 @@ for idx in "${!MODELS[@]}"; do
     FAILURE_COUNT=$((FAILURE_COUNT + 1))
     FAILED_MODELS+=("${MODEL}")
   fi
-  
-  # Incrementally re-aggregate overall metrics matrix so progress is immediately updated
-  echo "--- Refreshing AGGREGATED_METRICS.md and AGGREGATED_METRICS.json ---"
-  python3 "${REPO_ROOT}/research/benchmark/v4/aggregate_results.py" || true
   
   # 5-second polite cooldown between models to allow cloud connections to reset cleanly
   sleep 5
@@ -112,3 +110,6 @@ if [ ${FAILURE_COUNT} -gt 0 ]; then
   echo " Failed models: ${FAILED_MODELS[*]}"
 fi
 echo "================================================================================"
+if [ "${FAILURE_COUNT}" -gt 0 ]; then
+  exit 1
+fi
