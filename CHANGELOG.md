@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.5.0] - Unreleased
+## [4.5.0] - 2026-11-06
 
-This is a prepared release candidate. GitHub release creation and npm publication require separate authorization. The existing `v4.4.0` tag remains unchanged.
+This GitHub source release does not publish an npm package. npm publication requires separate authorization, and public npm installation remains unverified. The existing `v4.4.0` tag remains unchanged.
 
 ### Added
 - Add `install`, `check`, `update`, and `uninstall` CLI commands with terminal prompts for host and scope. Preserve `init` and existing installer flags, copy and symlink modes, and recovery behavior. Noninteractive checking, updating, and uninstalling require an explicit host and scope.

@@ -1,12 +1,12 @@
 # npm publishing setup and runbook
 
-## v4.5.0 preparation
+## v4.5.0 release
 
-The source metadata and changelog prepare v4.5.0. This preparation does not create a tag, a GitHub release, or an npm publication. The v4.4.0 tag remains unchanged. The v4.5.0 changelog entry is marked unreleased, and `CITATION.cff` omits `date-released` until the actual release date is established.
+The v4.5.0 changelog and citation use 2026-11-06 as the release date. GitHub release creation and npm publication are separate actions. The v4.4.0 tag remains unchanged, and public npm installation remains unverified.
 
 Proceed through these steps separately:
 
-1. Review and merge the version-preparation PR, then verify every required check on the exact main commit. Finalize the changelog and citation release date through reviewed source changes before tagging.
+1. Review and merge the release metadata PR, including the final changelog and citation date, then verify every required check on the exact main commit before tagging.
 2. Obtain explicit authorization for the GitHub tag and release, naming v4.5.0 and that verified commit. Creating the GitHub release does not authorize npm publication.
 3. Confirm package ownership and publishing access, then obtain separate authorization for npm publication. The guarded workflow must verify the final tagged source and the artifact it will publish.
 4. After publication, run `python3 scripts/public_npm_smoke.py --tag v4.5.0 --integrity 'sha512-REVIEWED_BASE64_DIGEST'` using the digest from that independently verified release artifact. Record the outcome before describing npm installation as verified. A missing public version is a failed verification attempt, not a reason to bypass the gate.

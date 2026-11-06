@@ -41,7 +41,7 @@ This starter demonstrates the approach. Install the full skill for its task rout
 
 ## Install in your agent
 
-The tagged commands below target v4.5.0. Use them once its [GitHub release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) is published; preparing a version or passing CI does not create that release. If it is not yet available, [v4.4.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.4.0) remains an existing source release. Public npm installation has a separate verification gate described in the [distribution guide](docs/npm-publishing.md).
+The source commands below select [v4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) for a repeatable installation. GitHub source releases and npm packages are published separately. Public npm installation remains unverified; see the [distribution guide](docs/npm-publishing.md).
 
 ### Let your coding agent help
 
@@ -85,7 +85,7 @@ Replace `codex` with your host. If the executable is on your `PATH`, use `make-p
 
 Codex uses `~/.agents/skills/make-prompt-better` for user scope and `.agents/skills/make-prompt-better` in the selected project. The installer removes older entries from the selected skill folders and keeps recovery copies outside them. Check your host's picker after installation; if Codex still shows old entries, restart it. [Update, uninstall, and recovery](docs/installation.md) · [Host compatibility](docs/compatibility.md)
 
-After publication, the source commands above select [v4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) for a repeatable installation. To choose another published version or restore a backup, see [update and recovery](docs/installation.md#update).
+To choose another published version or restore a backup, see [update and recovery](docs/installation.md#update).
 
 ## Use it on your next request
 
