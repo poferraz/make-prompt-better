@@ -73,7 +73,7 @@ Note: Token overhead ranges from ~1.7x (Qwen, most efficient) to ~2.7x (Kimi). T
 
 A Max certificate block adds roughly 150 to 300 tokens of prompt overhead depending on task complexity. Lite mode restricts this by capping premises at 3 items, using single-line causal arrow traces, and limiting conclusion fields to 1-2 sentences each. Over a session with many prompts, the difference between Lite and Max compounds significantly.
 
-**Historical trade-off:** An earlier four-model suite reported these overheads and self-judged gains. They are not a reliable prediction for current versions, models, or tasks. The later isolated v4.2.0 track declined on average, and current v4.4.0 outcomes have not been newly measured.
+**Historical trade-off:** An earlier four-model suite reported these overheads and self-judged gains. They are not a reliable prediction for current versions, models, or tasks. The later isolated v4.2.0 track declined on average, and current v4.5.0 outcomes have not been newly measured.
 
 ### Latency
 
@@ -187,7 +187,7 @@ The historical benchmarks include positive and negative self-judged outcomes und
 
 The costs are real: ~1.65x to 2.2x word overhead on Frontier models in Max mode (~1.45x in Lite mode, up to 3.57x words / 5.22x tokens when Max mode is forced onto open cloud models), proportional latency increase, diminishing returns on near-ceiling baselines (>22.5/25), and completeness penalties if prompt compilation drops user-requested sections or leaks backstage planning notes.
 
-**Decision framework (v4.4.0):**
+**Decision framework (v4.5.0):**
 - High-stakes multi-constraint audit (financial, legal, clinical, compliance, deep code review) where full premise-to-conclusion traceability is required? **Mode 1: Max Certificate (with anti-redundancy and acuity-first clinical ordering).**
 - Standard analytical task, code debugging, comparative trade-offs, or compact/flash model? **Mode 2: Lite Certificate (~1.45x word overhead, default for standard analytical tasks).**
 - Large Reasoning Model (o3, R1, Extended Thinking), async concurrency coding, or `AGENTS.md` / `CLAUDE.md` context file? **Mode 3: LRM / Harness Mode (Code-First `[V1] -> [V2]` verification with `<25%` overhead ceiling for Template 12, and compact `Section 0` requirement fulfillment + non-inferable gates for Template 11 per Lee et al., 2026 and Gloaguen et al., 2026).**

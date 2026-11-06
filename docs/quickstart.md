@@ -6,6 +6,8 @@ You can [try the starter in the README](../README.md#try-it-without-installing) 
 
 Use the source route below to install without a publisher token. For other distribution routes and their verification status, see the [distribution guide](npm-publishing.md).
 
+The commands target v4.5.0 after its [GitHub release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) is published. If that release is not available yet, use the existing v4.4.0 tag instead. A prepared version is not evidence of a published release or a verified npm installation.
+
 Choose one route and one scope. A user installation works across your projects; a project installation belongs to one repository. Installing both can produce two entries in a host that loads both scopes.
 
 ### With help from your coding agent
@@ -25,7 +27,7 @@ This confirms files in the selected locations. Next, open the skill picker and c
 A terminal is the app where you run the commands below. Git downloads the repository. Bash runs its installer. On Windows, use a WSL terminal; native PowerShell installation is untested.
 
 ```bash
-git clone --branch v4.4.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
+git clone --branch v4.5.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
 cd make-prompt-better
 ./install.sh --runtime codex --dry-run
 ./install.sh --runtime codex

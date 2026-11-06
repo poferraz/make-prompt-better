@@ -41,13 +41,16 @@ This starter demonstrates the approach. Install the full skill for its task rout
 
 ## Install in your agent
 
+The tagged commands below target v4.5.0. Use them once its [GitHub release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) is published; preparing a version or passing CI does not create that release. If it is not yet available, [v4.4.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.4.0) remains an existing source release. Public npm installation has a separate verification gate described in the [distribution guide](docs/npm-publishing.md).
+
 ### Let your coding agent help
 
 If your agent can access repositories and run local commands, paste this into it:
 
 ```text
-Install make-prompt-better from https://github.com/poferraz/make-prompt-better
-at release v4.4.0 for my user account in this agent. Inspect install.sh and choose this
+First confirm that release v4.5.0 is published at
+https://github.com/poferraz/make-prompt-better. If available, install that
+release for my user account in this agent. Inspect install.sh and choose this
 host's --runtime option. Keep one active copy of this skill in the selected
 scope, with recovery copies outside skill folders. Run the installer's
 --check command, show me its result, and explain how to invoke the skill.
@@ -60,7 +63,7 @@ Your host may request permission to write its skill directory. [First-time setup
 You need Git and Bash on macOS or Linux, or in WSL on Windows. From a folder where you keep projects:
 
 ```bash
-git clone --branch v4.4.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
+git clone --branch v4.5.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
 cd make-prompt-better
 ./install.sh --runtime codex --dry-run
 ./install.sh --runtime codex
@@ -82,7 +85,7 @@ Replace `codex` with your host. If the executable is on your `PATH`, use `make-p
 
 Codex uses `~/.agents/skills/make-prompt-better` for user scope and `.agents/skills/make-prompt-better` in the selected project. The installer removes older entries from the selected skill folders and keeps recovery copies outside them. Check your host's picker after installation; if Codex still shows old entries, restart it. [Update, uninstall, and recovery](docs/installation.md) · [Host compatibility](docs/compatibility.md)
 
-The source commands above select [v4.4.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.4.0) for a repeatable installation. To choose another version or restore a backup, see [update and recovery](docs/installation.md#update).
+After publication, the source commands above select [v4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) for a repeatable installation. To choose another published version or restore a backup, see [update and recovery](docs/installation.md#update).
 
 ## Use it on your next request
 

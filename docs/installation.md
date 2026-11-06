@@ -1,6 +1,6 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). Its source-install commands pin v4.4.0 so an installation is repeatable.
+For a first installation, start with the [quickstart](quickstart.md). Its source-install commands pin v4.5.0 so an installation is repeatable once that GitHub release is published. Until then, the existing v4.4.0 tag remains available.
 
 ## Distribution status
 
@@ -8,7 +8,7 @@ The GitHub source route is supported. Public npm availability and installation r
 
 ## Node CLI
 
-These commands require Node.js 22+ and Bash. They work from a source checkout that contains the named CLI commands; the pinned v4.4.0 release does not include all of them. Run these examples from such a checkout:
+These commands require Node.js 22+ and Bash. They are available in the v4.5.0 source candidate; the earlier v4.4.0 release does not include all of them. Run these examples from a checkout or installed package that contains them:
 
 ```bash
 node bin/cli.mjs install --runtime codex --global --dry-run
@@ -55,17 +55,17 @@ The cleanup covers direct children of the selected discovery roots. It does not 
 
 ## Update
 
-Choose the version you want from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. To select v4.4.0, run these commands from your checkout:
+Choose a published version from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. To select v4.5.0 after its release is published, run these commands from your checkout:
 
 ```bash
 git status --short
-git fetch --depth 1 origin tag v4.4.0
-git switch --detach v4.4.0
+git fetch --depth 1 origin tag v4.5.0
+git switch --detach v4.5.0
 ./install.sh --runtime codex
 ./install.sh --runtime codex --check
 ```
 
-For a later release, replace `v4.4.0` in both Git commands with that release's tag. A detached checkout is expected when selecting a tag; `git pull` is not the update path for that checkout. If Git reports a conflict, preserve your local changes and resolve it before updating the installation. A copy install uses a stable snapshot until you run the installer again. `--symlink` is optional for maintainers who want local edits to take effect immediately; it requires keeping the checkout at the same location. Use the same mode when checking a symlink installation: `./install.sh --runtime codex --symlink --check`.
+For a later release, replace `v4.5.0` in both Git commands with that release's tag. A detached checkout is expected when selecting a tag; `git pull` is not the update path for that checkout. If Git reports a conflict, preserve your local changes and resolve it before updating the installation. A copy install uses a stable snapshot until you run the installer again. `--symlink` is optional for maintainers who want local edits to take effect immediately; it requires keeping the checkout at the same location. Use the same mode when checking a symlink installation: `./install.sh --runtime codex --symlink --check`.
 
 ## Check or uninstall
 
