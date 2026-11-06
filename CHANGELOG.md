@@ -5,7 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.5.1] - Unreleased
+
+This version is prepared for review. No v4.5.1 tag, GitHub release, or npm publication has been created. The existing v4.4.0 and v4.5.0 releases remain unchanged; public npm evidence below applies only to 4.5.0.
+
+### Added
+- Launch the guided installer when the bare CLI runs in a terminal. Choose an agent and project or user scope by number or name, install a copy, and verify the same selection before reporting readiness.
+- Add real-terminal regression tests for both scopes, input validation, cancellation, EOF, interruption, repeat/recovery, redirected streams, install failure, and post-install mismatch. Exercise the guided flow from the actual npm archive.
+
+### Changed
+- Put the short installation flow near the top of the README and simplify the quickstart. Keep advanced options in the installation guide and distinguish the prepared version from the published one.
+- Show npm-oriented help and readable agent/scope menus. Preserve explicit commands, legacy flags, noninteractive defaults, source installation, and recovery behavior.
+- Bare noninteractive execution and explicit help continue to display help without installing. The guide requires both input and output terminals.
 
 ### Release operations
 - Resolve npm archive paths explicitly and allow the verified main workflow to publish an existing immutable source tag.

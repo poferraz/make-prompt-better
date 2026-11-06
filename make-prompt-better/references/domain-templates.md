@@ -1,6 +1,6 @@
 # Domain-Specific Certificate Templates
 
-Reference library for the `make-prompt-better` skill (v4.5.0). Each template adapts semi-formal reasoning to a specific domain and incorporates:
+Reference library for the `make-prompt-better` skill (v4.5.1). Each template adapts semi-formal reasoning to a specific domain and incorporates:
 - **Requirement preservation** as the first invariant: every requested deliverable, sub-question, ordering rule, and operational constraint is retained (Zhang, Hu et al., 2026; Yin et al., 2026)
 - **Itemized identifiers** `[P1]`, `[T1]`, `[V1]` with anti-redundancy cross-referencing so facts are stated once and cited by ID rather than repeated across sections (Ugare & Chandra, 2026; Zhang, Hu et al., 2026)
 - **Dual context binding**: verbatim embedding in `[P]` for portable/isolated prompts, or exact `file:line` pointers for working-context coding agents (Ugare & Chandra, 2026; Lee et al., 2026)

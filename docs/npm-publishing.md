@@ -1,5 +1,9 @@
 # npm publishing setup and runbook
 
+## v4.5.1 preparation
+
+The working source prepares v4.5.1 with a guided bare command and automatic filesystem verification. It has not been tagged or published to GitHub or npm. Test it from a checkout or locally packed archive; the bare public command still runs published 4.5.0 and displays help. Existing 4.5.0 registry evidence does not verify 4.5.1. Finalize release dates only when releasing, obtain separate GitHub/npm authorization, and run a fresh unauthenticated public test before changing that status. Both existing release tags remain unchanged.
+
 ## v4.5.0 release
 
 Version 4.5.0 was published on 2026-11-06 through the protected GitHub workflow using the stored bootstrap token, after separate authorization. The unauthenticated public installation test passed on macOS, including update, uninstall, and recovery. Pinned `npx` commands passed in user and project scopes. `npm audit signatures` verified the registry signature and provenance attestation. [Dated evidence](evidence/2026-11-06/v4.5.0-npm-verification.json).

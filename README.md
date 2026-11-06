@@ -10,6 +10,63 @@ A skill is a reusable set of instructions for your AI assistant. This one helps 
 
 [MIT licensed](LICENSE) · [Source code](make-prompt-better/SKILL.md) · [CI on main](https://github.com/poferraz/make-prompt-better/actions/workflows/validate-skill.yml)
 
+## Install in your agent
+
+**v4.5.1 is prepared but not published yet.** After its release and public verification, the quick start will be:
+
+```bash
+npx make-prompt-better
+```
+
+Choose your coding agent, then this project or your user account. The installer copies the skill, checks the installed files, and tells you how to start using it. You need Node.js 22+ and Bash. Public installation needs no token.
+
+The guide supports Codex, Claude Code, Cursor, Gemini CLI, Antigravity, and Qwen. Type a number or a name; `q` cancels before installation. After a successful check, reload your agent. In Codex, type `$make-prompt-better` and add your request. [Host compatibility and limits](docs/compatibility.md).
+
+<details>
+<summary><strong>Install the published version today</strong></summary>
+
+Public npm 4.5.0 has passed unauthenticated installation tests. Its bare command shows help, so use the explicit commands:
+
+```bash
+npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.0 check --runtime codex --global --copy
+```
+
+Replace `codex` with your agent. For one project, run inside it and replace `--global` with `--project`. Choose one scope. [Public verification evidence](docs/npm-publishing.md).
+
+</details>
+
+<details>
+<summary><strong>Try the prepared v4.5.1 from this checkout</strong></summary>
+
+Run the guide in your terminal:
+
+```bash
+node bin/cli.mjs
+```
+
+For project scope, run it from the intended project by its absolute path. Redirected input or output shows help without installing. Explicit `install`, `check`, `update`, `uninstall`, and legacy `init` remain available. [CLI and automation options](docs/installation.md#node-cli).
+
+</details>
+
+<details>
+<summary><strong>Install from a tagged source release without Node</strong></summary>
+
+Once the [v4.5.1 release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.1) is published, use Git and Bash:
+
+```bash
+git clone --branch v4.5.1 --depth 1 https://github.com/poferraz/make-prompt-better.git
+cd make-prompt-better
+./install.sh --runtime codex
+./install.sh --runtime codex --check
+```
+
+For an existing source release today, replace `v4.5.1` with `v4.5.0`. Choose your agent and add `--project` for project scope. This route needs neither Node nor Python. Windows users need WSL; WSL and native Windows remain unverified.
+
+</details>
+
+[First-time setup](docs/quickstart.md) · [Update, uninstall, and recovery](docs/installation.md) · [Distribution status](docs/npm-publishing.md)
+
 ## See what changes
 
 **Your request**
@@ -38,54 +95,6 @@ My request:
 ```
 
 This starter demonstrates the approach. Install the full skill for its task routing, reference templates, and research notes. Compare the rewrite with your original before asking your assistant to carry it out.
-
-## Install in your agent
-
-Version [4.5.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.0) is available from GitHub and npm. Its unauthenticated public installation passed on macOS on 2026-11-06, including update, uninstall, and recovery. See the [verification evidence and limits](docs/npm-publishing.md).
-
-### Let your coding agent help
-
-If your agent can access repositories and run local commands, paste this into it:
-
-```text
-First confirm that release v4.5.0 is published at
-https://github.com/poferraz/make-prompt-better. If available, install that
-release for my user account in this agent. Inspect install.sh and choose this
-host's --runtime option. Keep one active copy of this skill in the selected
-scope, with recovery copies outside skill folders. Run the installer's
---check command, show me its result, and explain how to invoke the skill.
-```
-
-Your host may request permission to write its skill directory. [First-time setup](docs/quickstart.md) explains the steps, prerequisites, and expected result.
-
-### Prefer the terminal?
-
-With Node.js 22+ and Bash, install a copy for your user account:
-
-```bash
-npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.0 check --runtime codex --global --copy
-```
-
-Replace `codex` with `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. For one project, run the commands in that project and replace `--global` with `--project`. Choose one scope. Public installation needs no token. `--yes` accepts npm's package execution prompt; `--copy` keeps the installed skill independent of the npm cache.
-
-For the source route, you need Git and Bash on macOS or Linux. From a folder where you keep projects:
-
-```bash
-git clone --branch v4.5.0 --depth 1 https://github.com/poferraz/make-prompt-better.git
-cd make-prompt-better
-./install.sh --runtime codex --dry-run
-./install.sh --runtime codex
-./install.sh --runtime codex --check
-```
-
-The first installer command previews the changes. Replace `codex` with `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. The commands above install for your user account; for a project installation, choose `--project` as described in the [installation guide](docs/installation.md#choose-a-scope-and-host). The source installer needs neither Node nor Python.
-
-Installing the npm package alone does not activate the skill; the explicit `install` command does. See the [CLI guide](docs/installation.md#node-cli) for checking, updating, and uninstalling. Windows users need WSL; WSL and native PowerShell installation have not been verified by these public tests.
-
-Codex uses `~/.agents/skills/make-prompt-better` for user scope and `.agents/skills/make-prompt-better` in the selected project. The installer removes older entries from the selected skill folders and keeps recovery copies outside them. Check your host's picker after installation; if Codex still shows old entries, restart it. [Update, uninstall, and recovery](docs/installation.md) · [Host compatibility](docs/compatibility.md)
-
-To choose another published version or restore a backup, see [update and recovery](docs/installation.md#update).
 
 ## Use it on your next request
 
@@ -142,7 +151,7 @@ The source is MIT licensed. The installer and linters need no API key. Your AI h
 <details>
 <summary><strong>Can I install with npm or npx?</strong></summary>
 
-Yes. The pinned `npx` commands above install and check version 4.5.0 without a token. Installing an npm package alone does not activate the skill in your agent; run its explicit `install` command. See the [distribution evidence](docs/npm-publishing.md) for the tested scope.
+Yes. The prepared v4.5.1 adds a guided bare command; the published v4.5.0 uses the explicit commands above. Downloading the npm package alone does not activate the skill. See the [distribution evidence](docs/npm-publishing.md) for version-specific status.
 
 </details>
 
@@ -167,7 +176,7 @@ The optional JavaScript tools require Node.js 22+. The Python linter requires Py
 ```bash
 node bin/cli.mjs lint CLAUDE.md AGENTS.md
 python3 lint_context.py CLAUDE.md AGENTS.md
-npm test
+npm run verify
 ```
 
 Lint findings are pattern-based review hints. Use `--fail-on-findings` if your CI should fail on them. They do not certify correctness, requirement preservation, or safety.

@@ -3,6 +3,7 @@
  * Zero-Dependency Universal CLI for make-prompt-better
  *
  * Commands:
+ *   node bin/cli.mjs                    Guided installation in a terminal
  *   node bin/cli.mjs install [options]  Install the skill
  *   node bin/cli.mjs check [options]    Check the installation
  *   node bin/cli.mjs update [options]   Update from this checkout or package
@@ -30,13 +31,14 @@ function printHelp() {
   console.log(`make-prompt-better v${version} - Clearer prompts with requirement checks
 
 Usage:
-  node bin/cli.mjs install [options]      Install the skill in your coding agent
-  node bin/cli.mjs check [options]        Check the selected installation
-  node bin/cli.mjs update [options]       Update from this checkout or package
-  node bin/cli.mjs uninstall [options]    Remove the installation with a recovery backup
-  node bin/cli.mjs init [options]         Legacy installer alias
-  node bin/cli.mjs lint [--json] [--fail-on-findings] [--] <file>
-                                             Run heuristic checks; scores are not certification
+  npx make-prompt-better                     Guided installation and verification
+  npx make-prompt-better install [options]   Install the skill in your coding agent
+  npx make-prompt-better check [options]     Check the selected installation
+  npx make-prompt-better update [options]    Update from this checkout or package
+  npx make-prompt-better uninstall [options] Remove the installation with a recovery backup
+  npx make-prompt-better init [options]      Legacy installer alias
+  npx make-prompt-better lint [--json] [--fail-on-findings] [--] <file>
+                                            Run heuristic checks; scores are not certification
 
 Install Options (passed to install.sh):
   -s, --symlink                 Link installed skill to this source directory
@@ -53,7 +55,9 @@ Install Options (passed to install.sh):
 
 Installation notes:
   Requires Bash; use WSL on Windows.
-  Installing the npm package alone does not activate the skill. Run install explicitly.
+  With no arguments in a terminal, choose an agent and scope; installation is checked afterward.
+  With redirected input or output, no arguments shows help without installing.
+  Installing the npm package alone does not activate the skill; run the CLI to install it.
   Copy mode keeps the skill independent of an npm installation or npx cache.
   Update uses the version of this checkout or package; it does not fetch a newer version.
   For check, update, and uninstall in scripts, specify --runtime and --project or --global.
@@ -61,7 +65,9 @@ Installation notes:
   Public package installation needs no publisher token.`);
 }
 
-const runtimes = ["all", "claude", "gemini", "antigravity", "codex", "cursor", "qwen"];
+const runtimes = ["codex", "claude", "cursor", "gemini", "antigravity", "qwen", "all"];
+const runtimeNames = { codex: "Codex", claude: "Claude Code", cursor: "Cursor", gemini: "Gemini CLI",
+  antigravity: "Antigravity", qwen: "Qwen", all: "All supported agents" };
 
 function detectedRuntimes() {
   const roots = [process.cwd(), os.homedir()];
@@ -78,13 +84,16 @@ function detectedRuntimes() {
 async function chooseMissing(passArgs, needsRuntime, needsScope) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: false });
   const lines = rl[Symbol.asyncIterator]();
-  async function choose(label, allowed) {
+  async function choose(label, allowed, names) {
+    console.log(label);
+    allowed.forEach((value, index) => console.log(`  ${index + 1}. ${names[value]} (${value})`));
     while (true) {
-      process.stdout.write(label);
+      process.stdout.write("Choose a number or name (q to cancel): ");
       const { value, done } = await lines.next();
       if (done || value.trim().toLowerCase() === "q") return null;
       const answer = value.trim().toLowerCase();
       if (allowed.includes(answer)) return answer;
+      if (/^[1-9]$/.test(answer) && Number(answer) <= allowed.length) return allowed[Number(answer) - 1];
       console.error(`Choose ${allowed.join(", ")} or q to cancel.`);
     }
   }
@@ -92,12 +101,14 @@ async function chooseMissing(passArgs, needsRuntime, needsScope) {
     if (needsRuntime) {
       const found = detectedRuntimes();
       if (found.length) console.log(`Detected host directories: ${found.join(", ")}`);
-      const runtime = await choose(`Runtime (${runtimes.join("/")}; q to cancel): `, runtimes);
+      const runtime = await choose("Runtime: which coding agent do you use?", runtimes, runtimeNames);
       if (!runtime) return false;
       passArgs.push("--runtime", runtime);
     }
     if (needsScope) {
-      const scope = await choose("Scope (project/global; q to cancel): ", ["project", "global"]);
+      const scope = await choose("Scope: where should the skill be available?", ["project", "global"], {
+        project: `This project: ${process.cwd()}`, global: `Your user account: ${os.homedir()}`,
+      });
       if (!scope) return false;
       passArgs.push(`--${scope}`);
     }
@@ -108,10 +119,16 @@ async function chooseMissing(passArgs, needsRuntime, needsScope) {
 }
 
 const args = process.argv.slice(2);
+const interactive = Boolean(process.stdin.isTTY && process.stdout.isTTY);
+const guided = args.length === 0 && interactive;
 
 if (args.length === 0) {
-  printHelp();
-  process.exit(0);
+  if (!guided) {
+    printHelp();
+    process.exit(0);
+  }
+  console.log(`make-prompt-better v${version}\nChoose your agent and scope. We will install a copy and verify its files.\n`);
+  args.push("install");
 }
 
 if (args.length === 1 && (args[0] === "-v" || args[0] === "--version")) {
@@ -157,7 +174,7 @@ if (["init", "install", "check", "update", "uninstall"].includes(args[0]) || arg
     console.error("Error: --runtime requires an argument.");
     process.exit(1);
   }
-  if ((wrapper || command === "install") && process.stdin.isTTY && process.stdout.isTTY) {
+  if ((wrapper || command === "install") && interactive) {
     if (!await chooseMissing(passArgs, !hasRuntime, !hasScope)) {
       console.error("Installation operation cancelled; no files changed.");
       process.exit(1);
@@ -170,10 +187,27 @@ if (["init", "install", "check", "update", "uninstall"].includes(args[0]) || arg
   if (command === "uninstall") passArgs.push("--uninstall");
   if (command === "update") console.log(`Updating from this checkout or package (v${version}); no version is fetched.`);
   const installScript = path.join(ROOT_DIR, "install.sh");
-  const res = spawnSync("bash", [installScript, ...passArgs], { stdio: "inherit" });
-  if (res.error) console.error(`Error: Could not start bash: ${res.error.message}`);
-  if (res.signal) console.error(`Error: Installer terminated by signal ${res.signal}`);
-  process.exit(res.status ?? 1);
+  function runInstaller(options) {
+    const res = spawnSync("bash", [installScript, ...options], { stdio: "inherit" });
+    if (res.error) console.error(`Error: Could not start bash: ${res.error.message}`);
+    if (res.signal) console.error(`Error: Installer terminated by signal ${res.signal}`);
+    return res.status ?? 1;
+  }
+  if (guided) passArgs.push("--copy");
+  const status = runInstaller(passArgs);
+  if (status !== 0 || !guided) process.exit(status);
+  console.log("\nVerifying installation...");
+  const checkStatus = runInstaller([...passArgs, "--check"]);
+  if (checkStatus !== 0) {
+    console.error("Installation verification failed. Re-run the installer for the same agent and scope to repair.");
+    process.exit(checkStatus);
+  }
+  console.log("\nInstallation verified. Reload your coding agent to load the skill.");
+  const selectedRuntime = passArgs[passArgs.indexOf("--runtime") + 1];
+  console.log(selectedRuntime === "codex"
+    ? "In Codex, type $make-prompt-better and add the request you want to improve."
+    : "Select make-prompt-better in your agent and add the request you want to improve.");
+  process.exit(0);
 }
 
 if (args[0] === "lint") {

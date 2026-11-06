@@ -8,6 +8,8 @@ import subprocess
 import tempfile
 import unittest
 
+from terminal_session import terminal_session
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -298,6 +300,35 @@ class PackageTests(unittest.TestCase):
             self.assertEqual(run(str(cli), 'check', *opts, cwd=Path(tmp)).returncode, 0)
             self.assertEqual(run(str(cli), 'uninstall', *opts, cwd=Path(tmp)).returncode, 0)
             self.assertFalse(target.exists())
+            home = Path(tmp) / 'guided-home'
+            home.mkdir()
+            guided = terminal_session([str(cli)], cwd=Path(tmp), home=home,
+                                      answers=[(b'Runtime', b'codex\n'), (b'Scope', b'project\n')])
+            self.assertEqual(guided.returncode, 0, guided.stdout)
+            copied = Path(tmp) / '.agents/skills/make-prompt-better'
+            self.assertTrue((copied / 'SKILL.md').is_file(), guided.stdout)
+            self.assertFalse(copied.is_symlink())
+            self.assertEqual((copied / 'SKILL.md').read_bytes(), (ROOT / 'make-prompt-better/SKILL.md').read_bytes())
+            self.assertIn('Check passed.', guided.stdout)
+            self.assertIn('Installation verified.', guided.stdout)
+            self.assertFalse((home / '.agents').exists())
+            npx_project = Path(tmp) / 'npx-project'
+            npx_project.mkdir()
+            user_config, global_config = Path(tmp) / 'user.npmrc', Path(tmp) / 'global.npmrc'
+            user_config.write_text('')
+            global_config.write_text('')
+            npx_result = terminal_session(
+                ['npx', '--yes', '--offline', '--ignore-scripts', '--package',
+                 str(Path(tmp) / metadata['filename']), '--', 'make-prompt-better'],
+                cwd=npx_project, home=home,
+                env={'npm_config_cache': str(Path(tmp) / 'npx-cache'),
+                     'npm_config_userconfig': str(user_config), 'npm_config_globalconfig': str(global_config)},
+                answers=[(b'Runtime', b'claude\n'), (b'Scope', b'project\n')], timeout=40)
+            self.assertEqual(npx_result.returncode, 0, npx_result.stdout)
+            self.assertEqual((npx_project / '.claude/skills/make-prompt-better/SKILL.md').read_bytes(),
+                             (ROOT / 'make-prompt-better/SKILL.md').read_bytes())
+            self.assertIn('Check passed.', npx_result.stdout)
+            self.assertIn('Installation verified.', npx_result.stdout)
 
 
 if __name__ == '__main__':
