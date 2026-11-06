@@ -29,7 +29,7 @@ Usage:
                                              Run heuristic checks; scores are not certification
 
 Install Options (passed to install.sh):
-  -s, --symlink                 Symlink skill folders for automatic git pull updates
+  -s, --symlink                 Link installed skill to this source directory
   -c, --copy                    Copy skill files into target directories (default)
   -r, --runtime <target>        Target: all, claude, gemini, antigravity, codex, cursor, qwen
   -p, --project                 Install into current project workspace (.claude, .cursor, .agents)
@@ -37,7 +37,13 @@ Install Options (passed to install.sh):
   -u, --uninstall               Remove installed make-prompt-better skill files
   -n, --dry-run                 Preview actions without modifying files
       --check                   Check installation files and duplicate entries
-  -h, --help                    Show this help message`);
+  -h, --help                    Show this help message
+
+Installation notes:
+  Requires Bash; use WSL on Windows.
+  Installing the npm package alone does not activate the skill. Run init explicitly.
+  Copy mode keeps the skill independent of an npm installation or npx cache.
+  Public package installation needs no publisher token.`);
 }
 
 const args = process.argv.slice(2);

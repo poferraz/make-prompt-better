@@ -43,7 +43,8 @@
     "docs/testing.md",
     "docs/evidence/2026-11-06/codex-discovery.json",
     "docs/npm-publishing.md",
-    "docs/evidence/2026-11-06/v4.4.0-candidate-discovery.json"
+    "docs/evidence/2026-11-06/v4.4.0-candidate-discovery.json",
+    "docs/evidence/2026-11-06/npm-setup.json"
   ],
   "engines": {
     "node": ">=22"
@@ -70,5 +71,9 @@
     "harness-engineering"
   ],
   "author": "Paulo Ferraz",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  }
 }

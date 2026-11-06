@@ -23,6 +23,10 @@ The repository includes a Bash installer, Node.js CLI and linter, Python tooling
 
 Submit ordinary citation corrections, broken documentation links, and benchmark-methodology questions through public issues unless disclosure would create a security risk. Remove credentials and private prompt content from examples and logs.
 
+## Publishing credentials
+
+The `NPM_TOKEN` environment secret is used only for the explicit bootstrap-publish and authentication-check jobs. OIDC is preferred after the package is established. Pull-request validation and package smoke tests receive no npm credential. Never commit `.npmrc` files or token values. If a token is exposed, revoke it in npm and replace the environment secret; deleting a committed file alone does not invalidate the credential. A token that authenticates may still lack package scope, direct-publish permission, or the required 2FA setting. See the [publishing runbook](docs/npm-publishing.md).
+
 ## Supported Versions
 
 Security fixes target the latest release and the current `main` branch. Older versions have no separate maintenance branch.

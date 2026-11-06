@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Add explicit npm preflight, authentication-only check, and publishing operations using the configured `npm-publish` environment. Bootstrap-token and OIDC publishing stay separate.
+- Verify package contents, identity, executable modes, release/CI evidence, archive integrity, sensitive-file exclusion, and actual tarball installation with positive and negative tests.
+- Record the configured environment and secret metadata; update installation status, token troubleshooting, release guidance, and the README without advertising an unverified registry install.
+
+### Evidence limits
+- A configured secret and a successful authentication check do not prove write scope, Bypass 2FA, package ownership, or a successful publication. npm installation and OIDC binding remain unverified until tested.
+
 ## [4.4.0] - 2026-11-06
 
 ### Changed

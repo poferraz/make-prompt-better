@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/recurring-tests.yml'
+      - '.github/workflows/publish-npm.yml'
       - 'install.sh'
       - 'bin/**'
       - 'scripts/**'
@@ -88,6 +89,7 @@ jobs:
           python -m coverage run -a research/benchmark/v4/rejudge_saved_outputs.py --self-test
           python -m coverage run -a research/benchmark/v4/blind_stats_engine.py
           python -m coverage run -a scripts/check-release.py
+          python -m coverage run -a -m unittest discover -s tests -p test_npm_release.py -v
           python -m coverage xml -o test-artifacts/coverage.xml
           python -m coverage json -o test-artifacts/coverage.json
           python tests/check_python_coverage.py test-artifacts/coverage.json | tee test-artifacts/module-coverage.txt

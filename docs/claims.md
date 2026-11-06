@@ -10,6 +10,7 @@ This register covers the consequential claims reviewed in the 2026-11-06 audit. 
 | Earlier project evaluations contain both positive and negative results | [Historical v4.2.0 summary](../research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md) and saved aggregate | Reproducible descriptive results under mixed protocols and self-judging; not a current efficacy estimate |
 | The current skill improves outcomes | No new controlled outcome study has been run for v4.4.0 | Unknown |
 | All listed hosts discover and run the skill correctly | Filesystem targets and isolated installer tests are available | End-to-end host behavior unknown until individually tested |
+| npm publishing setup is configured | Environment/secret metadata and `.github/workflows/publish-npm.yml`; [runbook and evidence](npm-publishing.md) | Configuration is distinct from token validity, package ownership, and a successful publish |
 | `npx make-prompt-better` is a working registry install | Registry lookup returned 404 on 2026-11-06 | Unpublished at that check; future publication and package ownership unknown |
 | Positive observable-predicate recipes and the creative typicality threshold | Project rules, informed by the research groups | Adaptations; their exact effects and the model's probability calibration are not established |
 

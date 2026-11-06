@@ -1,0 +1,33 @@
+{
+  "observed_date": "2026-11-06",
+  "repository": "poferraz/make-prompt-better",
+  "environment": "npm-publish",
+  "required_reviewer": "poferraz",
+  "prevent_self_review": false,
+  "deployment_policies": [
+    {
+      "name": "v*",
+      "type": "tag"
+    },
+    {
+      "name": "main",
+      "type": "branch"
+    }
+  ],
+  "secret_metadata": {
+    "name": "NPM_TOKEN",
+    "updated_at": "2026-11-06T19:25:28Z",
+    "value_read": false
+  },
+  "registry_lookup": {
+    "package": "make-prompt-better",
+    "status": 404
+  },
+  "limits": [
+    "Secret metadata does not establish authentication or publishing rights",
+    "Token values and screenshots were not committed",
+    "Registry ownership and first publication unverified",
+    "OIDC setup unverified",
+    "Authentication outcomes are recorded in the protected Actions check, not inferred from this snapshot"
+  ]
+}
