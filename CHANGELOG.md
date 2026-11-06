@@ -5,15 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.5.0] - Unreleased
+
+This is a prepared release candidate. GitHub release creation and npm publication require separate authorization. The existing `v4.4.0` tag remains unchanged.
 
 ### Added
-- Add explicit npm preflight, authentication-only check, and publishing operations using the configured `npm-publish` environment. Bootstrap-token and OIDC publishing stay separate.
-- Verify package contents, identity, executable modes, release/CI evidence, archive integrity, sensitive-file exclusion, and actual tarball installation with positive and negative tests.
-- Record the configured environment and secret metadata; update installation status, token troubleshooting, release guidance, and the README without advertising an unverified registry install.
+- Add `install`, `check`, `update`, and `uninstall` CLI commands with terminal prompts for host and scope. Preserve `init` and existing installer flags, copy and symlink modes, and recovery behavior. Noninteractive checking, updating, and uninstalling require an explicit host and scope.
+- Add `npm run verify` and `npm run verify:fast` for source validation, plus regression tests for failed or skipped release prerequisites and command failure propagation.
+- Add isolated host checks for Codex, Gemini, Claude Code plugins, and the Qwen skill-loading library. Keep filesystem checks, host discovery, offline activation, and model invocation evidence distinct.
+- Add explicit npm preflight, authentication-only checking, and publishing operations using the protected `npm-publish` environment. Bootstrap-token and OIDC publishing stay separate.
+- Check archive identity, file boundaries, executable modes, sensitive-file exclusion, integrity, and installation/update/recovery/uninstall behavior using actual npm tarballs.
+- Add an unauthenticated public installation smoke test that verifies the downloaded artifact against an independently supplied digest before executing it. Add disposable registry fixtures for missing versions, tampered files, bad executable links, and download failures.
+
+### Changed
+- Make the required `validate` check wait for source verification, the Linux/macOS regression and coverage matrix, mutation checks, and package preflight on every main push and PR, including documentation-only changes.
+- Require successful CI for the exact tagged main commit before npm release preparation. Retrieve all workflow-run pages and reject incomplete evidence, unsuccessful latest runs, and failed or pending rerun attempts.
+- Use explicit Bash pipeline failure handling so a failed test or coverage command cannot be hidden by `tee`.
+- Report the source version during CLI updates and clarify that `update` uses the current checkout or package without fetching another version. Preserve edited installations in recovery storage.
+- Keep onboarding source-first, document scope and recovery choices, and make packaged instructions conditional on actual release availability. Public npm installation is not presented as verified.
+
+### Fixed
+- Resolve generated Cursor reference paths relative to the rule file's directory.
+- Run the JavaScript linter correctly from paths containing spaces or special characters.
+- Preserve malformed judge responses as failed attempts and retry only invalid or missing judge stages when resuming a compatible benchmark or rejudge checkpoint. Restrict old-checkpoint migration to reviewed source hashes and preserve the original manifest.
 
 ### Evidence limits
-- A configured secret and a successful authentication check do not prove write scope, Bypass 2FA, package ownership, or a successful publication. npm installation and OIDC binding remain unverified until tested.
+- No new model-outcome evaluation was run for v4.5.0. Historical results and host transcripts retain their original source and version labels.
+- A configured secret and a successful authentication check do not prove write scope, Bypass 2FA, package ownership, or a successful publication. Public npm installation and OIDC binding remain unverified until tested after separately authorized publication.
+- Local tarball tests and disposable registry fixtures are not public installation evidence. The exact public version must pass the unauthenticated smoke test before installation is advertised as verified.
+- Native Windows, Cursor and Antigravity host loading, and broader model-driven behavior remain outside the recorded verification scope.
 
 ## [4.4.0] - 2026-11-06
 
