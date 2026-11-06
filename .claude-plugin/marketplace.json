@@ -9,7 +9,7 @@
       "name": "make-prompt-better",
       "source": "./",
       "description": "Rewrite prompts and agent instructions with task-appropriate structure, requirement checks, and research-informed guidance.",
-      "version": "4.3.0"
+      "version": "4.4.0"
     }
   ]
 }

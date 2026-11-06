@@ -1,6 +1,6 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). Use the current source checkout for the changes described here; they are not part of the v4.3.0 tag.
+For a first installation, start with the [quickstart](quickstart.md). These instructions describe v4.4.0. The quickstart pins that release so an installation is repeatable.
 
 ## Choose a scope and host
 
@@ -32,16 +32,17 @@ The cleanup covers direct children of the selected discovery roots. It does not 
 
 ## Update
 
-From your checkout, review any uncommitted work before pulling an update:
+Choose the version you want from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. For the current release, run these commands from your checkout:
 
 ```bash
 git status --short
-git pull --ff-only
+git fetch --depth 1 origin tag v4.4.0
+git switch --detach v4.4.0
 ./install.sh --runtime codex
 ./install.sh --runtime codex --check
 ```
 
-If Git reports a conflict, preserve your local changes and resolve it before updating the installation. A copy install uses a stable snapshot until you run the installer again. `--symlink` is optional for maintainers who want local edits to take effect immediately; it requires keeping the checkout at the same location. Use the same mode when checking a symlink installation: `./install.sh --runtime codex --symlink --check`.
+For a later release, replace `v4.4.0` in both Git commands with that release's tag. A detached checkout is expected when selecting a tag; `git pull` is not the update path for that checkout. If Git reports a conflict, preserve your local changes and resolve it before updating the installation. A copy install uses a stable snapshot until you run the installer again. `--symlink` is optional for maintainers who want local edits to take effect immediately; it requires keeping the checkout at the same location. Use the same mode when checking a symlink installation: `./install.sh --runtime codex --symlink --check`.
 
 ## Check or uninstall
 

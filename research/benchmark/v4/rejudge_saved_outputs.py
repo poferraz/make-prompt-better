@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Controlled Saved-Output Re-Judging & Ablation Harness for make-prompt-better (v4.3.0).
+"""Controlled Saved-Output Re-Judging & Ablation Harness for make-prompt-better.
 
 Directly addresses Audit Finding #3:
   "Rejudging the same saved responses under controlled label conditions would test that question."

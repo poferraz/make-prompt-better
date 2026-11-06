@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Sequential Ollama Cloud Benchmark Runner for make-prompt-better v4.2.0
+# Sequential Ollama Cloud Benchmark Runner for make-prompt-better
 # Runs one model at a time, ordered from cheapest / smallest to flagship tier.
 # Uses a separate run ID; historical aggregate artifacts are not rewritten.
 #
