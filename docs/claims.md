@@ -11,6 +11,7 @@ This register covers the consequential claims reviewed in the 2026-11-06 audit. 
 | The current skill improves outcomes | No new controlled outcome study has been run for v4.4.0 | Unknown |
 | All listed hosts discover and run the skill correctly | Filesystem targets and isolated installer tests are available | End-to-end host behavior unknown until individually tested |
 | npm publishing setup is configured | Environment/secret metadata and `.github/workflows/publish-npm.yml`; [runbook and evidence](npm-publishing.md) | Configuration is distinct from token validity, package ownership, and a successful publish |
+| npm accepts the configured credential | [Authentication-only run](https://github.com/poferraz/make-prompt-better/actions/runs/42280955141) succeeded on main; publishing was skipped | Authentication verified at that run; write scope, package ownership, and publication remain unverified |
 | `npx make-prompt-better` is a working registry install | Registry lookup returned 404 on 2026-11-06 | Unpublished at that check; future publication and package ownership unknown |
 | Positive observable-predicate recipes and the creative typicality threshold | Project rules, informed by the research groups | Adaptations; their exact effects and the model's probability calibration are not established |
 

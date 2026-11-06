@@ -6,6 +6,7 @@ Status checked on 2026-11-06. The GitHub v4.4.0 release is published and source 
 | --- | --- |
 | GitHub environment | `npm-publish`, reviewer `poferraz`, version tags `v*`, and protected `main` for the read-only token check |
 | Secret | `NPM_TOKEN` is present; its update timestamp changed to `2026-11-06T19:25:28Z`. The value was not read. Presence is not authentication or publishing proof. |
+| Authentication | [Live check passed](https://github.com/poferraz/make-prompt-better/actions/runs/42280955141) using the replacement secret. The publish job was skipped; no package was published. |
 | Automation | `.github/workflows/publish-npm.yml` separates preflight, authentication-only checking, and explicit publishing |
 | Registry | Public lookup returned 404. Ownership, name availability, first publication, and registry installation remain unverified. |
 | Current install route | The pinned GitHub source instructions in the README |
@@ -110,7 +111,7 @@ Effort estimates are hands-on engineering time, excluding account approvals and 
 - **Acceptance:** published tag resolves to the checked commit, source install passes, discovery evidence states host/version/scope, and untested behavior is explicit.
 - **Rollback:** before publication, revert the release PR. After publication, leave the tag immutable and publish a corrected version if needed. Users can restore a preserved skill or select an older source tag.
 
-### 1. Package checks implemented; registry identity still unverified
+### 1. Package checks and authentication verified; package ownership still unverified
 
 - **Owner / effort:** Paulo for account identity; maintainer for code; 1 to 2 hours. **Dependency:** stage 0 and npm account access.
 - **Files:** `package.json`, `.gitignore`, `tests/test_integration.py`, `docs/releasing.md`, this plan.
@@ -173,7 +174,7 @@ npx --yes make-prompt-better@PUBLISHED_VERSION init --runtime codex --check
 
 ## Unverified until the rollout is performed
 
-- npm account identity, name availability/ownership, token validity/scope/expiry, and publishing permission.
+- Package name availability/ownership, effective token write scope/expiry, and publishing permission. Authentication succeeded in the linked run; that observation is not a guarantee of future validity.
 - First npm publication, public download, OIDC identity binding, registry provenance, and an npm-to-npm upgrade.
 - Actual token permissions and the npm trusted-publisher configuration. Environment/secret presence and workflow source are established separately; consult the run result for authentication evidence.
 - Native Windows, other agent invocation, desktop picker refresh, and model-quality outcomes for the current release.
