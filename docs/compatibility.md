@@ -1,5 +1,7 @@
 # Host compatibility
 
+Public npm 4.5.0 was separately installed without credentials on macOS on 2026-11-06. The test verified the reviewed archive digest, every installed file, and the project installation/check/update/uninstall/recovery lifecycle. This is filesystem evidence, not a new host invocation test. [Public distribution evidence](evidence/2026-11-06/v4.5.0-npm-verification.json).
+
 The installer has automated filesystem tests for the target directories below. On 2026-11-06, the unreleased working tree was also checked against locally available hosts on macOS using isolated home and project directories. Apart from the Codex invocation described below, model invocation and reference loading remain unverified. These checks do not establish compatibility with other host versions.
 
 | Target | Filesystem tests | Host discovery evidence and limits |

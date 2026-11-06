@@ -1,0 +1,151 @@
+{
+  "observed_at": "2026-11-06T22:54:19.325587+00:00",
+  "package": "make-prompt-better",
+  "version": "4.5.0",
+  "source_tag": "v4.5.0",
+  "source_commit": "21e6c964e2e3bfeb511349c0c5811fc0b11b7bcf",
+  "publisher_commit": "c487a3505a5098e01238f6cea241fc972fa0b1a4",
+  "publication_run": "https://github.com/poferraz/make-prompt-better/actions/runs/42306630180",
+  "publication_result": "npm accepted 4.5.0; workflow failed on immediate HTTP 404 read-back while npm processed the package",
+  "public_verification_result": "passed after public availability; no repeat publication",
+  "sha256": "d432fdaa1f9d380ed610de8d39a1777959a2f29641515e5a6d746ff84d39a257",
+  "integrity": "sha512-UPAzYPk8YjWaZGGeo9OOAiF2vEFOHxV0IgOeXcgIHR+YTjMFdHdhEOapcy9toBIsDJwF7SqplaqGsPA2ZrZDBA==",
+  "package_files": 47,
+  "source_comparison": "all 47 published archive files matched the released source; publisher repair changed only workflows and tests",
+  "public_smoke": {
+    "name": "make-prompt-better",
+    "version": "4.5.0",
+    "integrity": "sha512-UPAzYPk8YjWaZGGeo9OOAiF2vEFOHxV0IgOeXcgIHR+YTjMFdHdhEOapcy9toBIsDJwF7SqplaqGsPA2ZrZDBA==",
+    "public_install_smoke": "passed",
+    "host_discovery": "not tested by filesystem smoke"
+  },
+  "public_smoke_platform": {
+    "os": "macOS",
+    "version": "27.3",
+    "node": "v26.12.0",
+    "npm": "11.20.0",
+    "python": "3.14.2"
+  },
+  "npx_and_signature_verification": {
+    "platform": "Darwin",
+    "node": "v26.12.0",
+    "npm": "11.20.0",
+    "version": "4.5.0",
+    "credentials": "none; empty npm configs, isolated home and fresh cache",
+    "npx_lifecycle": [
+      {
+        "scope": "--global",
+        "command": "install",
+        "extra": [
+          "--dry-run"
+        ],
+        "exit_code": 0
+      },
+      {
+        "scope": "--global",
+        "command": "install",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--global",
+        "command": "check",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--global",
+        "command": "install",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--global",
+        "command": "update",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--global",
+        "command": "check",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--global",
+        "command": "uninstall",
+        "extra": [
+          "--dry-run"
+        ],
+        "exit_code": 0
+      },
+      {
+        "scope": "--global",
+        "command": "uninstall",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--project",
+        "command": "install",
+        "extra": [
+          "--dry-run"
+        ],
+        "exit_code": 0
+      },
+      {
+        "scope": "--project",
+        "command": "install",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--project",
+        "command": "check",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--project",
+        "command": "install",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--project",
+        "command": "update",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--project",
+        "command": "check",
+        "extra": [],
+        "exit_code": 0
+      },
+      {
+        "scope": "--project",
+        "command": "uninstall",
+        "extra": [
+          "--dry-run"
+        ],
+        "exit_code": 0
+      },
+      {
+        "scope": "--project",
+        "command": "uninstall",
+        "extra": [],
+        "exit_code": 0
+      }
+    ],
+    "npm_audit_signatures": "audited 1 package in 0s\n\n1 package has a verified registry signature\n\n1 package has a verified attestation\n(use --json --include-attestations to view attestation details)"
+  },
+  "provenance_transparency_log": "https://search.sigstore.dev/?logIndex=3725959901",
+  "v4_4_0_tag_object_unchanged": "80af3ef4418fbf87d65932f0e594750495718006",
+  "limits": [
+    "Filesystem lifecycle and distribution evidence only; no new host or model invocation.",
+    "Linux public verification is recorded separately if performed; this file records the local macOS test.",
+    "OIDC publish authorization, a cross-version npm upgrade, native Windows, and WSL were not verified.",
+    "Published npm 4.5.0 documentation is the immutable pre-publication snapshot."
+  ]
+}
