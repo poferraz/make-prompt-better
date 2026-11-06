@@ -81,6 +81,8 @@ Preserve requested deliverables and decision-relevant constraints such as deadli
 
 Run `npm test`, `npm run lint`, `python3 scripts/check-release.py`, and `bash -n install.sh`. Before declaring changes complete, run the exact validation command in [AGENTS.md](../AGENTS.md) and `./install.sh`. The latter syncs your local agent installations. For a preview, use `./install.sh --dry-run`.
 
+Packaging or workflow changes also require `python3 -m unittest discover -s tests -p test_npm_release.py -v`. Keep preflight credential-free, lifecycle hooks disabled, and public registry claims tied to observed publication. The protected `npm-publish` environment and its secret are maintainer infrastructure; contributors should not add their own token to tests. [Publishing runbook](../docs/npm-publishing.md).
+
 For a first contribution, reproduce an installation issue, fix a documented link, or add a concrete before/after example. Check existing issues and pull requests before opening a duplicate.
 
 ## Questions

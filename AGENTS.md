@@ -5,6 +5,7 @@ This file follows **Template 11 (`[CONTEXT-FILES]`, Gloaguen et al., 2026, arXiv
 
 ## 1. Non-Inferable Validation & Sync Commands
 - Sync skill across local coding agents (`~/.agents`, `~/.claude`, `~/.qwen`, `~/.gemini`): `./install.sh`
+- Test npm packaging and release gates without publishing: `python3 -m unittest discover -s tests -p test_npm_release.py -v`. Use the explicit Actions operation for token checks; keep credentials out of local fixtures.
 - Run CI validation check locally (strictly enforces `<500` line limit on `SKILL.md`, universal YAML frontmatter, 12 templates in `domain-templates.md`, and zero em/en dashes across all core Markdown files):
   `python3 -c 'import re; files=["make-prompt-better/SKILL.md","make-prompt-better/references/domain-templates.md","make-prompt-better/references/research-principles.md","make-prompt-better/references/examples.md","docs/methodology.md","docs/tradeoffs.md","docs/when-to-use.md","docs/task-classification.md","README.md","CLAUDE.md","AGENTS.md","research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md"]; bad=[p for p in files if re.search(r"[\u2014\u2013]", open(p).read())]; assert not bad, f"Dashes in {bad}"; s=open("make-prompt-better/SKILL.md").read(); assert len(s.splitlines())<500; m=re.match(r"^---\nname: make-prompt-better\ndescription: \"(Use when [^\n:\"]+)\"\n---\n", s); assert m and len(m.group(1))<450; assert len(re.findall(r"^## \d+\.", open("make-prompt-better/references/domain-templates.md").read(), re.M))==12; print("VALIDATED OK")'`
 

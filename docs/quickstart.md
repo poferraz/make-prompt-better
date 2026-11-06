@@ -4,6 +4,8 @@ You can [try the starter in the README](../README.md#try-it-without-installing) 
 
 ## Install the full skill
 
+Use the source route below. npm setup is being completed, but registry installation has not been verified. You do not need a publisher token to install the skill.
+
 Choose one route and one scope. A user installation works across your projects; a project installation belongs to one repository. Installing both can produce two entries in a host that loads both scopes.
 
 ### With help from your coding agent

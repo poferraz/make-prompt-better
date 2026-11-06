@@ -10,6 +10,7 @@ FLOORS = {
     'research/benchmark/v4/run_ollama_benchmarks.py': 70,
     'research/benchmark/v4/summarize_runs.py': 75,
     'scripts/check-release.py': 98,
+    'scripts/npm_release.py': 80,
 }
 report = json.load(open(sys.argv[1], encoding='utf-8'))['files']
 failed = False

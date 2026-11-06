@@ -2,6 +2,10 @@
 
 For a first installation, start with the [quickstart](quickstart.md). These instructions describe v4.4.0. The quickstart pins that release so an installation is repeatable.
 
+## Distribution status
+
+The GitHub source route is supported. The GitHub npm environment and credential are configured, with separate preflight, token-check, and publish operations. npm still returned 404 on 2026-11-06; a stored token is not a published package. Follow the [maintainer runbook](npm-publishing.md) for registry rollout. Future public npm users will need Node and Bash, but no publisher token; installing an npm package alone will still require explicit `init` to activate the skill.
+
 ## Choose a scope and host
 
 A global installation is available to your user account. A project installation writes to the current working directory. Pick one scope for a given host: Codex can show separate project and global skills with the same name.

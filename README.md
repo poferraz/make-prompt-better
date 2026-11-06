@@ -70,7 +70,7 @@ Replace `codex` with `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. Run
 
 Codex uses one copy at `~/.agents/skills/make-prompt-better`. The installer removes older entries from the selected skill folders and keeps recovery copies outside them. Check your host's picker after installation; if Codex still shows old entries, restart it. [Update, uninstall, and recovery](docs/installation.md) · [Host compatibility](docs/compatibility.md)
 
-**Current release:** [v4.4.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.4.0) includes these installation and onboarding improvements. npm returned 404 on 2026-11-06; use the source installation above. Maintainers can follow the [npm rollout plan](docs/npm-publishing.md).
+**Current release:** [v4.4.0](https://github.com/poferraz/make-prompt-better/releases/tag/v4.4.0) includes these installation and onboarding improvements. npm returned 404 on 2026-11-06; use the source installation above. The npm publishing setup is configured; registry installation still awaits a published and tested package. [Maintainer setup and status](docs/npm-publishing.md).
 
 ## Use it on your next request
 
@@ -121,6 +121,13 @@ It is primarily a prompt-rewriting skill. Say "improve this prompt without answe
 <summary><strong>Do I need a subscription, an API key, or coding experience?</strong></summary>
 
 The source is MIT licensed. The installer and linters need no API key. Your AI host has its own access requirements and may charge for usage. You can try the starter above in a chat; installing the full skill requires a host that supports skills and access to its local files.
+
+</details>
+
+<details>
+<summary><strong>Can I install with npm or npx?</strong></summary>
+
+Use the GitHub source commands above for now. The publishing workflow and maintainer credential are configured, but npm returned 404 on the latest check. We will add a verified npm command after the first package is published and tested. Public installation will not require a publishing token. [Distribution status](docs/npm-publishing.md).
 
 </details>
 
