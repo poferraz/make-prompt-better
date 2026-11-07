@@ -67,9 +67,8 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          from scripts.file_scope import collect
-          paths = [p for p in collect(Path.cwd(), 'review') if p.endswith(('.py', '.mjs'))]
-          Path('quality-artifacts/codeql.json').write_text(json.dumps({'name': 'Functional source', 'paths': paths}))
+          from scripts.file_scope import codeql_config
+          Path('quality-artifacts/codeql.json').write_text(json.dumps(codeql_config(Path.cwd())))
           PY
       - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:

@@ -62,6 +62,18 @@ def collect(root: Path, purpose: str) -> list[str]:
     return selected
 
 
+def codeql_config(root: Path) -> dict:
+    # The Python extractor walks every include root with os.listdir, so use a
+    # directory root and the complement of our tracked-file allowlist as exclusions.
+    selected = set(collect(root, 'review'))
+    tracked = set(filter(None, subprocess.check_output(
+        ['git', 'ls-files', '-z'], cwd=root).decode().split('\0')))
+    excluded = tracked - selected
+    excluded.update({'quality-artifacts', 'test-artifacts', '.superpowers', '.worktrees',
+                     'research/benchmark/v4/runs', 'research/benchmark/v4/results'})
+    return {'name': 'Functional source', 'paths': ['.'], 'paths-ignore': sorted(excluded)}
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])

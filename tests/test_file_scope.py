@@ -61,3 +61,22 @@ class FileScopeTests(unittest.TestCase):
         files = json.loads(packed.stdout)[0]['files']
         unexpected = [f['path'] for f in files if not self.scope.included(f['path'], 'runtime')]
         self.assertEqual(unexpected, [])
+
+    def test_codeql_walks_directories_and_excludes_unrelated_tracked_code(self):
+        self.assertTrue(hasattr(self.scope, 'codeql_config'), 'CodeQL needs directory-rooted scope')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            for name in ('lint_context.py', 'tests/test_scope.py',
+                         'research/benchmark/v4/results/model/example.py', 'docs/audit/code.js'):
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('fixture')
+            subprocess.run(['git', 'add', '.'], cwd=root, check=True)
+            config = self.scope.codeql_config(root)
+            for directory in config['paths']:
+                self.assertTrue((root / directory).is_dir())
+            self.assertIn('docs/audit/code.js', config['paths-ignore'])
+            self.assertIn('research/benchmark/v4/results/model/example.py', config['paths-ignore'])
+            self.assertNotIn('lint_context.py', config['paths-ignore'])
+            self.assertNotIn('tests/test_scope.py', config['paths-ignore'])
