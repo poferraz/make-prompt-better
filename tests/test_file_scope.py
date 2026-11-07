@@ -2,6 +2,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -16,6 +17,27 @@ class FileScopeTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location('file_scope', path)
         self.scope = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.scope)
+
+    def test_one_private_root_ignores_arbitrary_nested_material(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            shutil.copy2(ROOT / '.gitignore', root / '.gitignore')
+            names = ['.private/notes.md', '.private/nested/new-name.bin',
+                     '.private/scripts/example.py', '.private/docs/guide.md']
+            for name in names:
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text('PRIVATE_SENTINEL')
+                self.assertFalse(self.scope.included(name, 'runtime'))
+                self.assertFalse(self.scope.included(name, 'review'))
+            ignored = subprocess.run(['git', 'check-ignore', '--stdin'], cwd=root,
+                                     input='\n'.join(names), text=True, capture_output=True)
+            self.assertEqual(ignored.stdout.splitlines(), names)
+            subprocess.run(['git', 'add', '.'], cwd=root, check=True)
+            tracked = subprocess.check_output(['git', 'ls-files'], cwd=root, text=True)
+            self.assertEqual(tracked.splitlines(), ['.gitignore'])
+            self.assertIn('.private', self.scope.codeql_config(root)['paths-ignore'])
 
     def test_runtime_retains_functional_prompts_only(self):
         for path in ['bin/cli.mjs', 'install.sh', 'make-prompt-better/SKILL.md',
@@ -34,7 +56,7 @@ class FileScopeTests(unittest.TestCase):
                      'research/benchmark/v4/checkpoint-migration-hashes.json',
                      'make-prompt-better/references/examples.md']:
             self.assertTrue(self.scope.included(path, 'review'), path)
-        for path in ['docs/clief/audits/security.md', 'research/benchmark/v4/EXECUTION_PLAN.md',
+        for path in ['docs/clief/audits/security.md', '.private/notes/plan.md',
                      'research/benchmark/v4/results/model/artifacts/limiter_verified.py',
                      'tests/audits/report.py', 'PROMPT.md']:
             self.assertFalse(self.scope.included(path, 'review'), path)

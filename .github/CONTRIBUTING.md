@@ -44,9 +44,9 @@ To incorporate a new paper into the methodology:
 1. Add an entry to `make-prompt-better/references/research-principles.md` with three fields: Finding, Constraint, When to cite
 2. Add the paper to the Research Foundation section in `make-prompt-better/SKILL.md`
 3. Update the Prompt Structure Framework table in `make-prompt-better/SKILL.md` if the paper affects component mapping
-4. Add to `docs/methodology.md` with full citation and arXiv link
+4. Keep full citations, arXiv links and methodological limits in the functional research reference
 5. Add to `README.md` Attribution section with full citation
-6. Add to `docs/tradeoffs.md` if the paper has cost/benefit implications
+6. Record relevant cost/benefit limitations beside the affected functional reference or template
 7. Verify consistent citation across all files using the format: (Author, Year)
 
 ### Citation Format

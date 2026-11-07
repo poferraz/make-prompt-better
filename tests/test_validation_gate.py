@@ -91,7 +91,7 @@ class StructuralGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='structural gate ') as tmp:
             root = Path(tmp) / 'source'
             shutil.copytree(ROOT, root, ignore=shutil.ignore_patterns(
-                '.git', 'node_modules', '__pycache__', '.coverage*', 'test-artifacts', 'runs'))
+                '.private', '.git', 'node_modules', '__pycache__', '.coverage*'))
             def check():
                 return subprocess.run([sys.executable, str(root / 'scripts/validate_repo.py')],
                                       cwd=root, text=True, capture_output=True, timeout=10)
@@ -123,8 +123,15 @@ class StructuralGateTests(unittest.TestCase):
             templates.write_text(original_templates)
             readme = root / 'README.md'
             original_readme = readme.read_text()
+            private = root / '.private/notes.md'
+            private.parent.mkdir(exist_ok=True)
+            private.write_text('PRIVATE_SENTINEL')
             for extra in ('\nBad \u2014 punctuation\n', '\nBad \u2013 punctuation\n',
-                          '\n[Missing](missing-file.md)\n'):
+                          '\n[Missing](missing-file.md)\n',
+                          '\n[Private](.private/notes.md)\n',
+                          '\n[Private](%2eprivate/notes.md)\n',
+                          '\n[Missing](https://github.com/poferraz/make-prompt-better/blob/main/missing.md)\n',
+                          '\n[Missing](https://raw.githubusercontent.com/poferraz/make-prompt-better/main/missing.png)\n'):
                 readme.write_text(original_readme + extra)
                 with self.assertRaises(ValueError):
                     validator.validate(root)

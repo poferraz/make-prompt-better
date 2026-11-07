@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Aggregates all benchmark results across session-based evaluations (Antigravity, OpenAI Codex)
-and isolated Ollama Cloud models in research/benchmark/v4/results/*/ into a unified dataset and Markdown matrix.
+and isolated Ollama Cloud models in .private/research/benchmark/v4/results/*/ into a unified dataset and Markdown matrix.
 
 Methodological safeguards:
 - Separates session-based self-evaluations from isolated runner evaluations instead of pooling them without qualification.
@@ -25,7 +25,7 @@ except ImportError:
     from blind_stats_engine import compute_stratified_benchmark_summary
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-RESULTS_ROOT = REPO_ROOT / "research" / "benchmark" / "v4" / "results"
+RESULTS_ROOT = REPO_ROOT / ".private" / "research" / "benchmark" / "v4" / "results"
 
 
 def score_quality_issues(
@@ -274,7 +274,7 @@ def build_pair_records(models: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def main() -> int:
-    legacy_root = REPO_ROOT / "research" / "benchmark" / "v4" / "results"
+    legacy_root = REPO_ROOT / ".private" / "research" / "benchmark" / "v4" / "results"
     if RESULTS_ROOT.resolve() == legacy_root.resolve():
         print("Error: historical aggregates are immutable; copy results to a disposable directory before regenerating", file=sys.stderr)
         return 1

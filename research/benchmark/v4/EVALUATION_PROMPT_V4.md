@@ -8,7 +8,7 @@ You are an independent evaluator. You have no stake in whether the skill perform
 
 ## THE SKILL BEING TESTED
 
-The skill is in your working directory (`/Users/poferraz/Documents/Development/active/make-prompt-better`). Read these files before starting:
+The skill is in your working directory (the repository root). Read these files before starting:
 
 ### Required (read all three before proceeding)
 
@@ -19,8 +19,7 @@ The skill is in your working directory (`/Users/poferraz/Documents/Development/a
 ### Recommended (read for deeper understanding)
 
 4. `make-prompt-better/references/examples.md` (9 before/after transformations showing all 4 modes in action)
-5. `docs/tradeoffs.md` (cost/benefit analysis with paper-backed numbers and failure modes)
-6. `docs/when-to-use.md` (decision framework for Mode 1 Max, Mode 2 Lite, Mode 3 Harness, Mode 4 Creative v2, and Bypass)
+5. `README.md` (usage limits and the distinction between research findings and project adaptations)
 
 Read all three required files now. Understand the methodology before proceeding.
 
@@ -278,6 +277,6 @@ Write each of these 9 sections:
 ## AUTOMATIC SAVING INSTRUCTIONS
 
 Save your complete output (containing all 12 test cases and the Final Report) to:
-`research/benchmark/v4/results/<MODEL_SLUG>/EVALUATION_RESULTS.md`
+`.private/research/benchmark/v4/runs/<RUN_ID>/<MODEL_SLUG>/EVALUATION_RESULTS.md`
 
 Where `<MODEL_SLUG>` identifies your model (for example, `gemini-3.8`, `gpt-6.1-terra`, `claude-opus`, `claude-sonnet-5.5`, `meta-muse-wonder-1.0-max`, or the Ollama model slug). Create the directory if it does not exist.

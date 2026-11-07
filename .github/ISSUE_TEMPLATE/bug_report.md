@@ -12,7 +12,7 @@ A clear description of what is wrong.
 
 ## What File Is Affected
 
-Which file contains the problem? For example: `make-prompt-better/references/domain-templates.md`, `make-prompt-better/SKILL.md`, `docs/methodology.md`.
+Which file contains the problem? For example: `make-prompt-better/references/domain-templates.md`, `make-prompt-better/SKILL.md`, `docs/installation.md`.
 
 ## Environment
 

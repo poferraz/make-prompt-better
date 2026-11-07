@@ -25,7 +25,7 @@ Python coverage uses coverage.py 7.6.12 with branches enabled and includes the b
 | Six discoverable copies to one, valid aliases, repeated update, and uninstall | Identity-based discovery regressions; malformed identities and unrelated skills preserved |
 | Read-only check/preview, protected recovery roots, manual restore then update | Negative cases plus a filesystem recovery round trip |
 
-Benchmark tests fake the chat service and cover streams, retry classes, manifest mismatch, staged resume, historical data protection, rejudging, seed propagation, and swapped judge mappings. `tests/test_skill_contract.py` checks selected literal details of one documented example; it does not establish live-model behavior. The mutation probe tests four targeted mutations. A loopback HTTP fixture tests a streamed response and retry without a model service. A live cloud-model smoke request on 2026-11-01 returned HTTP 429. Live model behavior, interruptions at every possible instruction, all host discovery paths, and exhaustive mutations are not verified. No live paid inference is performed in CI.
+Benchmark tests fake the chat service and cover streams, retry classes, manifest mismatch, staged resume, historical data protection, rejudging, seed propagation, and swapped judge mappings. `tests/test_skill_contract.py` checks selected literal details of one documented example; it does not establish live-model behavior. The mutation probe tests four targeted mutations. A loopback HTTP fixture tests a streamed response and retry without a model service. A live cloud-model smoke request on 2026-11-01 returned HTTP 429. Live model behavior, interruptions at every possible instruction, all host discovery paths, and exhaustive mutations are not verified. Required offline validation makes no model calls. Separate live workflows require explicit configuration and opt-in.
 
 ## npm workflow and package checks
 
@@ -37,4 +37,5 @@ Benchmark tests fake the chat service and cover streams, retry classes, manifest
 
 The `verify-public` operation checks an already published version without a publish job, npm credentials, or an environment approval. It retains the same stable-tag, source ancestry, exact-source CI, package audit, and trusted-integrity checks. Both operations retry public HTTP 404 responses at most 20 times with 15-second pauses, allowing npm processing to finish. Other HTTP failures and identity or integrity mismatches fail immediately. Verification never retries a publication. Workflow regression tests execute the real read-back code with simulated responses and exercise the job conditions for failed or skipped dependencies.
 
-The actual public npm 4.5.0 smoke passed on macOS on 2026-11-06 using empty npm configurations, an isolated home, and fresh caches. [Dated public evidence](evidence/2026-11-06/v4.5.0-npm-verification.json) is separate from local registry fixtures and host discovery evidence.
+
+Keep local reports under `.private/`. CI uploads only the designated test-output subdirectory; the private archive and working documents are not included. Public verification must pass without `.private/` present.

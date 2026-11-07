@@ -82,7 +82,7 @@ def sensitive_path(name):
         if (part in {'.npmrc', '.git', '.env', '.make-prompt-better', 'node_modules', '__pycache__'}
                 or part.startswith('.env.') or part.endswith(('.pem', '.key', '.p12', '.pyc'))):
             return True
-    return name.startswith(('tests/', 'test-artifacts/', 'research/benchmark/v4/runs/', '.github/workflows/'))
+    return name.startswith(('tests/', '.private/', '.github/workflows/'))
 
 
 def inspect_archive(archive, tag):

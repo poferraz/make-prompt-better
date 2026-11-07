@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.5.1] - 2026-11-07
 
-Released on GitHub and npm on November 7, 2026 (UTC). Unauthenticated public installation passed on Linux and macOS. The bare npx guide passed in both scopes on macOS, including repeat/recovery, a 4.5.0-to-4.5.1 upgrade, uninstall, registry signatures, and provenance verification. See the [dated evidence](docs/evidence/2026-11-07/v4.5.1-npm-verification.json) and [workflow recovery record](docs/npm-publishing.md). The existing v4.4.0 and v4.5.0 releases remain unchanged.
+Released on GitHub and npm on November 7, 2026 (UTC). Unauthenticated public installation passed on Linux and macOS. The bare npx guide passed in both scopes on macOS, including repeat/recovery, a 4.5.0-to-4.5.1 upgrade, uninstall, registry signatures, and provenance verification. See the [public verification workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42318325467) and [workflow recovery record](docs/npm-publishing.md). The existing v4.4.0 and v4.5.0 releases remain unchanged.
 
 ### Added
 - Launch the guided installer when the bare CLI runs in a terminal. Choose an agent and project or user scope by number or name, install a copy, and verify the same selection before reporting readiness.
@@ -25,7 +25,7 @@ Released on GitHub and npm on November 7, 2026 (UTC). Unauthenticated public ins
 
 ## [4.5.0] - 2026-11-06
 
-At GitHub source release time, npm publication awaited separate authorization and public installation was unverified. Later on 2026-11-06, npm 4.5.0 was published with authorization and passed the public installation test; see [dated evidence](docs/evidence/2026-11-06/v4.5.0-npm-verification.json). Both existing release tags and the published package remain unchanged. The entries below describe the original source release.
+At GitHub source release time, npm publication awaited separate authorization and public installation was unverified. Later on 2026-11-06, npm 4.5.0 was published with authorization and passed the public installation test; see [distribution runbook](docs/npm-publishing.md). Both existing release tags and the published package remain unchanged. The entries below describe the original source release.
 
 ### Added
 - Add `install`, `check`, `update`, and `uninstall` CLI commands with terminal prompts for host and scope. Preserve `init` and existing installer flags, copy and symlink modes, and recovery behavior. Noninteractive checking, updating, and uninstalling require an explicit host and scope.
@@ -126,7 +126,7 @@ V4.2.0 completes the repository upgrade to a verified Model-Aware Prompt and Con
 ### Changed
 - **`README.md` Above-the-Fold Architecture**: Added 5-Second Compiler Diff table, 10-Second Universal Install, repaired Shields.io badge URLs, and fixed relative citation links to `make-prompt-better/references/research-principles.md`.
 - **EVALUATION_PROMPT_V4.md**: Updated to blinded `Candidate Response A` vs. `Candidate Response B` protocol.
-- **Relocated Superpowers Design Spec**: Moved `docs/superpowers/specs/2026-10-29-make-prompt-better-v4-design.md` to `docs/architecture-v4.md`.
+- **Architecture documentation**: Consolidated the earlier design specification.
 - **Removed Deprecated Root Release Notes**: Consolidated `RELEASE_v3.md` and `RELEASE_v4.md` into `CHANGELOG.md`.
 
 ## [4.0.0] - 2026-10-29
@@ -153,7 +153,7 @@ V4 expands the research foundation from 6 to 11 peer-reviewed papers, introduces
 ### Changed
 - **Universal YAML Frontmatter in `SKILL.md`**: Replaced the 215-word folded YAML description (whose colons broke cross-agent skill migration parsers) with a single-line, parser-safe, trigger-focused `"Use when..."` description compliant with `agentskills.io` and `@skills` residency budgets.
 - **All 12 Domain Templates synchronized**: Added mandatory `REMEDIATION / NEXT ACTION` and `TRACEABILITY SELF-CHECK` blocks to every analytical template and converted negative "Do NOT" instructions into positive grounding rules with observable predicates.
-- **Resolved `docs/when-to-use.md` inconsistencies**: Updated the decision flowchart to route creative tasks to Mode 4 and reasoning models / context files to Mode 3.
+- **Resolved usage-guide inconsistencies**: Updated the decision flowchart to route creative tasks to Mode 4 and reasoning models / context files to Mode 3.
 
 ## [3.0.0] - 2026-04-01
 
@@ -185,9 +185,9 @@ V3 hardens the skill based on cross-architecture benchmark evaluation across fou
 - 10 domain-specific certificate templates (code review, document analysis, research synthesis, compliance, decision-making, comparative analysis, medical reasoning, legal analysis, financial due diligence, custom)
 - Research principles quick-reference index covering all six papers
 - 7 before/after example transformations across domains
-- Standalone methodology documentation (docs/methodology.md)
-- Task classification guide with persona decision tree (docs/task-classification.md)
-- When-to-use decision framework (docs/when-to-use.md)
-- Honest tradeoffs analysis with paper-backed numbers (docs/tradeoffs.md)
+- Standalone methodology documentation
+- Task classification guide with persona decision tree
+- When-to-use decision framework
+- Honest tradeoffs analysis with paper-backed numbers
 - Claude Code skill with progressive disclosure architecture
 - Contribution guidelines

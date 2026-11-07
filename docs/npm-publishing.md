@@ -1,32 +1,10 @@
 # npm publishing setup and runbook
 
-## v4.5.1 release
+## Current distribution
 
-Version 4.5.1 was released on GitHub and npm on 2026-11-07 (UTC). The [protected publication workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42317679119) used the stored bootstrap token after authorization and artifact review. The source tag and publisher both identify `6d0772b41eb458608207506e010cd2a563cbf327`, whose [main CI passed](https://github.com/poferraz/make-prompt-better/actions/runs/42317071879). All 48 public archive files matched that source. v4.4.0 and v4.5.0 remain unchanged.
+Version 4.5.1 is available from GitHub and npm. The [publication workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42317679119) and [verification workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42318325467) record the public release checks. Its published archive and tags are immutable snapshots; changes on main apply to future releases. Public installation checks covered Linux and macOS. Filesystem installation checks do not establish host discovery, authenticated model invocation or prompt quality.
 
-The publish job succeeded. Its first public smoke returned npm command exit 1 just after the registry began serving the correct identity and digest. A fresh isolated download then passed, followed by the credential-free [verification-only workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42318325467). Publication was not repeated.
-
-Public installation, checking, update, recovery, and uninstall passed on Linux and macOS. On macOS, the exact `npx make-prompt-better` command passed in both project and user scopes, including npm's package confirmation, the installer choices, automatic verification, and repeated installation preserving local edits. An upgrade from public 4.5.0 to 4.5.1 preserved an edited copy in recovery. `npm audit signatures` verified the registry signature and provenance attestation. [Dated npm evidence](evidence/2026-11-07/v4.5.1-npm-verification.json) and [provenance transparency record](https://search.sigstore.dev/?logIndex=3726930162).
-
-The public GitHub source archive also matched every tracked file and passed isolated installation and all five opt-in host checks without model requests. [Source verification evidence](evidence/2026-11-07/v4.5.1-source-verification.json).
-
-The published npm tarball and its README remain the immutable source-finalization snapshot, with a link to this current runbook. These later documentation updates do not overwrite the package or move its tag. OIDC authorization, native Windows, WSL, and new model-outcome evaluation remain outside this evidence.
-
-## v4.5.0 release
-
-Version 4.5.0 was published on 2026-11-06 through the protected GitHub workflow using the stored bootstrap token, after separate authorization. The unauthenticated public installation test passed on macOS, including update, uninstall, and recovery. Pinned `npx` commands passed in user and project scopes. `npm audit signatures` verified the registry signature and provenance attestation. [Dated evidence](evidence/2026-11-06/v4.5.0-npm-verification.json).
-
-The [publication run](https://github.com/poferraz/make-prompt-better/actions/runs/42306630180) accepted the package, but its immediate public lookup returned 404 while npm was processing it. The later independent public test passed against the reviewed artifact's SHA-512 digest. Do not rerun publication to recover a read-back failure; use `verify-public` below.
-
-Source tag `v4.5.0` remains at `21e6c964e2e3bfeb511349c0c5811fc0b11b7bcf`. The publisher ran from verified main commit `c487a3505a5098e01238f6cea241fc972fa0b1a4`; its repair changed only workflows and tests, and all 47 packaged files matched the released source. Provenance identifies that publishing workflow commit. The v4.4.0 tag remains unchanged.
-
-The npm 4.5.0 tarball and its packaged README are immutable release snapshots. No package was overwritten. At that release, an upgrade between two public npm versions was unverified; the later 4.5.1 test above records that upgrade. Public filesystem tests do not establish host discovery or model behavior.
-
-## Earlier setup observations
-
-The [configuration snapshot](evidence/2026-11-06/npm-setup.json) records metadata from before publication. At that point the registry returned 404, and the [authentication-only run](https://github.com/poferraz/make-prompt-better/actions/runs/42280955141) had accepted the stored token without publishing. Those observations remain historical evidence, not the current distribution status.
-
-The environment was `npm-publish`, with reviewer `poferraz`, version-tag and main branch policies, and a secret named `NPM_TOKEN`. The secret's value was never read locally. Its presence and authentication were separate from the later successful publication. Current results are in [npm workflow runs](https://github.com/poferraz/make-prompt-better/actions/workflows/publish-npm.yml).
+Follow this runbook for future releases and record private verification data under `.private/`. Publish only deliberately reviewed release evidence. Each release channel requires authorization.
 
 ## Consumer installation
 
@@ -125,7 +103,7 @@ python3 scripts/public_npm_smoke.py --tag v4.5.1 --integrity 'sha512-QQkPL5XHZWW
 
 The test uses empty npm configurations, isolated homes, and fresh caches. It downloads the exact public package with lifecycle hooks disabled, audits its archive and trusted digest, installs the public version into a separate prefix, and compares every installed byte with the archive. It checks the executable link and exercises project installation, repeats, checking, edited-copy rejection, update, recovery, and uninstall. It does not prove host discovery or model behavior.
 
-After this passes, follow the pinned customer commands in disposable user and project scopes. A separate temporary installation can run `npm audit signatures` to verify the registry signature and attestation. Record platform and tool versions, package integrity, source/workflow commits, and run URLs under `docs/evidence/`. Exclude credentials and private paths. Update customer docs only after public verification passes.
+After this passes, follow the pinned customer commands in disposable user and project scopes. A separate temporary installation can run `npm audit signatures` to verify the registry signature and attestation. Record platform and tool versions, package integrity, source/workflow commits, and run URLs under `.private/`. Exclude credentials and private paths. Update customer docs only after public verification passes.
 
 ## Recovery and remaining limits
 

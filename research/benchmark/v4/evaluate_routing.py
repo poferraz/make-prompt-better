@@ -37,7 +37,7 @@ def main(argv=None) -> int:
     parser.add_argument('--split', choices=['development', 'holdout', 'all'], default='all')
     parser.add_argument('--max-requests', type=int, default=72)
     parser.add_argument('--max-seconds', type=int, default=600)
-    parser.add_argument('--output', type=Path, default=Path('quality-artifacts/routing.json'))
+    parser.add_argument('--output', type=Path, default=Path('.private/quality-artifacts/routing.json'))
     parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args(argv)
     try:

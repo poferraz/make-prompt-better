@@ -189,7 +189,7 @@ console.log(JSON.stringify({type: spec.type, path: spec.fetchSpec}));
         script = textwrap.dedent(match.group(1))
         with tempfile.TemporaryDirectory(prefix='npm coverage workflow ') as tmp:
             root = Path(tmp)
-            (root / 'test-artifacts').mkdir()
+            (root / '.private/test-artifacts').mkdir(parents=True)
             fake = root / 'python'
             fake.write_text('#!/bin/sh\nprintf "%s\\n" "$*" >> "$CAPTURE_COMMANDS"\n')
             fake.chmod(0o755)

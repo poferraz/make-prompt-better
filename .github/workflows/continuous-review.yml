@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Record scoped source inventory
-        run: python3 scripts/review_code.py --output quality-artifacts/scope.json
+        run: python3 scripts/review_code.py --output .private/quality-artifacts/scope.json
       - name: Check shell syntax
         run: for path in install.sh scripts/*.sh; do bash -n "$path"; done
       - name: Check workflow syntax
@@ -44,7 +44,8 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: review-scope-${{ github.run_id }}-${{ github.run_attempt }}
-          path: quality-artifacts/
+          include-hidden-files: true
+          path: .private/quality-artifacts/
           retention-days: 30
 
   security:
@@ -63,18 +64,18 @@ jobs:
           persist-credentials: false
       - name: Select functional source for CodeQL
         run: |
-          mkdir -p quality-artifacts
+          mkdir -p .private/quality-artifacts
           python3 - <<'PY'
           import json
           from pathlib import Path
           from scripts.file_scope import codeql_config
-          Path('quality-artifacts/codeql.json').write_text(json.dumps(codeql_config(Path.cwd())))
+          Path('.private/quality-artifacts/codeql.json').write_text(json.dumps(codeql_config(Path.cwd())))
           PY
       - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: none
-          config-file: quality-artifacts/codeql.json
+          config-file: .private/quality-artifacts/codeql.json
       - uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           category: /language:${{ matrix.language }}
@@ -99,11 +100,12 @@ jobs:
           BATCH_NUMBER: ${{ github.run_number }}
         run: |
           test -n "$REVIEW_MODEL" && test -n "$OLLAMA_HOST"
-          python3 scripts/review_code.py --model "$REVIEW_MODEL" --offset "$BATCH_NUMBER" --timeout 120 --max-chars 120000 --output quality-artifacts/model-review.json
+          python3 scripts/review_code.py --model "$REVIEW_MODEL" --offset "$BATCH_NUMBER" --timeout 120 --max-chars 120000 --output .private/quality-artifacts/model-review.json
       - name: Upload structured findings
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: model-review-${{ github.run_id }}-${{ github.run_attempt }}
-          path: quality-artifacts/
+          include-hidden-files: true
+          path: .private/quality-artifacts/
           retention-days: 30

@@ -28,7 +28,7 @@ class RecurringWorkflowTests(unittest.TestCase):
             root = Path(tmp)
             fakebin = root / "bin"
             fakebin.mkdir()
-            (root / "test-artifacts").mkdir()
+            (root / ".private/test-artifacts").mkdir(parents=True)
             runner = root / "runner"
             c8 = runner / "c8/node_modules/.bin/c8"
             c8.parent.mkdir(parents=True)

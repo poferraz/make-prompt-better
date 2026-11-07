@@ -18,9 +18,9 @@ The adaptation here is an experiment, not a new production rule. `evaluate_routi
 | --- | --- | --- |
 | Consumer package | CLI, installer, linters, plugin metadata, SKILL.md, functional references, README, license | Plans, audits, historical benchmark reports, images, verification records, development tools |
 | Automated review | Runtime inputs, tests, functional benchmark code/instructions and checkpoint policy, CI, release tools and selected operating docs | Saved model outputs, research summaries, historical synthesis prompts, plans, audit narratives and working drafts |
-| Git tracking | Existing source and historical records | New generated campaigns/reviews and local work directories are ignored |
+| Git tracking | Functional source, tests, CI and essential guides | Internal material and generated output under the single ignored `.private/` root |
 
-Functional Markdown prompts remain in scope. Package docs link to the repository instead of bundling historical evidence. Existing tracked records are retained. `.gitignore` alone neither removes tracked files nor enforces npm/context boundaries. Symlinked review inputs fail closed; unknown archive files fail the package audit. Add new functional inputs to the scope policy and its tests deliberately.
+Functional Markdown prompts remain in scope. Package docs link to the repository instead of bundling historical evidence. Internal records are kept locally under `.private/` and removed from the current public tree. Earlier Git commits still contain previously public records. The single `/.private/` rule ignores every nested filename; public validation must not depend on this directory. `.gitignore` does not enforce npm/context boundaries or erase history. Symlinked review inputs fail closed; unknown archive files fail the package audit. Add new functional inputs to the scope policy and its tests deliberately.
 
 ## Repeated outcome experiments
 
@@ -33,7 +33,7 @@ python3 research/benchmark/v4/repeat_evaluations.py \
   --models example-executor --judge-model example-independent-judge \
   --seeds 42,43,44 --tests 1,2 \
   --max-requests 400 --deadline-seconds 900 \
-  --max-output-tokens 4096 --output-dir quality-artifacts/pilot --dry-run
+  --max-output-tokens 4096 --output-dir .private/quality-artifacts/pilot --dry-run
 ```
 
 The example intentionally compares identical skill directories, useful for testing variance. Replace the baseline with a pinned prior checkout and the candidate with the proposed skill directory for an improvement experiment. Supply real model identifiers and `--host` for the configured Ollama-compatible endpoint, then remove `--dry-run` to make live requests. `OLLAMA_API_KEY`, when needed, is read from the environment, never from a command-line argument or saved manifest. No dollar price or provider revision is guessed.
@@ -56,7 +56,7 @@ Before promoting a change, freeze the protocol, primary metric and minimum meani
 python3 research/benchmark/v4/evaluate_routing.py \
   --model example-router --seeds 42,43,44 --split all \
   --max-requests 72 --max-seconds 600 \
-  --output quality-artifacts/routing.json --dry-run
+  --output .private/quality-artifacts/routing.json --dry-run
 ```
 
 With a real model and no dry-run flag, this makes at most 72 single-attempt calls. It pairs variants by case/seed, counterbalances variant order, hashes the catalog/corpus and saves each observation. Invalid outputs are recorded and make the experiment incomplete. Metrics are exact selection accuracy, target recall, false-positive rate and invalid count; interpret all together. Test larger and growing catalogs, genuine competing skills, multiple models and actual host loading before generalizing. Direct `$make-prompt-better` invocation already selects the skill; routing changes chiefly concern automatic selection. End-to-end answer quality needs the separate outcome study.
@@ -76,7 +76,7 @@ Static review needs no model credentials. For live work, set repository variable
 
 The model reviewer sends only selected functional source, never the complete repository. Truncation and omitted files are explicit, and the starting file rotates across runs. Its output must contain bounded findings with valid source paths/lines and verbatim evidence. Stable fingerprints deduplicate identical findings; CodeQL manages its own persistent alerts. Model findings are stored in artifacts, without repeated PR comments or automatic fixes. Prompt-injection text has no shell/file tools to invoke. These checks reduce risk but do not certify safety or semantic correctness.
 
-Review reports are retained for 30 days, evaluation summaries for 90 days and curated raw runs for 14 days. Download reviewed summaries before expiry for longer-term trend analysis, retaining protocol hashes and failure counts. The scheduled corpus contains public fixture data; do not substitute confidential user prompts in public CI artifacts. All new local reports stay under ignored `quality-artifacts/` or benchmark run directories. Pause live spend by setting either enable variable to `false`; revert a candidate through a normal PR, preserving evidence from both versions.
+Review reports are retained for 30 days, evaluation summaries for 90 days and curated raw runs for 14 days. Download reviewed summaries before expiry for longer-term trend analysis, retaining protocol hashes and failure counts. The scheduled corpus contains public fixture data; do not substitute confidential user prompts in public CI artifacts. All new local reports stay under ignored `.private/quality-artifacts/` or benchmark run directories. Pause live spend by setting either enable variable to `false`; revert a candidate through a normal PR, preserving evidence from both versions.
 
 ## Verification
 

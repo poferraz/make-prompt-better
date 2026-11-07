@@ -1,7 +1,7 @@
 [run]
 branch = True
 source = .
-omit = */test_*.py, tests/*
+omit = */test_*.py, tests/*, .private/*
 
 [report]
 show_missing = True

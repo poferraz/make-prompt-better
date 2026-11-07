@@ -100,8 +100,7 @@ class ReleaseCheckTests(unittest.TestCase):
         surfaces = ['package.json', '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json',
                  'pyproject.toml', 'CITATION.cff', 'install.sh', 'CHANGELOG.md', 'README.md',
                  'make-prompt-better/SKILL.md', 'AGENTS.md', 'CLAUDE.md',
-                 'make-prompt-better/references/domain-templates.md', 'docs/methodology.md',
-                 'docs/tradeoffs.md', 'docs/quickstart.md', 'docs/installation.md',
+                 'make-prompt-better/references/domain-templates.md', 'docs/quickstart.md', 'docs/installation.md',
                  'research/benchmark/v4/run_ollama_benchmarks.py']
         files = surfaces + ['bin/cli.mjs',
                  'scripts/lint-prompt.mjs', 'scripts/check-release.py']

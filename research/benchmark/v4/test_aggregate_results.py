@@ -13,7 +13,7 @@ class AggregateResultsTests(unittest.TestCase):
     def test_default_legacy_aggregate_is_not_overwritten(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            results = root / 'research/benchmark/v4/results'
+            results = root / '.private/research/benchmark/v4/results'
             results.mkdir(parents=True)
             output = results / 'AGGREGATED_METRICS.json'
             output.write_text('original historical data')

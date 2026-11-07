@@ -60,23 +60,23 @@ jobs:
           [[ "$seed" =~ ^[0-9]{1,9}$ ]] || { echo 'Seed must be 1 to 9 digits'; exit 1; }
           echo "TEST_SEED=$seed" >> "$GITHUB_ENV"
           if [[ "$SCHEDULE" == '43 5 * * 0' ]]; then echo 'TEST_CASES=2000' >> "$GITHUB_ENV"; else echo 'TEST_CASES=200' >> "$GITHUB_ENV"; fi
-          mkdir -p test-artifacts
-          printf 'Seed: %s\nReproduce: TEST_SEED=%s TEST_CASES=%s python3 -m unittest discover -s research/benchmark/v4 -p test_properties.py -v\n' "$seed" "$seed" "$([[ "$SCHEDULE" == '43 5 * * 0' ]] && echo 2000 || echo 200)" | tee test-artifacts/reproduce.txt
+          mkdir -p .private/test-artifacts
+          printf 'Seed: %s\nReproduce: TEST_SEED=%s TEST_CASES=%s python3 -m unittest discover -s research/benchmark/v4 -p test_properties.py -v\n' "$seed" "$seed" "$([[ "$SCHEDULE" == '43 5 * * 0' ]] && echo 2000 || echo 200)" | tee .private/test-artifacts/reproduce.txt
       - name: Install coverage tool
         run: python -m pip install coverage==7.6.12
       - name: Install JavaScript coverage tool
         run: npm install --prefix "$RUNNER_TEMP/c8" --no-audit --no-fund c8@10.1.3
       - name: Integration tests and JavaScript coverage
         run: |
-          "$RUNNER_TEMP/c8/node_modules/.bin/c8" --all --include 'bin/*.mjs' --include 'scripts/*.mjs' --reporter=text --reporter=lcov --reports-dir test-artifacts/js-coverage --temp-directory "$RUNNER_TEMP/c8-raw" --check-coverage --per-file --lines 83 --branches 78 python -m unittest discover -s tests -v 2>&1 | tee test-artifacts/integration.log
+          "$RUNNER_TEMP/c8/node_modules/.bin/c8" --all --include 'bin/*.mjs' --include 'scripts/*.mjs' --reporter=text --reporter=lcov --reports-dir .private/test-artifacts/js-coverage --temp-directory "$RUNNER_TEMP/c8-raw" --check-coverage --per-file --lines 83 --branches 78 python -m unittest discover -s tests -v 2>&1 | tee .private/test-artifacts/integration.log
       - name: Check overall JavaScript coverage
         run: '"$RUNNER_TEMP/c8/node_modules/.bin/c8" report --temp-directory "$RUNNER_TEMP/c8-raw" --all --include "bin/*.mjs" --include "scripts/*.mjs" --check-coverage --lines 85 --branches 78'
       - name: Additional reproducible seeds
         run: |
           for offset in 1 2; do
             seed=$((10#$TEST_SEED + offset))
-            echo "TEST_SEED=$seed TEST_CASES=$TEST_CASES python -m unittest discover -s research/benchmark/v4 -p test_properties.py -v" | tee -a test-artifacts/reproduce.txt
-            TEST_SEED="$seed" python -m unittest discover -s research/benchmark/v4 -p test_properties.py -v 2>&1 | tee "test-artifacts/seed-$seed.log"
+            echo "TEST_SEED=$seed TEST_CASES=$TEST_CASES python -m unittest discover -s research/benchmark/v4 -p test_properties.py -v" | tee -a .private/test-artifacts/reproduce.txt
+            TEST_SEED="$seed" python -m unittest discover -s research/benchmark/v4 -p test_properties.py -v 2>&1 | tee ".private/test-artifacts/seed-$seed.log"
           done
       - name: Python branch coverage
         run: |
@@ -91,18 +91,19 @@ jobs:
           python -m coverage run -a -m unittest discover -s tests -p test_public_npm_smoke.py -v
           python -m coverage run -a -m unittest discover -s tests -p test_file_scope.py -v
           python -m coverage run -a -m unittest discover -s tests -p test_review_code.py -v
-          python -m coverage xml -o test-artifacts/coverage.xml
-          python -m coverage json -o test-artifacts/coverage.json
-          python tests/check_python_coverage.py test-artifacts/coverage.json | tee test-artifacts/module-coverage.txt
-          python -m coverage report --fail-under=81 | tee test-artifacts/coverage.txt
+          python -m coverage xml -o .private/test-artifacts/coverage.xml
+          python -m coverage json -o .private/test-artifacts/coverage.json
+          python tests/check_python_coverage.py .private/test-artifacts/coverage.json | tee .private/test-artifacts/module-coverage.txt
+          python -m coverage report --fail-under=81 | tee .private/test-artifacts/coverage.txt
       - name: Targeted mutation probe
         if: github.event.schedule == '43 5 * * 0' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' || github.event_name == 'push'
-        run: python tests/mutation_probe.py 2>&1 | tee test-artifacts/mutation.log
+        run: python tests/mutation_probe.py 2>&1 | tee .private/test-artifacts/mutation.log
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-reports-${{ matrix.os }}-py${{ matrix.python }}
-          path: test-artifacts/
+          include-hidden-files: true
+          path: .private/test-artifacts/
           if-no-files-found: warn
           retention-days: 14
