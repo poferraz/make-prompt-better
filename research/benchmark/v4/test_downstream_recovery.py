@@ -167,6 +167,15 @@ class RecoveryTests(unittest.TestCase):
         self.assertNotIn('secret-token', json.dumps(caught.exception.telemetry))
         self.assertIsNone(caught.exception.telemetry['attempts'][0]['prompt_eval_count'])
 
+    def test_missing_usage_response_containing_key_is_not_retained(self):
+        body = io.BytesIO(b'{"message":{"content":"secret-token"},"done":true}\n')
+        with mock.patch.object(runner, 'open_ollama_request', return_value=body):
+            with self.assertRaises(runner.OllamaStopError) as caught:
+                runner.call_ollama_chat('executor', [{'role': 'user', 'content': 'hello'}],
+                                        api_key='secret-token', stop_on_unknown_usage=True)
+        self.assertEqual(caught.exception.reason, 'sensitive_response')
+        self.assertFalse(hasattr(caught.exception, 'response'))
+
     def test_answer_availability_is_part_of_the_denominator(self):
         manifest = evaluation.build_manifest(self.args())
         summary = evaluation.summarize(manifest, {'cells': {}}, [])
@@ -214,6 +223,9 @@ class CampaignStopTests(unittest.TestCase):
                 record = json.loads((output / 'cells' / '0.json').read_text())
                 self.assertEqual(record['stop_reason'], expected_reason)
                 self.assertIn('request_body', record['calls'][0])
+                if expected_reason == 'unknown_usage':
+                    self.assertEqual(record['calls'][0]['response']['content'], 'answer')
+                    self.assertIsNone(record['calls'][0]['response']['prompt_eval_count'])
                 # Simulate a coordinator crash before its state was updated with the stop.
                 state_path = output / 'state.json'
                 state = json.loads(state_path.read_text())

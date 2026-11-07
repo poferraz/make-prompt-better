@@ -495,11 +495,7 @@ def call_ollama_chat(
                              "elapsed_seconds": elapsed,
                              "prompt_eval_count": prompt_count,
                              "eval_count": output_count})
-            if stop_on_unknown_usage and (prompt_count is None or output_count is None):
-                raise OllamaStopError("unknown_usage", telemetry())
-            # Polite pause to avoid bursting cloud gateways
-            time.sleep(1.5)
-            return {
+            result = {
                 "content": content,
                 "raw_content": raw_content,
                 "words": words,
@@ -508,6 +504,16 @@ def call_ollama_chat(
                 "elapsed_seconds": elapsed,
                 "telemetry": telemetry(),
             }
+            if stop_on_unknown_usage and (prompt_count is None or output_count is None):
+                if api_key and api_key in json.dumps(result, ensure_ascii=False):
+                    raise OllamaStopError("sensitive_response", telemetry())
+                failure = OllamaStopError("unknown_usage", telemetry())
+                failure.response = result
+                raise failure
+            # Polite pause to avoid bursting cloud gateways
+            time.sleep(1.5)
+            result['telemetry'] = telemetry()
+            return result
         except urllib.error.HTTPError as err:
             record_failure(err)
             err_body = ""

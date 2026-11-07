@@ -289,6 +289,8 @@ def run_cell(manifest: dict, cell: dict, path: Path, host: str, deadline: float 
             entry.update(status='failed', error=type(exc).__name__)
             if getattr(exc, 'telemetry', None):
                 entry['telemetry'] = exc.telemetry
+            if getattr(exc, 'response', None):
+                entry['response'] = exc.response
             data['stop_reason'] = exc.reason
             data['failures'].append({'stage': stage, 'arm': arm, 'error': type(exc).__name__})
             return None
