@@ -48,21 +48,23 @@ jobs:
             --candidate-skill-dir make-prompt-better \
             --models "$EVAL_MODEL" --judge-model "$EVAL_JUDGE" --host "$OLLAMA_HOST" \
             --seeds 42,43,44 --tests 1,2 --max-requests 400 --deadline-seconds 900 \
-            --max-output-tokens 4096 --output-dir quality-artifacts/campaign
+            --max-output-tokens 4096 --output-dir .private/quality-artifacts/campaign
       - name: Retain trend summaries
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: evaluation-summary-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
           path: |
-            candidate/quality-artifacts/campaign/summary.json
-            candidate/quality-artifacts/campaign/manifest.json
-            candidate/quality-artifacts/campaign/state.json
+            candidate/.private/quality-artifacts/campaign/summary.json
+            candidate/.private/quality-artifacts/campaign/manifest.json
+            candidate/.private/quality-artifacts/campaign/state.json
           retention-days: 90
       - name: Retain curated raw experiment evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: evaluation-runs-${{ github.run_id }}-${{ github.run_attempt }}
-          path: candidate/quality-artifacts/campaign/runs/
+          include-hidden-files: true
+          path: candidate/.private/quality-artifacts/campaign/runs/
           retention-days: 14

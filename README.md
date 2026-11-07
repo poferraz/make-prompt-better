@@ -126,11 +126,9 @@ The skill selects a level of structure for the task. You do not need to learn th
 
 The workflow draws on **11 research principle groups citing 14 papers**. Its particular templates, thresholds, and routing rules are project adaptations. Requirement preservation and proportional structure are design goals informed by Zhang, Hu et al. (2026) and Ugare & Chandra (2026).
 
-Historical v4.2.0 tests recorded **164 comparisons across 14 models**, using different evaluation protocols. The in-session track had a positive average change; the isolated cloud track had a negative one. These results do not measure the current working skill. There is no universal quality or safety guarantee.
+Earlier exploratory evaluations produced mixed outcomes, including regressions. They do not establish the quality of the current skill. There is no universal quality or safety guarantee. Use a direct prompt for a simple question or a request that is already clear; verify consequential outputs against original requirements and reliable sources.
 
-[Results and protocol limits](https://github.com/poferraz/make-prompt-better/blob/main/research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md) · [Claims register](https://github.com/poferraz/make-prompt-better/blob/main/docs/claims.md) · [Research sources](make-prompt-better/references/research-principles.md)
-
-Use a direct prompt for a simple question or a request that is already clear. [When to use it, and when to skip it](https://github.com/poferraz/make-prompt-better/blob/main/docs/when-to-use.md).
+[Research sources](make-prompt-better/references/research-principles.md) · [Run your own evaluation](https://github.com/poferraz/make-prompt-better/blob/main/docs/benchmark-runs.md)
 
 ## Questions before you start
 
@@ -181,7 +179,9 @@ npm run verify
 
 Lint findings are pattern-based review hints. Use `--fail-on-findings` if your CI should fail on them. They do not certify correctness, requirement preservation, or safety.
 
-[Methodology](https://github.com/poferraz/make-prompt-better/blob/main/docs/methodology.md) · [Task routing](https://github.com/poferraz/make-prompt-better/blob/main/docs/task-classification.md) · [Trade-offs](https://github.com/poferraz/make-prompt-better/blob/main/docs/tradeoffs.md) · [Benchmark guide](https://github.com/poferraz/make-prompt-better/blob/main/docs/benchmark-runs.md) · [Testing](https://github.com/poferraz/make-prompt-better/blob/main/docs/testing.md)
+[Functional templates](make-prompt-better/references/domain-templates.md) · [Benchmark guide](https://github.com/poferraz/make-prompt-better/blob/main/docs/benchmark-runs.md) · [Testing](https://github.com/poferraz/make-prompt-better/blob/main/docs/testing.md)
+
+Internal working material and generated reports belong under the single ignored `.private/` directory. Public source, tests and essential guides remain independently usable; `.private/` is excluded from packages and automated review.
 
 ## Help make the next prompt clearer
 

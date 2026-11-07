@@ -72,4 +72,4 @@ The example explains the intended flow; it does not establish consistent outcome
 
 Start with a short request whose details you know. Add the documents or code you want the assistant to use. Say what you need back and what must stay unchanged. For consequential decisions, verify the resulting answer using the appropriate sources, tests, and expertise.
 
-If the skill is too wordy, ask for "only the rewritten prompt" or use the direct request. [When to skip optimization](when-to-use.md) · [Get help](../SUPPORT.md).
+If the skill is too wordy, ask for "only the rewritten prompt" or use the direct request. [Usage limits](../README.md#what-the-evidence-says) · [Get help](../SUPPORT.md).

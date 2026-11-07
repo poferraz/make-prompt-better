@@ -1,8 +1,5 @@
-# Source research papers (available via arXiv links in the docs)
-research/*.pdf
-
-# Build spec (internal, not part of the published repo)
-repo-build-prompt.md
+# Internal material and generated outputs belong under this single local root.
+/.private/
 
 # Python cache
 __pycache__/
@@ -28,19 +25,6 @@ credentials*
 
 # Logs
 *.log
-research/benchmark/v4/results_*_backup/
-# New runs may contain sensitive prompts and responses. Publish only deliberately reviewed artifacts.
-research/benchmark/v4/runs/
-
-# Working drafts
-PROMPT.md
-PROMPT_REMEDIATION.md
 
 # Project-scope installer recovery and staging files
 .make-prompt-better/
-
-# Local quality campaigns and review reports (never runtime inputs)
-quality-artifacts/
-test-artifacts/
-.superpowers/
-.worktrees/

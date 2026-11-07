@@ -197,7 +197,7 @@ class ActualPackageTests(unittest.TestCase):
                     shutil.copy2(original, target)
             (source / '.npmrc').write_text('//registry.npmjs.org/:_authToken=fixture-not-a-key\n')
             (source / '.env').write_text('EXAMPLE=fixture\n')
-            runs = source / 'research/benchmark/v4/runs'
+            runs = source / '.private/nested'
             runs.mkdir(parents=True, exist_ok=True)
             (runs / 'private.json').write_text('{}')
             config = base / 'empty.npmrc'
@@ -211,7 +211,7 @@ class ActualPackageTests(unittest.TestCase):
             self.assertEqual(packed.returncode, 0, packed.stderr)
             metadata = json.loads(packed.stdout)[0]
             paths = {item['path'] for item in metadata['files']}
-            self.assertFalse({'.npmrc', '.env', 'research/benchmark/v4/runs/private.json'} & paths)
+            self.assertFalse({'.npmrc', '.env', '.private/nested/private.json'} & paths)
             archive = base / metadata['filename']
             report = release.inspect_archive(archive, 'v' + metadata['version'])
             self.assertEqual(report['integrity'], metadata['integrity'])

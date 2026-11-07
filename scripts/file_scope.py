@@ -19,6 +19,7 @@ REVIEW_DOCS = frozenset({
     '.gitignore', '.gitattributes', '.github/dependabot.yml',
     'docs/testing.md', 'docs/benchmark-runs.md', 'docs/continuous-quality.md',
     'docs/installation.md', 'docs/compatibility.md', 'docs/releasing.md',
+    'docs/quickstart.md', 'docs/demo.md', 'docs/npm-publishing.md',
     'research/benchmark/v4/routing_cases.json',
     'research/benchmark/v4/EVALUATION_PROMPT_V4.md',
     'research/benchmark/v4/checkpoint-migration-hashes.json',
@@ -69,8 +70,7 @@ def codeql_config(root: Path) -> dict:
     tracked = set(filter(None, subprocess.check_output(
         ['git', 'ls-files', '-z'], cwd=root).decode().split('\0')))
     excluded = tracked - selected
-    excluded.update({'quality-artifacts', 'test-artifacts', '.superpowers', '.worktrees',
-                     'research/benchmark/v4/runs', 'research/benchmark/v4/results'})
+    excluded.add('.private')
     return {'name': 'Functional source', 'paths': ['.'], 'paths-ignore': sorted(excluded)}
 
 

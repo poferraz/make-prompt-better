@@ -30,8 +30,6 @@ assert f"[COMPILER RECEIPT // make-prompt-better v{version}]" in read("make-prom
 assert f"Agent Operating Contract (v{version})" in read("AGENTS.md")
 assert f"skill (`v{version}`)" in read("CLAUDE.md")
 assert f"skill (v{version})" in read("make-prompt-better/references/domain-templates.md")
-assert f"full v{version} methodology" in read("docs/methodology.md")
-assert f"Decision framework (v{version})" in read("docs/tradeoffs.md")
 assert f'"version": "{version}"' in read("research/benchmark/v4/run_ollama_benchmarks.py")
 cli_version = subprocess.check_output(
     ["node", "bin/cli.mjs", "--version"], cwd=ROOT, text=True

@@ -66,7 +66,7 @@ except ImportError:
     )
 
 TEST_MAP = {tc["id"]: tc for tc in TEST_CASES}
-LEGACY_RESULTS_ROOT = REPO_ROOT / "research" / "benchmark" / "v4" / "results"
+LEGACY_RESULTS_ROOT = REPO_ROOT / ".private" / "research" / "benchmark" / "v4" / "results"
 
 
 def build_labeled_eval_instruction(

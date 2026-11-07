@@ -2,6 +2,7 @@
 """Run the repository's structural checks without installing or changing files."""
 from pathlib import Path
 import re
+from urllib.parse import unquote, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,13 +11,16 @@ CORE_FILES = (
     'make-prompt-better/references/domain-templates.md',
     'make-prompt-better/references/research-principles.md',
     'make-prompt-better/references/examples.md',
-    'docs/methodology.md', 'docs/tradeoffs.md', 'docs/when-to-use.md',
-    'docs/task-classification.md', 'README.md', 'CLAUDE.md', 'AGENTS.md',
-    'research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md',
+    'docs/installation.md', 'docs/quickstart.md', 'docs/compatibility.md',
+    'docs/demo.md', 'docs/testing.md', 'docs/releasing.md',
+    'docs/npm-publishing.md', 'docs/benchmark-runs.md', 'docs/continuous-quality.md',
+    'README.md', 'CLAUDE.md', 'AGENTS.md', 'SUPPORT.md', 'SECURITY.md',
+    'CHANGELOG.md', 'CODE_OF_CONDUCT.md', '.github/CONTRIBUTING.md',
 )
 
 
 def validate(root=ROOT):
+    root = Path(root).resolve()
     skill = (root / 'make-prompt-better/SKILL.md').read_text(encoding='utf-8')
     frontmatter = re.match(
         r'^---\nname: make-prompt-better\ndescription: "(Use when [^\n:\"]+)"\n---\n', skill)
@@ -35,10 +39,24 @@ def validate(root=ROOT):
         content = re.sub(r'```.*?```', '', content, flags=re.S)
         for raw in re.findall(r'\[[^\]]+\]\(([^)]+)\)', content):
             target = raw.strip().split()[0]
-            if target.startswith(('http://', 'https://', 'mailto:', '#')):
+            if target.startswith(('mailto:', '#')):
                 continue
-            file_part = target.split('#', 1)[0]
-            if file_part and not (path.parent / file_part).exists():
+            url = urlsplit(target)
+            if url.scheme in {'http', 'https'}:
+                prefixes = {
+                    'github.com': '/poferraz/make-prompt-better/blob/main/',
+                    'raw.githubusercontent.com': '/poferraz/make-prompt-better/main/',
+                }
+                prefix = prefixes.get(url.netloc)
+                if not prefix or not url.path.startswith(prefix):
+                    continue
+                linked = root / unquote(url.path[len(prefix):])
+            else:
+                linked = path.parent / unquote(url.path)
+            linked = linked.resolve()
+            if not linked.is_relative_to(root) or '.private' in linked.relative_to(root).parts:
+                raise ValueError(f'Nonpublic link in {name}: {raw}')
+            if not linked.exists():
                 raise ValueError(f'Broken relative link in {name}: {raw}')
     return 'VALIDATED OK: frontmatter, skill size, templates, punctuation, and local links'
 

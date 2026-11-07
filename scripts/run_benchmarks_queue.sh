@@ -11,7 +11,8 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${REPO_ROOT}"
 RUN_ID="${1:-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 
-LOG_FILE="${REPO_ROOT}/research/benchmark/v4/BENCHMARK_QUEUE.log"
+mkdir -p "${REPO_ROOT}/.private/logs" || exit 1
+LOG_FILE="${REPO_ROOT}/.private/logs/benchmark-queue.log"
 exec > >(tee -a "${LOG_FILE}") 2>&1
 
 echo "================================================================================"

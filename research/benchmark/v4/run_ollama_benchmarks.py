@@ -10,8 +10,8 @@ Executes the 12-test v4.0 benchmark protocol across installed Ollama models:
   - Step E: Final Report generation across all 12 tests
 
 Saves incremental progress after every test to:
-  - research/benchmark/v4/results/<model-slug>/EVALUATION_RESULTS.md
-  - research/benchmark/v4/results/<model-slug>/metrics.json
+  - .private/research/benchmark/v4/results/<model-slug>/EVALUATION_RESULTS.md
+  - .private/research/benchmark/v4/results/<model-slug>/metrics.json
 """
 
 from __future__ import annotations
@@ -52,7 +52,7 @@ except ImportError:
     )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-RESULTS_ROOT = REPO_ROOT / "research" / "benchmark" / "v4" / "runs"
+RESULTS_ROOT = REPO_ROOT / ".private" / "research" / "benchmark" / "v4" / "runs"
 DEFAULT_MAX_RETRIES = 5
 DEFAULT_MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 # The audited predecessor saved judge output before validating it.
@@ -1133,7 +1133,7 @@ def main() -> int:
     parser.add_argument("--strict-preservation", action="store_true", help="Execute the rewrite unchanged without source repairs.")
     parser.add_argument("--max-output-tokens", type=int, default=None, help="Positive output limit for every generation stage.")
     parser.add_argument("--results-dir", type=Path, default=RESULTS_ROOT,
-                        help="Parent directory for new runs (default: research/benchmark/v4/runs).")
+                        help="Parent directory for new runs (default: .private/research/benchmark/v4/runs).")
     parser.add_argument("--run-id", default=None,
                         help="Run identifier; provide the same identifier to resume. Defaults to a new unique ID.")
     parser.add_argument("--dry-run", action="store_true",
