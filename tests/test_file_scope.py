@@ -54,6 +54,8 @@ class FileScopeTests(unittest.TestCase):
                      'research/benchmark/v4/run_ollama_benchmarks.py',
                      'research/benchmark/v4/EVALUATION_PROMPT_V4.md',
                      'research/benchmark/v4/checkpoint-migration-hashes.json',
+                     'research/benchmark/v4/downstream_cases.json',
+                     'docs/downstream-evaluation.md',
                      'make-prompt-better/references/examples.md']:
             self.assertTrue(self.scope.included(path, 'review'), path)
         for path in ['docs/clief/audits/security.md', '.private/notes/plan.md',

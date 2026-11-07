@@ -20,7 +20,9 @@ REVIEW_DOCS = frozenset({
     'docs/testing.md', 'docs/benchmark-runs.md', 'docs/continuous-quality.md',
     'docs/installation.md', 'docs/compatibility.md', 'docs/releasing.md',
     'docs/quickstart.md', 'docs/demo.md', 'docs/npm-publishing.md',
+    'docs/downstream-evaluation.md',
     'research/benchmark/v4/routing_cases.json',
+    'research/benchmark/v4/downstream_cases.json',
     'research/benchmark/v4/EVALUATION_PROMPT_V4.md',
     'research/benchmark/v4/checkpoint-migration-hashes.json',
 })
