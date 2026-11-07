@@ -45,7 +45,9 @@
     "docs/npm-publishing.md",
     "docs/evidence/2026-11-06/v4.4.0-candidate-discovery.json",
     "docs/evidence/2026-11-06/npm-setup.json",
-    "docs/evidence/2026-11-06/v4.5.0-npm-verification.json"
+    "docs/evidence/2026-11-06/v4.5.0-npm-verification.json",
+    "docs/evidence/2026-11-07/v4.5.1-source-verification.json",
+    "docs/evidence/2026-11-07/v4.5.1-npm-verification.json"
   ],
   "engines": {
     "node": ">=22"

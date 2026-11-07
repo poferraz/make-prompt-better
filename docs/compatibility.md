@@ -1,6 +1,8 @@
 # Host compatibility
 
-Public npm 4.5.0 was separately installed without credentials on macOS on 2026-11-06. The test verified the reviewed archive digest, every installed file, and the project installation/check/update/uninstall/recovery lifecycle. This is filesystem evidence, not a new host invocation test. [Public distribution evidence](evidence/2026-11-06/v4.5.0-npm-verification.json).
+Public npm 4.5.1 was installed without credentials on Linux and macOS on 2026-11-07. The tests verified the reviewed archive digest and installed files. macOS additionally passed the exact bare npx guide in project/user scopes, repeated installation with recovery, a 4.5.0-to-4.5.1 upgrade preserving edits, and uninstall. These are filesystem checks. [Public distribution evidence](evidence/2026-11-07/v4.5.1-npm-verification.json).
+
+The public v4.5.1 source archive at commit `6d0772b41eb458608207506e010cd2a563cbf327` also passed all five opt-in Codex, Claude, Gemini, and Qwen host checks on macOS on 2026-11-07, without model requests. [Source hashes, host versions, and results](evidence/2026-11-07/v4.5.1-source-verification.json). The table and working-tree fingerprints below retain the earlier observations, including the separately recorded Codex model invocation.
 
 The installer has automated filesystem tests for the target directories below. On 2026-11-06, the unreleased working tree was also checked against locally available hosts on macOS using isolated home and project directories. Apart from the Codex invocation described below, model invocation and reference loading remain unverified. These checks do not establish compatibility with other host versions.
 
