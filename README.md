@@ -1,4 +1,4 @@
-![make-prompt-better: Keep the intent. Sharpen the ask. A reusable skill for clearer prompts.](https://github.com/poferraz/make-prompt-better/blob/main/assets/prompt-cover.png)
+![make-prompt-better: Keep the intent. Sharpen the ask. A reusable skill for clearer prompts.](https://raw.githubusercontent.com/poferraz/make-prompt-better/main/assets/prompt-cover.png)
 
 # make-prompt-better
 
