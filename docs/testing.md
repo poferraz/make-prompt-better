@@ -1,5 +1,7 @@
 # Testing and recurring runs
 
+See [continuous quality and scoped review](continuous-quality.md) for repeatable outcome campaigns, the routing experiment, bounded optional model review, and activation/retention rules.
+
 From a full source checkout, run `npm run verify`. It runs structural validation, release metadata, both linters, Bash syntax, benchmark tests, and CLI, installer and actual npm archive integration tests. `npm run verify:fast` runs only structure, release metadata, lint and Bash syntax; it is not a substitute for the full release bar. Tests use temporary directories and a temporary npm cache; no model credentials are needed. These source verification tools are not included in the npm consumer package. The additional validation and synchronization requirements in [AGENTS.md](../AGENTS.md) still apply; for testing-only work, run the installer with an isolated temporary home.
 
 The required check remains named `validate`. On every push and pull request to main, including documentation-only changes, it waits for three jobs: `source` runs `npm run verify`, `regression` calls the complete Linux/macOS matrix in `recurring-tests.yml`, and `package` calls `npm-preflight.yml`. The final job runs even when a dependency fails or is skipped, and accepts only success from all three. Package preflight packs once, audits and hashes the tarball, tests its installation lifecycle, and retains the checked artifact. None of these jobs receives npm credentials or publishes.
