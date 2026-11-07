@@ -1,8 +1,8 @@
 # npm publishing setup and runbook
 
-## v4.5.1 preparation
+## v4.5.1 release snapshot
 
-The working source prepares v4.5.1 with a guided bare command and automatic filesystem verification. It has not been tagged or published to GitHub or npm. Test it from a checkout or locally packed archive; the bare public command still runs published 4.5.0 and displays help. Existing 4.5.0 registry evidence does not verify 4.5.1. Finalize release dates only when releasing, obtain separate GitHub/npm authorization, and run a fresh unauthenticated public test before changing that status. Both existing release tags remain unchanged.
+v4.5.1 adds a guided bare command and automatic filesystem verification. Its changelog and citation dates are November 7, 2026 (UTC). At source finalization, GitHub release creation, npm publication, and unauthenticated public installation verification were pending. This packaged document is an immutable snapshot; see the [current runbook](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md) for later results. Existing 4.5.0 registry evidence does not verify 4.5.1. Obtain authorization for both release channels and pass a fresh unauthenticated public test before claiming verification. Both earlier release tags remain unchanged.
 
 ## v4.5.0 release
 
