@@ -4,7 +4,7 @@ You can [try the starter in the README](../README.md#try-it-without-installing) 
 
 ## Install the full skill
 
-The guided installer is prepared for v4.5.1, which is not published yet. From this checkout, run `node bin/cli.mjs` in a terminal. After v4.5.1 is published and publicly verified, the same guide will start with:
+This v4.5.1 release snapshot includes the guided installer. From this checkout, run `node bin/cli.mjs` in a terminal. Check the [current distribution status](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md); after v4.5.1 is published and publicly verified, start the same guide with:
 
 ```bash
 npx make-prompt-better
@@ -22,7 +22,7 @@ Check passed. Selected installations match this checkout; no duplicate entries i
 
 This confirms files in the selected locations. Next, open the skill picker and confirm that the host can actually load the skill. A filesystem check alone cannot establish that.
 
-### Install the published version now
+### Previously verified npm release: v4.5.0
 
 Public npm 4.5.0 has passed installation checks. Its bare command shows help, so use:
 
@@ -37,7 +37,7 @@ Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or 
 
 A terminal is the app where you run the commands below. Git downloads the repository. Bash runs its installer. On Windows, use a WSL terminal; native PowerShell installation is untested.
 
-After the [v4.5.1 source release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.1) exists, run the commands below. For a published source release today, substitute `v4.5.0`.
+After the [v4.5.1 source release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.1) exists, run the commands below. To select the previous source release, substitute `v4.5.0`.
 
 ```bash
 git clone --branch v4.5.1 --depth 1 https://github.com/poferraz/make-prompt-better.git

@@ -12,7 +12,7 @@ A skill is a reusable set of instructions for your AI assistant. This one helps 
 
 ## Install in your agent
 
-**v4.5.1 is prepared but not published yet.** After its release and public verification, the quick start will be:
+**This v4.5.1 release snapshot includes the guided installer.** Check the [current publication and public verification status](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md). Once v4.5.1 is published and publicly verified, start with:
 
 ```bash
 npx make-prompt-better
@@ -23,7 +23,7 @@ Choose your coding agent, then this project or your user account. The installer 
 The guide supports Codex, Claude Code, Cursor, Gemini CLI, Antigravity, and Qwen. Type a number or a name; `q` cancels before installation. After a successful check, reload your agent. In Codex, type `$make-prompt-better` and add your request. [Host compatibility and limits](docs/compatibility.md).
 
 <details>
-<summary><strong>Install the published version today</strong></summary>
+<summary><strong>Previously verified npm release: v4.5.0</strong></summary>
 
 Public npm 4.5.0 has passed unauthenticated installation tests. Its bare command shows help, so use the explicit commands:
 
@@ -37,7 +37,7 @@ Replace `codex` with your agent. For one project, run inside it and replace `--g
 </details>
 
 <details>
-<summary><strong>Try the prepared v4.5.1 from this checkout</strong></summary>
+<summary><strong>Run the v4.5.1 guide from this checkout</strong></summary>
 
 Run the guide in your terminal:
 
@@ -61,7 +61,7 @@ cd make-prompt-better
 ./install.sh --runtime codex --check
 ```
 
-For an existing source release today, replace `v4.5.1` with `v4.5.0`. Choose your agent and add `--project` for project scope. This route needs neither Node nor Python. Windows users need WSL; WSL and native Windows remain unverified.
+To select the previous source release, replace `v4.5.1` with `v4.5.0`. Choose your agent and add `--project` for project scope. This route needs neither Node nor Python. Windows users need WSL; WSL and native Windows remain unverified.
 
 </details>
 
@@ -151,7 +151,7 @@ The source is MIT licensed. The installer and linters need no API key. Your AI h
 <details>
 <summary><strong>Can I install with npm or npx?</strong></summary>
 
-Yes. The prepared v4.5.1 adds a guided bare command; the published v4.5.0 uses the explicit commands above. Downloading the npm package alone does not activate the skill. See the [distribution evidence](docs/npm-publishing.md) for version-specific status.
+Yes. v4.5.1 adds a guided bare command; v4.5.0 uses the explicit commands above. Downloading the npm package alone does not activate the skill. See the [current distribution evidence](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md) for version-specific publication and verification status.
 
 </details>
 

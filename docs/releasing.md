@@ -1,6 +1,6 @@
 # Release checklist
 
-v4.5.1 is prepared and unpublished. Its citation release date remains unset. Finalize the date and changelog, rerun the gates below, and obtain separate authorization for each release channel. Keep v4.4.0 and v4.5.0 unchanged. Public verification of 4.5.0 is not evidence that 4.5.1 can be installed from npm.
+v4.5.1 release metadata is finalized for November 7, 2026 (UTC), including its changelog and citation dates. Complete the gates below before creating its GitHub release or publishing to npm. Each channel requires authorization. Keep v4.4.0 and v4.5.0 unchanged. Public verification of 4.5.0 is not evidence that 4.5.1 can be installed from npm; consult the [current distribution status](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md) for later results.
 
 Changing the benchmark runner's version label changes its source fingerprint. Review that diff before updating `research/benchmark/v4/checkpoint-migration-hashes.json`; never approve arbitrary runner changes just to pass a test. Run the benchmark provenance and rejudge tests to retain the migration guard. Keep historical evidence filenames and their package allowlist entries at the original version.
 

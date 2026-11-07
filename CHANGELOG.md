@@ -5,9 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.5.1] - Unreleased
+## [4.5.1] - 2026-11-07
 
-This version is prepared for review. No v4.5.1 tag, GitHub release, or npm publication has been created. The existing v4.4.0 and v4.5.0 releases remain unchanged; public npm evidence below applies only to 4.5.0.
+Release metadata is finalized for November 7, 2026 (UTC). npm publication and public installation verification are recorded separately in the [current distribution status](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md). The existing v4.4.0 and v4.5.0 releases remain unchanged; their public npm evidence does not verify 4.5.1.
 
 ### Added
 - Launch the guided installer when the bare CLI runs in a terminal. Choose an agent and project or user scope by number or name, install a copy, and verify the same selection before reporting readiness.

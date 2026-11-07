@@ -1,6 +1,6 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). This checkout prepares v4.5.1; the published version remains v4.5.0. Both existing release tags remain unchanged.
+For a first installation, start with the [quickstart](quickstart.md). This is the v4.5.1 release snapshot; check the [current distribution status](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md) for publication and verification results. Both earlier release tags remain unchanged.
 
 ## Distribution status
 
@@ -8,9 +8,9 @@ GitHub source and public npm version 4.5.0 are available. The unauthenticated pu
 
 ## Install from npm
 
-The two-choice guided installer is prepared for v4.5.1. After publication and public verification, run `npx make-prompt-better` in a terminal, choose your agent and scope, and wait for the automatic file check. To try it now from this source checkout, run `node bin/cli.mjs`. It installs a copy, accepts numbers or names, and allows `q` to cancel before installation. With redirected input or output it shows help and changes no skill files.
+v4.5.1 adds the two-choice guided installer. After publication and public verification, run `npx make-prompt-better` in a terminal, choose your agent and scope, and wait for the automatic file check. From this source checkout, run `node bin/cli.mjs`. It installs a copy, accepts numbers or names, and allows `q` to cancel before installation. With redirected input or output it shows help and changes no skill files.
 
-For the published 4.5.0 package today, use:
+For the previously verified 4.5.0 package, use:
 
 ```bash
 npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
@@ -39,7 +39,7 @@ Use the same host and scope as your installation. Uninstall preserves recovery c
 
 ## Node CLI
 
-These commands require Node.js 22+ and Bash. The named commands remain compatible with v4.5.0. v4.5.1 adds bare interactive installation and verification; it is currently unpublished. Run these examples from this checkout:
+These commands require Node.js 22+ and Bash. The named commands remain compatible with v4.5.0. v4.5.1 adds bare interactive installation and verification. Run these examples from this checkout:
 
 ```bash
 node bin/cli.mjs install --runtime codex --global --dry-run
@@ -131,7 +131,7 @@ In checkouts containing the Cursor rule path fix, generated rules identify refer
 
 | What you see | What to do |
 | --- | --- |
-| Bare command shows help | Check `--version`. Published 4.5.0 needs `install`. The prepared 4.5.1 guide needs an interactive terminal for both input and output; in automation, use explicit commands with runtime and scope. |
+| Bare command shows help | Check `--version`. v4.5.0 needs `install`. The v4.5.1 guide needs an interactive terminal for both input and output; in automation, use explicit commands with runtime and scope. |
 | Several entries in Codex | Run the current Codex installer and `--check`. Restart Codex if its picker is stale. Check for a separate project, admin, or plugin copy if it persists. |
 | No skill in the picker | Confirm the target exists, restart the host, and check its discovery instructions. Filesystem placement alone does not prove the host loaded it. |
 | `Missing or different from this checkout` | Confirm you are checking the intended checkout, runtime, scope, and copy/symlink mode. Reinstall if this source is the version you want. |
