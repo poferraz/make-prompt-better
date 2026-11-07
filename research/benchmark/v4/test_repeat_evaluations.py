@@ -153,6 +153,10 @@ class CampaignTests(unittest.TestCase):
         self.assertLess(summary['completed_pairs'], 8)
 
     def test_changing_sources_during_campaign_stops_further_calls_for_that_variant(self):
+        # Exercise aliases on Linux too; macOS temporary paths resolve /var to /private/var.
+        alias = self.root / 'alias'
+        alias.symlink_to(self.root, target_is_directory=True)
+        self.root = alias
         calls = []
         def change_source(cmd, **kwargs):
             result = self.fake_runner(cmd, **kwargs)
@@ -161,7 +165,8 @@ class CampaignTests(unittest.TestCase):
             return result
         with mock.patch.object(self.campaign.subprocess, 'run', side_effect=change_source):
             self.assertEqual(self.campaign.main(self.args), 1)
-        baseline_calls = [c for c in calls if str(self.root / 'baseline') in c]
+        baseline_calls = [c for c in calls if
+                          Path(c[c.index('--skill-dir') + 1]).resolve() == (self.root / 'baseline').resolve()]
         self.assertEqual(len(baseline_calls), 1)
         summary = json.loads((self.output / 'summary.json').read_text())
         self.assertEqual(summary['completed_pairs'], 0)
