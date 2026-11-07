@@ -27,6 +27,8 @@ Python coverage uses coverage.py 7.6.12 with branches enabled and includes the b
 
 Benchmark tests fake the chat service and cover streams, retry classes, manifest mismatch, staged resume, historical data protection, rejudging, seed propagation, and swapped judge mappings. `tests/test_skill_contract.py` checks selected literal details of one documented example; it does not establish live-model behavior. The mutation probe tests four targeted mutations. A loopback HTTP fixture tests a streamed response and retry without a model service. A live cloud-model smoke request on 2026-11-01 returned HTTP 429. Live model behavior, interruptions at every possible instruction, all host discovery paths, and exhaustive mutations are not verified. Required offline validation makes no model calls. Separate live workflows require explicit configuration and opt-in.
 
+See [five-arm downstream evaluation](downstream-evaluation.md) for the original/minimal/direct/stable/candidate protocol and its complete no-paid-call HTTP proof.
+
 ## npm workflow and package checks
 
 `tests/test_guided_install.py` drives the bare CLI through real pseudo-terminals and isolated homes/projects. It covers names and numeric choices, invalid input, both scopes, cancellation/EOF/interruption, repeated installation with recovery, redirected streams, explicit help/dry-run compatibility, installer failure, and a real mismatch introduced between installation and verification. `tests/test_integration.py` repeats the guided path from the actual npm archive. These are local filesystem tests and do not establish public availability of v4.5.1 or host discovery.

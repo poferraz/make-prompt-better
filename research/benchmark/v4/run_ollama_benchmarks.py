@@ -453,7 +453,8 @@ def call_ollama_chat(
                 if body is None:
                     raise ConnectionError("Ollama stream ended before the done frame")
             elapsed = round(time.monotonic() - t0, 4)
-            content = "".join(parts).strip()
+            raw_content = "".join(parts)
+            content = raw_content.strip()
             if not content:
                 raise ConnectionError("Ollama stream completed without response content")
             words = len(content.split())
@@ -465,6 +466,7 @@ def call_ollama_chat(
             time.sleep(1.5)
             return {
                 "content": content,
+                "raw_content": raw_content,
                 "words": words,
                 "prompt_eval_count": body.get("prompt_eval_count"),
                 "eval_count": body.get("eval_count"),
