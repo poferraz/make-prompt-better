@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.5.1] - 2026-11-07
 
-Release metadata is finalized for November 7, 2026 (UTC). npm publication and public installation verification are recorded separately in the [current distribution status](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md). The existing v4.4.0 and v4.5.0 releases remain unchanged; their public npm evidence does not verify 4.5.1.
+Released on GitHub and npm on November 7, 2026 (UTC). Unauthenticated public installation passed on Linux and macOS. The bare npx guide passed in both scopes on macOS, including repeat/recovery, a 4.5.0-to-4.5.1 upgrade, uninstall, registry signatures, and provenance verification. See the [dated evidence](docs/evidence/2026-11-07/v4.5.1-npm-verification.json) and [workflow recovery record](docs/npm-publishing.md). The existing v4.4.0 and v4.5.0 releases remain unchanged.
 
 ### Added
 - Launch the guided installer when the bare CLI runs in a terminal. Choose an agent and project or user scope by number or name, install a copy, and verify the same selection before reporting readiness.

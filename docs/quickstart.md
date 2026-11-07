@@ -4,13 +4,13 @@ You can [try the starter in the README](../README.md#try-it-without-installing) 
 
 ## Install the full skill
 
-This v4.5.1 release snapshot includes the guided installer. From this checkout, run `node bin/cli.mjs` in a terminal. Check the [current distribution status](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md); after v4.5.1 is published and publicly verified, start the same guide with:
+Open a terminal and run:
 
 ```bash
 npx make-prompt-better
 ```
 
-You need Node.js 22+ and Bash. Choose your coding agent and whether the skill should be available in this project or across your user account. Enter a number or name; `q` cancels. The guide installs a copy, verifies it, and prints the next step. No publisher token is needed.
+You need Node.js 22+ and Bash. Approve npm's package prompt if it appears. Choose your coding agent and whether the skill should be available in this project or across your user account. Enter a number or name; `q` cancels. The guide installs a copy, verifies it, and prints the next step. No publisher token is needed. [Public v4.5.1 verification](npm-publishing.md).
 
 Choose one route and one scope. A user installation works across your projects; a project installation belongs to one repository. Installing both can produce two entries in a host that loads both scopes.
 
@@ -22,13 +22,13 @@ Check passed. Selected installations match this checkout; no duplicate entries i
 
 This confirms files in the selected locations. Next, open the skill picker and confirm that the host can actually load the skill. A filesystem check alone cannot establish that.
 
-### Previously verified npm release: v4.5.0
+### Explicit commands
 
-Public npm 4.5.0 has passed installation checks. Its bare command shows help, so use:
+For automation or a pinned version, select the agent and scope explicitly:
 
 ```bash
-npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.0 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.1 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.1 check --runtime codex --global --copy
 ```
 
 Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. These commands install for your user account. For one project, run them inside that project and replace `--global` with `--project`. Choose one scope. `--yes` accepts npm's execution prompt; copy mode keeps the skill after the npm cache is cleared. [Update, uninstall, and recovery](installation.md).
@@ -37,7 +37,7 @@ Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or 
 
 A terminal is the app where you run the commands below. Git downloads the repository. Bash runs its installer. On Windows, use a WSL terminal; native PowerShell installation is untested.
 
-After the [v4.5.1 source release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.1) exists, run the commands below. To select the previous source release, substitute `v4.5.0`.
+Install the [v4.5.1 source release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.1):
 
 ```bash
 git clone --branch v4.5.1 --depth 1 https://github.com/poferraz/make-prompt-better.git

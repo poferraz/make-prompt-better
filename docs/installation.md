@@ -1,20 +1,20 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). This is the v4.5.1 release snapshot; check the [current distribution status](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md) for publication and verification results. Both earlier release tags remain unchanged.
+For a first installation, start with the [quickstart](quickstart.md). v4.5.1 is released on GitHub and npm. Both earlier release tags remain unchanged.
 
 ## Distribution status
 
-GitHub source and public npm version 4.5.0 are available. The unauthenticated public package lifecycle passed on macOS on 2026-11-06; see the [evidence and limits](npm-publishing.md). An npm installation requires Node.js 22+ and Bash and does not activate the skill by itself. Public consumers do not need a publisher token.
+The unauthenticated public v4.5.1 package lifecycle passed on Linux and macOS on 2026-11-07. The bare npx guide passed in project and user scopes on macOS, as did an upgrade from 4.5.0 with edited-copy recovery; see the [evidence and limits](npm-publishing.md). An npm installation requires Node.js 22+ and Bash and does not activate the skill by itself. Public consumers do not need a publisher token.
 
 ## Install from npm
 
-v4.5.1 adds the two-choice guided installer. After publication and public verification, run `npx make-prompt-better` in a terminal, choose your agent and scope, and wait for the automatic file check. From this source checkout, run `node bin/cli.mjs`. It installs a copy, accepts numbers or names, and allows `q` to cancel before installation. With redirected input or output it shows help and changes no skill files.
+Run `npx make-prompt-better` in a terminal, approve npm's package prompt if shown, choose your agent and scope, and wait for the automatic file check. From a source checkout, run `node bin/cli.mjs`. The guide installs a copy, accepts numbers or names, and allows `q` to cancel before installation. With redirected input or output it shows help and changes no skill files.
 
-For the previously verified 4.5.0 package, use:
+For explicit commands pinned to v4.5.1, use:
 
 ```bash
-npx --yes make-prompt-better@4.5.0 install --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.0 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.1 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.1 check --runtime codex --global --copy
 ```
 
 Choose your host and one scope. For a project, run from that project's directory and replace `--global` with `--project`. Add `--dry-run` to preview installation. Copy mode prevents the skill from depending on the npm cache. `--yes` accepts npm's execution prompt for this pinned package.
@@ -22,17 +22,17 @@ Choose your host and one scope. For a project, run from that project's directory
 To reinstall or update the selected copy, select the desired published package version and run:
 
 ```bash
-npx --yes make-prompt-better@4.5.0 update --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.0 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.1 update --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.1 check --runtime codex --global --copy
 ```
 
-`update` uses that selected package's files. For a future release, replace `4.5.0` in both commands with the desired published version. `npm update` alone does not refresh a copied skill. Existing edits are preserved in [recovery storage](#recovery).
+`update` uses that selected package's files. For a future release, replace `4.5.1` in both commands with the desired published version. `npm update` alone does not refresh a copied skill. Existing edits are preserved in [recovery storage](#recovery).
 
 To remove the selected installation:
 
 ```bash
-npx --yes make-prompt-better@4.5.0 uninstall --runtime codex --global --dry-run
-npx --yes make-prompt-better@4.5.0 uninstall --runtime codex --global
+npx --yes make-prompt-better@4.5.1 uninstall --runtime codex --global --dry-run
+npx --yes make-prompt-better@4.5.1 uninstall --runtime codex --global
 ```
 
 Use the same host and scope as your installation. Uninstall preserves recovery copies and does not clear npm's cache.
@@ -86,7 +86,7 @@ The cleanup covers direct children of the selected discovery roots. It does not 
 
 ## Update
 
-Choose a published version from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. Once v4.5.1 is released, select it with these commands. Until then, use the published `v4.5.0` tag instead:
+Choose a published version from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. Select v4.5.1 with these commands:
 
 ```bash
 git status --short

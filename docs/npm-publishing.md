@@ -1,8 +1,16 @@
 # npm publishing setup and runbook
 
-## v4.5.1 release snapshot
+## v4.5.1 release
 
-v4.5.1 adds a guided bare command and automatic filesystem verification. Its changelog and citation dates are November 7, 2026 (UTC). At source finalization, GitHub release creation, npm publication, and unauthenticated public installation verification were pending. This packaged document is an immutable snapshot; see the [current runbook](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md) for later results. Existing 4.5.0 registry evidence does not verify 4.5.1. Obtain authorization for both release channels and pass a fresh unauthenticated public test before claiming verification. Both earlier release tags remain unchanged.
+Version 4.5.1 was released on GitHub and npm on 2026-11-07 (UTC). The [protected publication workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42317679119) used the stored bootstrap token after authorization and artifact review. The source tag and publisher both identify `6d0772b41eb458608207506e010cd2a563cbf327`, whose [main CI passed](https://github.com/poferraz/make-prompt-better/actions/runs/42317071879). All 48 public archive files matched that source. v4.4.0 and v4.5.0 remain unchanged.
+
+The publish job succeeded. Its first public smoke returned npm command exit 1 just after the registry began serving the correct identity and digest. A fresh isolated download then passed, followed by the credential-free [verification-only workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42318325467). Publication was not repeated.
+
+Public installation, checking, update, recovery, and uninstall passed on Linux and macOS. On macOS, the exact `npx make-prompt-better` command passed in both project and user scopes, including npm's package confirmation, the installer choices, automatic verification, and repeated installation preserving local edits. An upgrade from public 4.5.0 to 4.5.1 preserved an edited copy in recovery. `npm audit signatures` verified the registry signature and provenance attestation. [Dated npm evidence](evidence/2026-11-07/v4.5.1-npm-verification.json) and [provenance transparency record](https://search.sigstore.dev/?logIndex=3726930162).
+
+The public GitHub source archive also matched every tracked file and passed isolated installation and all five opt-in host checks without model requests. [Source verification evidence](evidence/2026-11-07/v4.5.1-source-verification.json).
+
+The published npm tarball and its README remain the immutable source-finalization snapshot, with a link to this current runbook. These later documentation updates do not overwrite the package or move its tag. OIDC authorization, native Windows, WSL, and new model-outcome evaluation remain outside this evidence.
 
 ## v4.5.0 release
 
@@ -12,7 +20,7 @@ The [publication run](https://github.com/poferraz/make-prompt-better/actions/run
 
 Source tag `v4.5.0` remains at `21e6c964e2e3bfeb511349c0c5811fc0b11b7bcf`. The publisher ran from verified main commit `c487a3505a5098e01238f6cea241fc972fa0b1a4`; its repair changed only workflows and tests, and all 47 packaged files matched the released source. Provenance identifies that publishing workflow commit. The v4.4.0 tag remains unchanged.
 
-The npm 4.5.0 tarball and its packaged README are immutable release snapshots. Current repository docs record the later public verification; no package was overwritten. OIDC publishing, an upgrade between two public npm versions, native Windows, and WSL remain unverified. Public filesystem tests do not establish host discovery or model behavior.
+The npm 4.5.0 tarball and its packaged README are immutable release snapshots. No package was overwritten. At that release, an upgrade between two public npm versions was unverified; the later 4.5.1 test above records that upgrade. Public filesystem tests do not establish host discovery or model behavior.
 
 ## Earlier setup observations
 
@@ -22,7 +30,7 @@ The environment was `npm-publish`, with reviewer `poferraz`, version-tag and mai
 
 ## Consumer installation
 
-Use the [pinned npm commands](installation.md#install-from-npm) or the [source quickstart](quickstart.md). Public customers need no token. Node.js 22+ and Bash are required for the npm CLI; Git and Bash suffice for the source installer. Package installation alone does not activate the skill. The explicit `install` command copies it into the selected host and scope.
+Run `npx make-prompt-better` in a terminal for the guided installer, use the [pinned npm commands](installation.md#install-from-npm) for automation, or follow the [source quickstart](quickstart.md). Public customers need no token. Node.js 22+ and Bash are required for the npm CLI; Git and Bash suffice for the source installer. Downloading the package alone does not activate the skill. The guide installs and checks the selected copy; explicit `install` and `check` remain separate commands.
 
 Keep one active scope and use copy mode with npm. Selecting a new package version does not refresh an already copied skill automatically; run that version's `update` command. Recovery copies remain outside skill discovery roots.
 
@@ -89,7 +97,7 @@ The environment reviewer approves before GitHub releases the secret. The check s
 1. Merge the final source and release metadata through CI. Wait for every required check on the exact main commit.
 2. Obtain authorization for its GitHub tag and release. Keep previous tags unchanged.
 3. Obtain separate authorization for npm publication, naming the package and version.
-4. Dispatch the maintained workflow from verified main, selecting the immutable source tag. Replace `vX.Y.Z` below with that new authorized version. Do not republish 4.5.0.
+4. Dispatch the maintained workflow from verified main, selecting the immutable source tag. Replace `vX.Y.Z` below with that new authorized version. Do not republish an existing version.
 
 ```bash
 gh workflow run publish-npm.yml --ref main -f operation=publish -f release_tag=vX.Y.Z -f auth_mode=bootstrap-token --repo poferraz/make-prompt-better
@@ -106,13 +114,13 @@ The separate credential-free public job checks registry identity and integrity, 
 This operation retains the stable-tag, source ancestry, exact-source CI, archive, and trusted-integrity checks. It skips publication and token checking and has no npm credentials or environment approval:
 
 ```bash
-gh workflow run publish-npm.yml --ref main -f operation=verify-public -f release_tag=v4.5.0 --repo poferraz/make-prompt-better
+gh workflow run publish-npm.yml --ref main -f operation=verify-public -f release_tag=v4.5.1 --repo poferraz/make-prompt-better
 ```
 
 To run the public smoke locally from a full source checkout, supply the digest from the independently reviewed artifact, not solely from the registry being tested:
 
 ```bash
-python3 scripts/public_npm_smoke.py --tag v4.5.0 --integrity 'sha512-UPAzYPk8YjWaZGGeo9OOAiF2vEFOHxV0IgOeXcgIHR+YTjMFdHdhEOapcy9toBIsDJwF7SqplaqGsPA2ZrZDBA=='
+python3 scripts/public_npm_smoke.py --tag v4.5.1 --integrity 'sha512-QQkPL5XHZWWNS9EqUex/FCoGH10YYqKVhINkpQoqd+IK26veOCYfTrNOVMDGssNeUr6gjxKuftrlA3QXhxZQ8A=='
 ```
 
 The test uses empty npm configurations, isolated homes, and fresh caches. It downloads the exact public package with lifecycle hooks disabled, audits its archive and trusted digest, installs the public version into a separate prefix, and compares every installed byte with the archive. It checks the executable link and exercises project installation, repeats, checking, edited-copy rejection, update, recovery, and uninstall. It does not prove host discovery or model behavior.
@@ -124,4 +132,4 @@ After this passes, follow the pinned customer commands in disposable user and pr
 - After a successful publish, use `verify-public` to retry failed verification. Never retry publication merely to make a run green.
 - A package correction needs a new reviewed version or an explicitly authorized deprecation. Do not overwrite a published version, move tags, or rely on unpublishing as routine rollback. Preserve the source fallback and recovery data.
 - OIDC publishing needs its own successful test. Token validity at publication does not establish future expiry, permissions, or account policy.
-- An upgrade between two public npm versions, native Windows, WSL, and broader host/model behavior need separate evidence. Filesystem tests do not expand those claims.
+- The recorded 4.5.0-to-4.5.1 upgrade does not establish every upgrade path. Native Windows, WSL, and broader host/model behavior need separate evidence. Filesystem tests do not expand those claims.
