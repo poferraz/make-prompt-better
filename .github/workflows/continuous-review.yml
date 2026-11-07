@@ -1,0 +1,110 @@
+name: Continuous code review
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 6 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: review-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Record scoped source inventory
+        run: python3 scripts/review_code.py --output quality-artifacts/scope.json
+      - name: Check shell syntax
+        run: for path in install.sh scripts/*.sh; do bash -n "$path"; done
+      - name: Check workflow syntax
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@03d0035246f3e81f36aed592ffb4bebf33a03106
+          "$(go env GOPATH)/bin/actionlint" -shellcheck=''
+      - name: Upload scope report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: review-scope-${{ github.run_id }}-${{ github.run_attempt }}
+          path: quality-artifacts/
+          retention-days: 30
+
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript-typescript]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Select functional source for CodeQL
+        run: |
+          mkdir -p quality-artifacts
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from scripts.file_scope import collect
+          paths = [p for p in collect(Path.cwd(), 'review') if p.endswith(('.py', '.mjs'))]
+          Path('quality-artifacts/codeql.json').write_text(json.dumps({'name': 'Functional source', 'paths': paths}))
+          PY
+      - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          config-file: quality-artifacts/codeql.json
+      - uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
+        with:
+          category: /language:${{ matrix.language }}
+
+  model-review:
+    # Never expose inference credentials to pull-request code or non-main dispatches.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.MODEL_REVIEW_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Review one rotating bounded source batch
+        env:
+          REVIEW_MODEL: ${{ vars.REVIEW_MODEL }}
+          OLLAMA_HOST: ${{ vars.OLLAMA_HOST }}
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+          BATCH_NUMBER: ${{ github.run_number }}
+        run: |
+          test -n "$REVIEW_MODEL" && test -n "$OLLAMA_HOST"
+          python3 scripts/review_code.py --model "$REVIEW_MODEL" --offset "$BATCH_NUMBER" --timeout 120 --max-chars 120000 --output quality-artifacts/model-review.json
+      - name: Upload structured findings
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: model-review-${{ github.run_id }}-${{ github.run_attempt }}
+          path: quality-artifacts/
+          retention-days: 30
