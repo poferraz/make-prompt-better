@@ -26,6 +26,19 @@ def record(model, skill, delta):
 
 
 class RunSummaryTests(unittest.TestCase):
+    def test_schema_two_strict_protocol_is_supported_and_separate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for schema in (1, 2):
+                folder = root / str(schema)
+                folder.mkdir()
+                data = record(str(schema), 'same', 1)
+                if schema == 2:
+                    data['manifest'].update(schema=2, protocol='outcome-v2', skill_dir='/skill',
+                        strict_preservation=True, max_output_tokens=100, pricing_status='unknown')
+                (folder / 'metrics.json').write_text(json.dumps(data))
+            self.assertEqual(len(summarizer.summarize(root)['groups']), 2)
+
     def test_migrated_run_is_not_grouped_with_unmigrated_run(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

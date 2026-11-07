@@ -1,5 +1,7 @@
 # Benchmark runs and evidence
 
+For paired baseline/candidate campaigns over repeated seeds and a separate Skill++-inspired routing experiment, see [continuous quality](continuous-quality.md). The original runner remains available; its legacy repair behavior changes only with `--strict-preservation`.
+
 Existing files under `research/benchmark/v4/results/` are historical records. The runner now writes separate run directories under `research/benchmark/v4/runs/` and refuses to resume a legacy result lacking a matching manifest. It also refuses to overwrite a populated model directory with `--no-resume`.
 
 Preview a bounded experiment without model requests or result writes:

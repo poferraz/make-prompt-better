@@ -280,10 +280,17 @@ def validate_host(host: str, allow_remote_http: bool = False) -> None:
 def build_manifest(model: str, skill_bundle: str, test_ids: list[int], host: str,
                    timeout: int, judge_model: str | None, blind_eval: bool,
                    swap_positions: bool, strip_cert_markers: bool,
-                   unprescribed_routing: bool, seed: int) -> dict[str, Any]:
+                   unprescribed_routing: bool, seed: int, *, skill_dir: Path | None = None,
+                   strict_preservation: bool = False,
+                   max_output_tokens: int | None = None) -> dict[str, Any]:
     """Bind resumable results to the exact inputs controlled by this runner."""
     return {
-        "schema": 1,
+        "schema": 2,
+        "protocol": "outcome-v2",
+        "skill_dir": str(skill_dir.resolve()) if skill_dir is not None else None,
+        "strict_preservation": strict_preservation,
+        "max_output_tokens": max_output_tokens,
+        "pricing_status": "unknown",
         "model": model,
         "judge_model": judge_model or model,
         "model_revision": "unknown: provider identifier may be mutable",
@@ -316,10 +323,11 @@ def atomic_write(path: Path, content: str) -> None:
             os.unlink(temporary)
 
 
-def load_skill_bundle() -> str:
-    skill_md = (REPO_ROOT / "make-prompt-better" / "SKILL.md").read_text(encoding="utf-8")
-    templates_md = (REPO_ROOT / "make-prompt-better" / "references" / "domain-templates.md").read_text(encoding="utf-8")
-    principles_md = (REPO_ROOT / "make-prompt-better" / "references" / "research-principles.md").read_text(encoding="utf-8")
+def load_skill_bundle(skill_dir: Path | None = None) -> str:
+    root = skill_dir if skill_dir is not None else REPO_ROOT / "make-prompt-better"
+    skill_md = (root / "SKILL.md").read_text(encoding="utf-8")
+    templates_md = (root / "references" / "domain-templates.md").read_text(encoding="utf-8")
+    principles_md = (root / "references" / "research-principles.md").read_text(encoding="utf-8")
     return (
         "# SKILL FILE 1: make-prompt-better/SKILL.md\n\n"
         f"{skill_md}\n\n"
@@ -347,6 +355,16 @@ def discover_ollama_cloud_models() -> list[str]:
         return DEFAULT_CLOUD_MODELS
 
 
+class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        # A redirect is an extra HTTP request and can forward a bearer credential.
+        return None
+
+
+def open_ollama_request(request: urllib.request.Request, timeout: int):
+    return urllib.request.build_opener(NoRedirectHandler()).open(request, timeout=timeout)
+
+
 def call_ollama_chat(
     model: str,
     messages: list[dict[str, str]],
@@ -357,13 +375,23 @@ def call_ollama_chat(
     seed: int = 42,
     options: dict[str, Any] | None = None,
     max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
+    max_output_tokens: int | None = None,
+    api_key: str | None = None,
 ) -> dict[str, Any]:
     if max_response_bytes <= 0:
         raise ValueError("Response size limit must be positive")
+    if max_retries <= 0:
+        raise RuntimeError(f"Failed after {max_retries} attempts.")
+    if initial_delay < 0 or timeout <= 0:
+        raise ValueError("Retries and timeout must be positive; delay must be nonnegative")
+    if max_output_tokens is not None and max_output_tokens <= 0:
+        raise ValueError("Output token limit must be positive")
     url = f"{host.rstrip('/')}/api/chat"
     payload_options: dict[str, Any] = {"seed": seed}
     if options:
         payload_options.update(options)
+    if max_output_tokens is not None:
+        payload_options["num_predict"] = max_output_tokens
     payload = {
         "model": model,
         "messages": messages,
@@ -372,17 +400,34 @@ def call_ollama_chat(
     }
     data = json.dumps(payload).encode("utf-8")
     delay = initial_delay
+    started = time.monotonic()
+    attempts = []
+    backoff = 0.0
+
+    def telemetry() -> dict[str, Any]:
+        return {"attempts": attempts, "attempt_count": len(attempts),
+                "retry_count": max(len(attempts) - 1, 0),
+                "backoff_seconds": backoff,
+                "total_elapsed_seconds": round(time.monotonic() - started, 4)}
+
+    def record_failure(err: Exception) -> None:
+        attempts.append({"attempt": attempt, "status": "failed", "error": type(err).__name__ if api_key else str(err),
+                         "elapsed_seconds": round(time.monotonic() - t0, 4),
+                         "prompt_eval_count": body.get("prompt_eval_count") if body else None,
+                         "eval_count": body.get("eval_count") if body else None})
+        err.telemetry = telemetry()
 
     for attempt in range(1, max_retries + 1):
         req = urllib.request.Request(
             url,
             data=data,
-            headers={"Content-Type": "application/json"},
+            headers={"Content-Type": "application/json", **({"Authorization": f"Bearer {api_key}"} if api_key else {})},
             method="POST",
         )
-        t0 = time.time()
+        t0 = time.monotonic()
+        body = None
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
+            with open_ollama_request(req, timeout=timeout) as resp:
                 parts: list[str] = []
                 body = None
                 received = 0
@@ -407,21 +452,27 @@ def call_ollama_chat(
                         break
                 if body is None:
                     raise ConnectionError("Ollama stream ended before the done frame")
-            elapsed = round(time.time() - t0, 2)
+            elapsed = round(time.monotonic() - t0, 4)
             content = "".join(parts).strip()
             if not content:
                 raise ConnectionError("Ollama stream completed without response content")
             words = len(content.split())
+            attempts.append({"attempt": attempt, "status": "success",
+                             "elapsed_seconds": elapsed,
+                             "prompt_eval_count": body.get("prompt_eval_count"),
+                             "eval_count": body.get("eval_count")})
             # Polite pause to avoid bursting cloud gateways
             time.sleep(1.5)
             return {
                 "content": content,
                 "words": words,
-                "prompt_eval_count": body.get("prompt_eval_count", 0),
-                "eval_count": body.get("eval_count", 0),
+                "prompt_eval_count": body.get("prompt_eval_count"),
+                "eval_count": body.get("eval_count"),
                 "elapsed_seconds": elapsed,
+                "telemetry": telemetry(),
             }
         except urllib.error.HTTPError as err:
+            record_failure(err)
             err_body = ""
             try:
                 err_body = err.read(4096).decode("utf-8", errors="replace").strip()
@@ -434,25 +485,101 @@ def call_ollama_chat(
             retryable = err.code in (502, 503, 504, 500, 429) or (520 <= err.code <= 527)
             if retryable and attempt < max_retries:
                 print(
-                    f"      [WARN] HTTP {err.code} ({err.reason}) for {model}. "
+                    f"      [WARN] HTTP {err.code} ({'redacted' if api_key else err.reason}) for {model}. "
                     f"Retrying in {delay:.1f}s (attempt {attempt}/{max_retries})..."
                 )
                 time.sleep(delay)
+                backoff += delay
                 delay = min(delay * 2.0, 60.0)
                 continue
-            raise RuntimeError(f"HTTP Error {err.code}: {err.reason} ({err_body})") from err
+            failure = RuntimeError(f"HTTP Error {err.code}" if api_key else f"HTTP Error {err.code}: {err.reason} ({err_body})")
+            failure.telemetry = telemetry()
+            if api_key:
+                raise failure from None
+            raise failure from err
         except (urllib.error.URLError, TimeoutError, ConnectionResetError, OSError, http.client.IncompleteRead) as err:
+            record_failure(err)
             if attempt < max_retries:
                 print(
-                    f"      [WARN] Network error ({err}) for {model}. "
+                    f"      [WARN] Network error ({type(err).__name__ if api_key else err}) for {model}. "
                     f"Retrying in {delay:.1f}s (attempt {attempt}/{max_retries})..."
                 )
                 time.sleep(delay)
+                backoff += delay
                 delay = min(delay * 2.0, 60.0)
                 continue
+            if api_key:
+                failure = RuntimeError(f"Ollama request failed: {type(err).__name__}")
+                failure.telemetry = telemetry()
+                raise failure from None
+            raise
+        except Exception as err:
+            record_failure(err)
+            if api_key:
+                failure = RuntimeError(f"Ollama request failed: {type(err).__name__}")
+                failure.telemetry = telemetry()
+                raise failure from None
             raise
 
     raise RuntimeError(f"Failed after {max_retries} attempts.")
+
+
+def check_preservation(raw_prompt: str, rewrite: str) -> dict[str, Any]:
+    """Conservative literal-anchor audit, not a semantic preservation proof."""
+    anchors = set(re.findall(r"`([^`]+)`", raw_prompt))
+    anchors.update(re.findall(r"(?<![\w])\$?\d+(?:[./-]\d+)*(?:M|%|\+)?", raw_prompt))
+    if "\ndef " in raw_prompt:
+        code = raw_prompt[raw_prompt.index("\ndef ") + 1:]
+        anchors.update(line.strip() for line in code.splitlines() if line.strip())
+    normalized = " ".join(rewrite.split())
+    missing = sorted(anchor for anchor in anchors if " ".join(anchor.split()) not in normalized)
+    return {"method": "literal numbers, inline code, and source code lines", "missing_anchors": missing,
+            "checked_anchors": len(anchors), "status": "failed" if missing else "no_literal_omissions_detected",
+            "limitation": "Paraphrases can be flagged; unanchored facts and semantic constraints require review."}
+
+
+def summarize_stage_usage(metrics: dict[str, Any]) -> dict[str, Any]:
+    """Count each saved call once, including failed retries and invalid judges."""
+    buckets: dict[str, list[dict]] = {name: [] for name in ("baseline", "optimizer", "execution", "judge", "synthesis")}
+    names = {"baseline": "baseline", "optimize": "optimizer", "execute": "execution",
+             "judge_1": "judge", "judge_2": "judge"}
+    def collect(bucket: str, item: dict, failed: bool = False) -> None:
+        response = item.get("response", {})
+        telemetry = item.get("telemetry") or response.get("telemetry")
+        if telemetry is None:
+            telemetry = {"attempt_count": 1, "retry_count": 0,
+                         "total_elapsed_seconds": response.get("elapsed_seconds"),
+                         "attempts": [{"status": "failed" if failed else "success",
+                                       "prompt_eval_count": response.get("prompt_eval_count"),
+                                       "eval_count": response.get("eval_count")}]}
+        buckets[bucket].append({**telemetry, "call_failed": failed})
+    for stages in metrics.get("in_progress", {}).values():
+        for name, bucket in names.items():
+            if name in stages:
+                collect(bucket, stages[name])
+        for archive in ("failed_stage_attempts", "failed_judge_attempts"):
+            for name, items in stages.get(archive, {}).items():
+                for item in items:
+                    collect(names[name], item, True)
+    for item in metrics.get("synthesis_attempts", [metrics["final_synthesis"]] if "final_synthesis" in metrics else []):
+        collect("synthesis", item)
+    for item in metrics.get("failed_synthesis_attempts", []):
+        collect("synthesis", item, True)
+    result = {}
+    for name, calls in buckets.items():
+        attempts = [attempt for call in calls for attempt in call["attempts"]]
+        stage = {"calls": len(calls), "failed_calls": sum(c["call_failed"] for c in calls), "attempt_count": sum(c["attempt_count"] for c in calls),
+                 "retry_count": sum(c["retry_count"] for c in calls),
+                 "failed_attempts": sum(a["status"] == "failed" for a in attempts)}
+        for key in ("prompt_eval_count", "eval_count"):
+            values = [a.get(key) for a in attempts]
+            stage[key] = sum(values) if all(v is not None for v in values) else None
+            stage["known_" + key] = sum(v for v in values if v is not None)
+            stage["unknown_" + key + "_attempts"] = sum(v is None for v in values)
+        elapsed = [c.get("total_elapsed_seconds") for c in calls]
+        stage["total_elapsed_seconds"] = round(sum(elapsed), 4) if all(v is not None for v in elapsed) else None
+        result[name] = stage
+    return {"pricing_status": "unknown", "stages": result}
 
 
 def parse_scores(eval_text: str) -> dict[str, Any]:
@@ -560,10 +687,15 @@ def run_model_benchmark(
     seed: int = 42,
     results_dir: Path | None = None,
     allow_remote_http: bool = False,
+    skill_dir: Path | None = None,
+    strict_preservation: bool = False,
+    max_output_tokens: int | None = None,
 ) -> bool:
     if not model or slugify_model(model) in {"", ".", ".."}:
         raise ValueError("Invalid model identifier")
     validate_host(host, allow_remote_http)
+    if timeout <= 0 or (max_output_tokens is not None and max_output_tokens <= 0):
+        raise ValueError("Timeout and output token limit must be positive")
     root = results_dir if results_dir is not None else RESULTS_ROOT
     root.mkdir(parents=True, exist_ok=True)
     lock = root / f".{slugify_model(model)}.lock"
@@ -574,7 +706,8 @@ def run_model_benchmark(
     try:
         return _run_model_benchmark(model, skill_bundle, test_ids, host, resume, timeout,
                                     judge_model, blind_eval, swap_positions, strip_cert_markers,
-                                    unprescribed_routing, seed, results_dir)
+                                    unprescribed_routing, seed, results_dir, skill_dir,
+                                    strict_preservation, max_output_tokens)
     finally:
         lock.rmdir()
 
@@ -593,6 +726,9 @@ def _run_model_benchmark(
     unprescribed_routing: bool,
     seed: int,
     results_dir: Path | None,
+    skill_dir: Path | None = None,
+    strict_preservation: bool = False,
+    max_output_tokens: int | None = None,
 ) -> bool:
     if test_ids is None:
         test_ids = [tc["id"] for tc in TEST_CASES]
@@ -605,7 +741,8 @@ def _run_model_benchmark(
         raise ValueError("Position swapping requires blinded evaluation")
     manifest = build_manifest(model, skill_bundle, test_ids, host, timeout, judge_model,
                               blind_eval, swap_positions, strip_cert_markers,
-                              unprescribed_routing, seed)
+                              unprescribed_routing, seed, skill_dir=skill_dir,
+                              strict_preservation=strict_preservation, max_output_tokens=max_output_tokens)
     slug = slugify_model(model)
     out_dir = (results_dir if results_dir is not None else RESULTS_ROOT) / slug
     metrics_path = out_dir / "metrics.json"
@@ -644,6 +781,11 @@ def _run_model_benchmark(
     metrics["judge_model"] = judge_model or model
     metrics["self_judged"] = ((judge_model or model) == model)
     metrics["unprescribed_routing"] = unprescribed_routing
+    chat_options = {}
+    if max_output_tokens is not None:
+        chat_options["max_output_tokens"] = max_output_tokens
+    if os.environ.get("OLLAMA_API_KEY"):
+        chat_options["api_key"] = os.environ["OLLAMA_API_KEY"]
 
     print(f"\n============================================================")
     print(f"Running Benchmark for Model: {model} -> {out_dir}")
@@ -686,8 +828,14 @@ def _run_model_benchmark(
                         atomic_write(metrics_path, json.dumps(metrics, indent=2))
                     else:
                         return stages[name]["response"]
-                result = call_ollama_chat(model=stage_model, messages=messages, host=host,
-                                          timeout=timeout, seed=seed)
+                try:
+                    result = call_ollama_chat(model=stage_model, messages=messages, host=host,
+                                              timeout=timeout, seed=seed, **chat_options)
+                except Exception as exc:
+                    failed = {"request": request, "error": str(exc),
+                              "telemetry": getattr(exc, "telemetry", None)}
+                    stages.setdefault("failed_stage_attempts", {}).setdefault(name, []).append(failed)
+                    raise
                 stages[name] = {"request": request, "response": result}
                 atomic_write(metrics_path, json.dumps(metrics, indent=2))
                 if validate_judge:
@@ -735,20 +883,23 @@ def _run_model_benchmark(
             # Step C: Execute Optimized Prompt (isolated context)
             print(f"    -> Step C: Generating Optimized response...")
             opt_prompt_to_send = opt_prompt_res["content"].strip()
-            # Guardrail: Ensure input data / code is never starved if the model emitted an abstract outline
-            if tc["id"] == 1 and "def calculate_discount" not in opt_prompt_to_send:
-                opt_prompt_to_send += f"\n\n### CODE UNDER REVIEW:\n```python\n{tc['raw_prompt']}\n```"
-            elif tc["id"] == 2 and "$50M" not in opt_prompt_to_send:
-                opt_prompt_to_send += f"\n\n### FINANCIAL DATA:\n{tc['raw_prompt']}"
-            elif tc["id"] == 3 and "58-year-old" not in opt_prompt_to_send:
-                opt_prompt_to_send += f"\n\n### PATIENT CLINICAL DATA:\n{tc['raw_prompt']}"
-            elif tc["id"] == 4 and "200-mile" not in opt_prompt_to_send:
-                opt_prompt_to_send += f"\n\n### CONTRACT & CASE FACTS:\n{tc['raw_prompt']}"
-            elif tc["id"] == 7 and "NIST" not in opt_prompt_to_send:
-                opt_prompt_to_send += f"\n\n### POLICY UNDER REVIEW:\n{tc['raw_prompt']}"
-            elif tc["id"] == 8 and "60%" not in opt_prompt_to_send:
-                opt_prompt_to_send += f"\n\n### PROPOSAL TEXT:\n{tc['raw_prompt']}"
-
+            preservation = check_preservation(tc["raw_prompt"], opt_prompt_to_send)
+            stages["preservation"] = preservation
+            atomic_write(metrics_path, json.dumps(metrics, indent=2))
+            if not strict_preservation:
+                # Guardrail: Ensure input data / code is never starved if the model emitted an abstract outline
+                if tc["id"] == 1 and "def calculate_discount" not in opt_prompt_to_send:
+                    opt_prompt_to_send += f"\n\n### CODE UNDER REVIEW:\n```python\n{tc['raw_prompt']}\n```"
+                elif tc["id"] == 2 and "$50M" not in opt_prompt_to_send:
+                    opt_prompt_to_send += f"\n\n### FINANCIAL DATA:\n{tc['raw_prompt']}"
+                elif tc["id"] == 3 and "58-year-old" not in opt_prompt_to_send:
+                    opt_prompt_to_send += f"\n\n### PATIENT CLINICAL DATA:\n{tc['raw_prompt']}"
+                elif tc["id"] == 4 and "200-mile" not in opt_prompt_to_send:
+                    opt_prompt_to_send += f"\n\n### CONTRACT & CASE FACTS:\n{tc['raw_prompt']}"
+                elif tc["id"] == 7 and "NIST" not in opt_prompt_to_send:
+                    opt_prompt_to_send += f"\n\n### POLICY UNDER REVIEW:\n{tc['raw_prompt']}"
+                elif tc["id"] == 8 and "60%" not in opt_prompt_to_send:
+                    opt_prompt_to_send += f"\n\n### PROPOSAL TEXT:\n{tc['raw_prompt']}"
             opt_exec_res = stage_call("execute", model, [{"role": "user", "content": opt_prompt_to_send}])
 
             # Step D: Evaluate Baseline vs. Optimized
@@ -802,12 +953,11 @@ def _run_model_benchmark(
                 eval_res = stage_call("judge_1", effective_judge, [{"role": "user", "content": eval_instruction}], validate_judge=True)
                 parsed = parse_scores(eval_res["content"])
 
-            b_tokens = max(base_res.get("eval_count", 0) or base_res["words"], 1)
-            o_tokens = max(opt_exec_res.get("eval_count", 0) or opt_exec_res["words"], 1)
-            extra_tokens = max(o_tokens - b_tokens, 0)
-            lift_per_1k_tokens = (
-                round((parsed["delta_total"] / extra_tokens) * 1000, 2) if extra_tokens > 0 else parsed["delta_total"]
-            )
+            b_tokens = base_res.get("eval_count")
+            o_tokens = opt_exec_res.get("eval_count")
+            extra_tokens = o_tokens - b_tokens if b_tokens is not None and o_tokens is not None else None
+            lift_per_1k_tokens = (round(parsed["delta_total"] / extra_tokens * 1000, 2)
+                                  if extra_tokens is not None and extra_tokens > 0 else None)
             b_words = max(base_res["words"], 1)
             o_words = opt_exec_res["words"]
             ratio = round(o_words / b_words, 2)
@@ -824,6 +974,7 @@ def _run_model_benchmark(
                 "baseline": base_res,
                 "optimized_prompt": opt_prompt_res,
                 "executed_optimized_prompt": opt_prompt_to_send,
+                "preservation": preservation,
                 "optimized_response": opt_exec_res,
                 "evaluation": {
                     "content": eval_res["content"],
@@ -836,6 +987,7 @@ def _run_model_benchmark(
             }
             metrics["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
+            metrics["telemetry"] = summarize_stage_usage(metrics)
             # Save incremental progress after every test
             atomic_write(metrics_path, json.dumps(metrics, indent=2))
             atomic_write(md_path, render_markdown_report(model, metrics, metrics.get("final_report_md", "")))
@@ -844,6 +996,9 @@ def _run_model_benchmark(
                 f"Optimized={parsed['optimized_total']}/25 (Delta={parsed['delta_total']:+g}, Overhead={ratio}x)"
             )
         except Exception as test_err:
+            metrics.setdefault("failures", []).append({"test_id": tid, "error": str(test_err)})
+            metrics["telemetry"] = summarize_stage_usage(metrics)
+            atomic_write(metrics_path, json.dumps(metrics, indent=2))
             print(f"    [ERROR] Test {tid:02d} failed for {model}: {test_err}. Continuing with remaining tests...")
 
     # Compute aggregate summary stats
@@ -902,19 +1057,24 @@ def _run_model_benchmark(
             host=host,
             timeout=timeout,
             seed=seed,
+            **chat_options,
         )
         final_content = final_res["content"]
+        if "synthesis_attempts" not in metrics:
+            metrics["synthesis_attempts"] = [metrics["final_synthesis"]] if "final_synthesis" in metrics else []
         metrics["final_synthesis"] = {"request": final_prompt, "response": final_res}
+        metrics["synthesis_attempts"].append(metrics["final_synthesis"])
     except Exception as exc:
+        metrics.setdefault("failed_synthesis_attempts", []).append({"error": str(exc),
+            "telemetry": getattr(exc, "telemetry", None)})
         print(f"  [WARN] Final synthesis generation failed for {model}: {exc}. Preserving summary metrics.")
         final_content = f"Synthesis analysis generation encountered error: {exc}"
         report_ok = False
 
     final_report_md = f"### Summary Table\n\n{summary_table_md}\n\n### Analysis Sections\n\n{final_content}"
 
-    avg_lift_per_1k = round(
-        sum(t.get("lift_per_1k_tokens", 0.0) for t in completed) / len(completed), 2
-    )
+    measured_lifts = [t["lift_per_1k_tokens"] for t in completed if t.get("lift_per_1k_tokens") is not None]
+    avg_lift_per_1k = round(sum(measured_lifts) / len(measured_lifts), 2) if measured_lifts else None
     metrics["summary"] = {
         "completed_tests": len(completed),
         "avg_baseline": avg_b,
@@ -928,6 +1088,7 @@ def _run_model_benchmark(
         "judge_model": judge_model or model,
         "self_judged": ((judge_model or model) == model),
     }
+    metrics["telemetry"] = summarize_stage_usage(metrics)
     metrics["final_report_md"] = final_report_md
     atomic_write(metrics_path, json.dumps(metrics, indent=2))
     atomic_write(md_path, render_markdown_report(model, metrics, final_report_md))
@@ -968,6 +1129,9 @@ def main() -> int:
         action="store_true",
         help="Start from scratch; refuses to overwrite a populated run directory.",
     )
+    parser.add_argument("--skill-dir", type=Path, default=None, help="Alternate skill directory containing SKILL.md and references.")
+    parser.add_argument("--strict-preservation", action="store_true", help="Execute the rewrite unchanged without source repairs.")
+    parser.add_argument("--max-output-tokens", type=int, default=None, help="Positive output limit for every generation stage.")
     parser.add_argument("--results-dir", type=Path, default=RESULTS_ROOT,
                         help="Parent directory for new runs (default: research/benchmark/v4/runs).")
     parser.add_argument("--run-id", default=None,
@@ -1059,7 +1223,7 @@ def main() -> int:
     if len({slugify_model(model) for model in models}) != len(models):
         print("Error: model identifiers have colliding result paths", file=sys.stderr)
         return 1
-    if args.timeout <= 0 or (args.swap_positions and args.unblinded):
+    if args.timeout <= 0 or (args.max_output_tokens is not None and args.max_output_tokens <= 0) or (args.swap_positions and args.unblinded):
         print("Error: timeout must be positive and swapping requires blind evaluation", file=sys.stderr)
         return 1
     run_id = args.run_id or f"{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}-{uuid.uuid4().hex[:8]}"
@@ -1072,7 +1236,7 @@ def main() -> int:
     if args.max_requests is not None and (args.max_requests < 0 or worst_requests > args.max_requests):
         print(f"Error: up to {worst_requests} HTTP requests exceed --max-requests", file=sys.stderr)
         return 1
-    skill_bundle = load_skill_bundle()
+    skill_bundle = load_skill_bundle(args.skill_dir) if args.skill_dir is not None else load_skill_bundle()
 
     print(f"Loaded make-prompt-better skill bundle ({len(skill_bundle.splitlines())} lines).")
     print(f"Target models ({len(models)}): {', '.join(models)}")
@@ -1100,6 +1264,9 @@ def main() -> int:
                 seed=args.seed,
                 results_dir=run_dir,
                 allow_remote_http=args.allow_remote_http,
+                skill_dir=args.skill_dir,
+                strict_preservation=args.strict_preservation,
+                max_output_tokens=args.max_output_tokens,
             )
             if not complete:
                 failures.append((model, "requested tests or final report are incomplete"))

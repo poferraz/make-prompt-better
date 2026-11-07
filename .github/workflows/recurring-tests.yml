@@ -89,6 +89,8 @@ jobs:
           python -m coverage run -a -m unittest discover -s tests -p test_validation_gate.py -v
           python -m coverage run -a -m unittest discover -s tests -p test_npm_release.py -v
           python -m coverage run -a -m unittest discover -s tests -p test_public_npm_smoke.py -v
+          python -m coverage run -a -m unittest discover -s tests -p test_file_scope.py -v
+          python -m coverage run -a -m unittest discover -s tests -p test_review_code.py -v
           python -m coverage xml -o test-artifacts/coverage.xml
           python -m coverage json -o test-artifacts/coverage.json
           python tests/check_python_coverage.py test-artifacts/coverage.json | tee test-artifacts/module-coverage.txt

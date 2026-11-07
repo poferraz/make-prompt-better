@@ -13,6 +13,11 @@ import tempfile
 import urllib.error
 import urllib.request
 
+try:
+    from file_scope import included
+except ModuleNotFoundError:
+    from scripts.file_scope import included
+
 NAME = 'make-prompt-better'
 REPOSITORY = 'git+https://github.com/poferraz/make-prompt-better.git'
 REGISTRY = 'https://registry.npmjs.org'
@@ -97,6 +102,7 @@ def inspect_archive(archive, tag):
                 continue
             name = '/'.join(parts[1:])
             require(name and name not in files and not sensitive_path(name), 'Duplicate or sensitive archive path')
+            require(included(name, 'runtime'), 'Non-runtime archive file')
             total += member.size
             require(0 <= member.size <= MAX_FILE_BYTES and total <= MAX_TOTAL_BYTES, 'Archive exceeds the size limit')
             content = tar.extractfile(member).read()

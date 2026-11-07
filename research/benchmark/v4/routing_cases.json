@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "description": "Small public regression corpus, not a sealed efficacy benchmark.",
+  "neighbors": [
+    {"name": "code-review", "description": "Review source code for correctness, security and maintainability defects."},
+    {"name": "planning", "description": "Create an implementation plan for a software change before implementation."},
+    {"name": "research", "description": "Read research papers and assess evidence, applicability and limitations."}
+  ],
+  "cases": [
+    {"id": "rewrite", "split": "development", "query": "Rewrite this prompt to preserve its requirements and make it clearer.", "expected": "make-prompt-better"},
+    {"id": "instructions", "split": "development", "query": "Improve the wording of my system instructions for a support agent.", "expected": "make-prompt-better"},
+    {"id": "agents", "split": "development", "query": "Simplify my AGENTS.md instructions while retaining all constraints.", "expected": "make-prompt-better"},
+    {"id": "code", "split": "development", "query": "Review this Python function for a race condition.", "expected": "code-review"},
+    {"id": "plan", "split": "development", "query": "Create an implementation plan for our database migration.", "expected": "planning"},
+    {"id": "paper", "split": "development", "query": "Read this paper and assess whether its findings apply to our system.", "expected": "research"},
+    {"id": "review-prompt", "split": "holdout", "query": "Improve this prompt that asks an AI to perform a code review.", "expected": "make-prompt-better"},
+    {"id": "workflow-instructions", "split": "holdout", "query": "Rewrite these agent workflow instructions, keeping the tests and deployment constraints.", "expected": "make-prompt-better"},
+    {"id": "claude", "split": "holdout", "query": "Make the instructions in CLAUDE.md shorter without losing required commands.", "expected": "make-prompt-better"},
+    {"id": "direct-fix", "split": "holdout", "query": "Fix the missing semicolon in this JavaScript snippet.", "expected": "none"},
+    {"id": "review-runner", "split": "holdout", "query": "Find security vulnerabilities in the prompt evaluation runner's source code.", "expected": "code-review"},
+    {"id": "prompt-study", "split": "holdout", "query": "Compare the experimental evidence in these two prompt optimization papers.", "expected": "research"}
+  ]
+}

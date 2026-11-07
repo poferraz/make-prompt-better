@@ -63,7 +63,7 @@ class HttpServiceTests(unittest.TestCase):
                     response = runner.urllib.error.HTTPError('http://local', status, 'unavailable', {}, io.BytesIO(b'rejected'))
                     responses.append(response)
                     raise response
-                with mock.patch.object(runner.urllib.request, 'urlopen', side_effect=error) as urlopen:
+                with mock.patch.object(runner, 'open_ollama_request', side_effect=error) as urlopen:
                     with self.assertRaisesRegex(RuntimeError, str(status)):
                         runner.call_ollama_chat('model', [], max_retries=2, initial_delay=0)
                     self.assertEqual(urlopen.call_count, 2)
@@ -75,7 +75,7 @@ class HttpServiceTests(unittest.TestCase):
                   ConnectionResetError('reset'), OSError('socket'), http.client.IncompleteRead(b'partial')]
         for error in errors:
             with self.subTest(error=type(error).__name__):
-                with mock.patch.object(runner.urllib.request, 'urlopen', side_effect=error) as urlopen:
+                with mock.patch.object(runner, 'open_ollama_request', side_effect=error) as urlopen:
                     with self.assertRaises(type(error)):
                         runner.call_ollama_chat('model', [], max_retries=2, initial_delay=0)
                     self.assertEqual(urlopen.call_count, 2)
@@ -85,7 +85,7 @@ class HttpServiceTests(unittest.TestCase):
         for status in (400, 401, 403, 404, 519, 528):
             with self.subTest(status=status):
                 error = runner.urllib.error.HTTPError('http://local', status, 'rejected', {}, io.BytesIO(b'denied'))
-                with mock.patch.object(runner.urllib.request, 'urlopen', side_effect=error) as urlopen:
+                with mock.patch.object(runner, 'open_ollama_request', side_effect=error) as urlopen:
                     with self.assertRaisesRegex(RuntimeError, str(status)):
                         runner.call_ollama_chat('model', [], max_retries=3)
                     self.assertEqual(urlopen.call_count, 1)
@@ -94,11 +94,11 @@ class HttpServiceTests(unittest.TestCase):
 
     @mock.patch.object(runner.time, 'sleep')
     def test_backoff_is_bounded_and_zero_retries_fails(self, sleep):
-        with mock.patch.object(runner.urllib.request, 'urlopen', side_effect=TimeoutError('timeout')):
+        with mock.patch.object(runner, 'open_ollama_request', side_effect=TimeoutError('timeout')):
             with self.assertRaises(TimeoutError):
                 runner.call_ollama_chat('model', [], max_retries=4, initial_delay=40)
         self.assertEqual([call.args[0] for call in sleep.call_args_list], [40, 60, 60])
-        with mock.patch.object(runner.urllib.request, 'urlopen') as urlopen:
+        with mock.patch.object(runner, 'open_ollama_request') as urlopen:
             with self.assertRaisesRegex(RuntimeError, 'Failed after 0 attempts'):
                 runner.call_ollama_chat('model', [], max_retries=0)
             urlopen.assert_not_called()

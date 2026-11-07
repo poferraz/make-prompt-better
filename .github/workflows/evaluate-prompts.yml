@@ -1,0 +1,68 @@
+name: Repeated prompt evaluations
+
+on:
+  schedule:
+    - cron: '41 7 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+    working-directory: candidate
+
+concurrency:
+  group: prompt-evaluation-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    if: github.ref == 'refs/heads/main' && vars.PROMPT_EVAL_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: candidate
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 277cf3831c9306fad49e8ef81aa46ac749f8993c # inspected v4.5.1 baseline
+          path: baseline
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Run bounded paired campaign
+        env:
+          EVAL_MODEL: ${{ vars.EVAL_MODEL }}
+          EVAL_JUDGE: ${{ vars.EVAL_JUDGE }}
+          OLLAMA_HOST: ${{ vars.OLLAMA_HOST }}
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+        run: |
+          test -n "$EVAL_MODEL" && test -n "$EVAL_JUDGE" && test -n "$OLLAMA_HOST"
+          python3 research/benchmark/v4/repeat_evaluations.py \
+            --baseline-skill-dir ../baseline/make-prompt-better \
+            --candidate-skill-dir make-prompt-better \
+            --models "$EVAL_MODEL" --judge-model "$EVAL_JUDGE" --host "$OLLAMA_HOST" \
+            --seeds 42,43,44 --tests 1,2 --max-requests 400 --deadline-seconds 900 \
+            --max-output-tokens 4096 --output-dir quality-artifacts/campaign
+      - name: Retain trend summaries
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: evaluation-summary-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            candidate/quality-artifacts/campaign/summary.json
+            candidate/quality-artifacts/campaign/manifest.json
+            candidate/quality-artifacts/campaign/state.json
+          retention-days: 90
+      - name: Retain curated raw experiment evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: evaluation-runs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: candidate/quality-artifacts/campaign/runs/
+          retention-days: 14

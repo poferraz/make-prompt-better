@@ -1,4 +1,4 @@
-![make-prompt-better: Keep the intent. Sharpen the ask. A reusable skill for clearer prompts.](assets/prompt-cover.png)
+![make-prompt-better: Keep the intent. Sharpen the ask. A reusable skill for clearer prompts.](https://raw.githubusercontent.com/poferraz/make-prompt-better/main/assets/prompt-cover.png)
 
 # make-prompt-better
 
@@ -20,7 +20,7 @@ npx make-prompt-better
 
 Approve npm's package prompt if it appears. Choose your coding agent, then this project or your user account. The installer copies the skill, checks the installed files, and tells you how to start using it. You need Node.js 22+ and Bash. Public installation needs no token.
 
-The guide supports Codex, Claude Code, Cursor, Gemini CLI, Antigravity, and Qwen. Type a number or a name; `q` cancels before installation. After a successful check, reload your agent. In Codex, type `$make-prompt-better` and add your request. [Host compatibility and limits](docs/compatibility.md).
+The guide supports Codex, Claude Code, Cursor, Gemini CLI, Antigravity, and Qwen. Type a number or a name; `q` cancels before installation. After a successful check, reload your agent. In Codex, type `$make-prompt-better` and add your request. [Host compatibility and limits](https://github.com/poferraz/make-prompt-better/blob/main/docs/compatibility.md).
 
 <details>
 <summary><strong>Explicit commands for automation</strong></summary>
@@ -32,7 +32,7 @@ npx --yes make-prompt-better@4.5.1 install --runtime codex --global --copy
 npx --yes make-prompt-better@4.5.1 check --runtime codex --global --copy
 ```
 
-Replace `codex` with your agent. For one project, run inside it and replace `--global` with `--project`. Choose one scope. [Public verification evidence](docs/npm-publishing.md).
+Replace `codex` with your agent. For one project, run inside it and replace `--global` with `--project`. Choose one scope. [Public verification evidence](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md).
 
 </details>
 
@@ -45,7 +45,7 @@ Run the guide in your terminal:
 node bin/cli.mjs
 ```
 
-For project scope, run it from the intended project by its absolute path. Redirected input or output shows help without installing. Explicit `install`, `check`, `update`, `uninstall`, and legacy `init` remain available. [CLI and automation options](docs/installation.md#node-cli).
+For project scope, run it from the intended project by its absolute path. Redirected input or output shows help without installing. Explicit `install`, `check`, `update`, `uninstall`, and legacy `init` remain available. [CLI and automation options](https://github.com/poferraz/make-prompt-better/blob/main/docs/installation.md#node-cli).
 
 </details>
 
@@ -65,7 +65,7 @@ Choose your agent and add `--project` for project scope. This route needs neithe
 
 </details>
 
-[First-time setup](docs/quickstart.md) · [Update, uninstall, and recovery](docs/installation.md) · [Distribution status](docs/npm-publishing.md)
+[First-time setup](https://github.com/poferraz/make-prompt-better/blob/main/docs/quickstart.md) · [Update, uninstall, and recovery](https://github.com/poferraz/make-prompt-better/blob/main/docs/installation.md) · [Distribution status](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md)
 
 ## See what changes
 
@@ -79,7 +79,7 @@ Choose your agent and add `--project` for project scope. This route needs neithe
 
 The dates, apology, tone, length, and discount restriction all stay visible. You review the rewrite before using it. This is an editorial example; it is not a recorded model evaluation.
 
-For code, see a [complete request, rewrite, and requirement check](docs/demo.md).
+For code, see a [complete request, rewrite, and requirement check](https://github.com/poferraz/make-prompt-better/blob/main/docs/demo.md).
 
 ## Try it without installing
 
@@ -128,9 +128,9 @@ The workflow draws on **11 research principle groups citing 14 papers**. Its par
 
 Historical v4.2.0 tests recorded **164 comparisons across 14 models**, using different evaluation protocols. The in-session track had a positive average change; the isolated cloud track had a negative one. These results do not measure the current working skill. There is no universal quality or safety guarantee.
 
-[Results and protocol limits](research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md) · [Claims register](docs/claims.md) · [Research sources](make-prompt-better/references/research-principles.md)
+[Results and protocol limits](https://github.com/poferraz/make-prompt-better/blob/main/research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md) · [Claims register](https://github.com/poferraz/make-prompt-better/blob/main/docs/claims.md) · [Research sources](make-prompt-better/references/research-principles.md)
 
-Use a direct prompt for a simple question or a request that is already clear. [When to use it, and when to skip it](docs/when-to-use.md).
+Use a direct prompt for a simple question or a request that is already clear. [When to use it, and when to skip it](https://github.com/poferraz/make-prompt-better/blob/main/docs/when-to-use.md).
 
 ## Questions before you start
 
@@ -151,14 +151,14 @@ The source is MIT licensed. The installer and linters need no API key. Your AI h
 <details>
 <summary><strong>Can I install with npm or npx?</strong></summary>
 
-Yes. Run `npx make-prompt-better` in a terminal and follow the guide. Public v4.5.1 passed unauthenticated installation checks, including the guided command in both scopes and an upgrade from 4.5.0. Downloading the npm package alone does not activate the skill. See the [distribution evidence](docs/npm-publishing.md).
+Yes. Run `npx make-prompt-better` in a terminal and follow the guide. Public v4.5.1 passed unauthenticated installation checks, including the guided command in both scopes and an upgrade from 4.5.0. Downloading the npm package alone does not activate the skill. See the [distribution evidence](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md).
 
 </details>
 
 <details>
 <summary><strong>Why do I see multiple copies in Codex?</strong></summary>
 
-Earlier installers placed backups inside skill folders and installed a second copy in `.codex/skills`. Both could appear in the picker. Run the current installer with `--runtime codex`, then `--runtime codex --check`. It keeps the current checkout's skill in `.agents/skills` and moves recognized older entries into recovery storage outside those roots. Restart Codex if the picker is stale. Separate project, admin, or plugin installations need their own review. [Troubleshooting](docs/installation.md#troubleshooting).
+Earlier installers placed backups inside skill folders and installed a second copy in `.codex/skills`. Both could appear in the picker. Run the current installer with `--runtime codex`, then `--runtime codex --check`. It keeps the current checkout's skill in `.agents/skills` and moves recognized older entries into recovery storage outside those roots. Restart Codex if the picker is stale. Separate project, admin, or plugin installations need their own review. [Troubleshooting](https://github.com/poferraz/make-prompt-better/blob/main/docs/installation.md#troubleshooting).
 
 </details>
 
@@ -181,10 +181,10 @@ npm run verify
 
 Lint findings are pattern-based review hints. Use `--fail-on-findings` if your CI should fail on them. They do not certify correctness, requirement preservation, or safety.
 
-[Methodology](docs/methodology.md) · [Task routing](docs/task-classification.md) · [Trade-offs](docs/tradeoffs.md) · [Benchmark guide](docs/benchmark-runs.md) · [Testing](docs/testing.md)
+[Methodology](https://github.com/poferraz/make-prompt-better/blob/main/docs/methodology.md) · [Task routing](https://github.com/poferraz/make-prompt-better/blob/main/docs/task-classification.md) · [Trade-offs](https://github.com/poferraz/make-prompt-better/blob/main/docs/tradeoffs.md) · [Benchmark guide](https://github.com/poferraz/make-prompt-better/blob/main/docs/benchmark-runs.md) · [Testing](https://github.com/poferraz/make-prompt-better/blob/main/docs/testing.md)
 
 ## Help make the next prompt clearer
 
-Try a request you already care about. If a rewrite loses a requirement or setup is confusing, [report the smallest reproducible example](SUPPORT.md), with private content removed.
+Try a request you already care about. If a rewrite loses a requirement or setup is confusing, [report the smallest reproducible example](https://github.com/poferraz/make-prompt-better/blob/main/SUPPORT.md), with private content removed.
 
-[Contribute](.github/CONTRIBUTING.md) · [Report a security issue](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md) · [Changelog](CHANGELOG.md) · [Cite this project](CITATION.cff)
+[Contribute](https://github.com/poferraz/make-prompt-better/blob/main/.github/CONTRIBUTING.md) · [Report a security issue](https://github.com/poferraz/make-prompt-better/blob/main/SECURITY.md) · [Code of conduct](https://github.com/poferraz/make-prompt-better/blob/main/CODE_OF_CONDUCT.md) · [Changelog](https://github.com/poferraz/make-prompt-better/blob/main/CHANGELOG.md) · [Cite this project](https://github.com/poferraz/make-prompt-better/blob/main/CITATION.cff)

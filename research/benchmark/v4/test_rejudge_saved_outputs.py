@@ -46,7 +46,9 @@ class SavedPairsTests(unittest.TestCase):
                  mock.patch.object(rejudge, 'call_ollama_chat', side_effect=AssertionError('network used')):
                 self.assertNotEqual(rejudge.main(args), 0)
             self.assertEqual(json.loads(output.read_text())['manifest'], old_manifest)
-            with mock.patch.object(rejudge, 'call_ollama_chat', return_value={'content': rows}) as chat:
+            # Simulate approval of this successor without modifying the historical audit hashes.
+            with mock.patch.object(rejudge, 'migration_code_is_approved', return_value=True), \
+                 mock.patch.object(rejudge, 'call_ollama_chat', return_value={'content': rows}) as chat:
                 self.assertEqual(rejudge.main(args), 0)
             self.assertEqual(chat.call_count, 1)
             state = json.loads(output.read_text())
