@@ -513,6 +513,13 @@ def read_records(root: Path, manifest: dict) -> list[dict]:
     return records
 
 
+def has_unknown_usage(record: dict) -> bool:
+    if record.get('status') == 'running' or any(call.get('status') == 'running' for call in record.get('calls', [])):
+        return True
+    return any(stage['unknown_telemetry_calls'] or stage['prompt_eval_count'] is None or stage['eval_count'] is None
+               for stage in summarize_usage([record]).values())
+
+
 def run_campaign(args: argparse.Namespace, manifest: dict, argv: list[str]) -> int:
     root = args.output_dir
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -537,10 +544,18 @@ def run_campaign(args: argparse.Namespace, manifest: dict, argv: list[str]) -> i
             save(state_path, state)
         # A worker may have persisted a stop immediately before the parent crashed.
         # Reconcile durable cell evidence before considering any further dispatch.
-        for record in read_records(root, manifest):
+        saved_records = read_records(root, manifest)
+        saved_indexes = {record['identity']['index'] for record in saved_records}
+        for record in saved_records:
             if record.get('stop_reason'):
                 state['stop_reason'] = record['stop_reason']
                 break
+        if not state.get('stop_reason') and (
+                any(has_unknown_usage(record) for record in saved_records) or
+                any(value.get('status') == 'running' or
+                    (value.get('reserved_request_allowance', 0) > 0 and int(key) not in saved_indexes)
+                    for key, value in state['cells'].items())):
+            state['stop_reason'] = 'interrupted_cell_unknown_usage'
         for cell in cells(manifest):
             key = str(cell['index'])
             previous = state['cells'].get(key)
@@ -586,6 +601,7 @@ def run_campaign(args: argparse.Namespace, manifest: dict, argv: list[str]) -> i
                 # Do not persist stderr containing endpoint responses or environment values.
             except subprocess.TimeoutExpired:
                 status.update(status='failed', error='DeadlineExceeded; active worker killed; usage may be unknown')
+                state['stop_reason'] = 'deadline_exceeded'
             except OSError:
                 status.update(status='failed', error='WorkerLaunchFailed')
                 state['stop_reason'] = 'worker_launch_failed'
@@ -593,10 +609,14 @@ def run_campaign(args: argparse.Namespace, manifest: dict, argv: list[str]) -> i
                 os.close(read_fd)
                 if write_fd >= 0:
                     os.close(write_fd)
-            for record in read_records(root, manifest):
+            saved_records = read_records(root, manifest)
+            for record in saved_records:
                 if record.get('stop_reason'):
                     state['stop_reason'] = record['stop_reason']
                     break
+            current = next((record for record in saved_records if record['identity']['index'] == cell['index']), None)
+            if not state.get('stop_reason') and (current is None or has_unknown_usage(current)):
+                state['stop_reason'] = 'interrupted_cell_unknown_usage'
             save(state_path, state)
         records = read_records(root, manifest)
         summary = summarize(manifest, state, records)

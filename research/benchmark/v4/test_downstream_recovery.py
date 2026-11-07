@@ -68,6 +68,40 @@ class RecoveryTests(unittest.TestCase):
                 runner.call_ollama_chat('executor', [{'role': 'user', 'content': 'hello'}], request_observer=fail)
         request.assert_not_called()
 
+    def test_resume_with_interrupted_worker_cannot_dispatch_another_cell(self):
+        args = self.args('--seeds', '1,2', '--max-requests', '54')
+        manifest = evaluation.build_manifest(args)
+        self.root.mkdir(parents=True)
+        (self.root / 'cells').mkdir()
+        evaluation.save(self.root / 'manifest.json', manifest)
+        evaluation.save(self.root / 'state.json', {'deadline_at': time.time() + 30,
+            'reserved_request_allowance': 27, 'cells': {'0': {'status': 'running', 'reserved_request_allowance': 27}}})
+        evaluation.save(self.root / 'cells' / '0.json', {'identity': next(evaluation.cells(manifest)),
+            'status': 'running', 'arms': {}, 'comparisons': {},
+            'calls': [{'stage': 'execution', 'arm': 'original', 'status': 'running'}]})
+        with mock.patch.object(evaluation.subprocess, 'run', return_value=subprocess.CompletedProcess([], 1)) as worker, \
+                contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(evaluation.run_campaign(args, manifest, self.argv), 1)
+        worker.assert_not_called()
+        state = json.loads((self.root / 'state.json').read_text())
+        self.assertEqual(state['stop_reason'], 'interrupted_cell_unknown_usage')
+
+    def test_abnormal_worker_exit_stops_before_next_cell(self):
+        args = self.args('--seeds', '1,2', '--max-requests', '54')
+        manifest = evaluation.build_manifest(args)
+        first = next(evaluation.cells(manifest))
+        def crash(*_args, **_kwargs):
+            (self.root / 'cells').mkdir(exist_ok=True)
+            evaluation.save(self.root / 'cells' / '0.json', {'identity': first, 'status': 'running',
+                'arms': {}, 'comparisons': {}, 'calls': [{'stage': 'execution', 'arm': 'original', 'status': 'running'}]})
+            return subprocess.CompletedProcess([], -9)
+        with mock.patch.object(evaluation.subprocess, 'run', side_effect=crash) as worker, \
+                contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(evaluation.run_campaign(args, manifest, self.argv), 1)
+        self.assertEqual(worker.call_count, 1)
+        state = json.loads((self.root / 'state.json').read_text())
+        self.assertEqual(state['stop_reason'], 'interrupted_cell_unknown_usage')
+
     def test_rate_limit_is_not_retried_when_fail_closed_enabled(self):
         error = HTTPError('http://localhost', 429, 'limited', {}, io.BytesIO(b'limited'))
         with mock.patch.object(runner, 'open_ollama_request', side_effect=error) as request:
