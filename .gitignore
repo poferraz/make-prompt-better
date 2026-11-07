@@ -38,3 +38,9 @@ PROMPT_REMEDIATION.md
 
 # Project-scope installer recovery and staging files
 .make-prompt-better/
+
+# Local quality campaigns and review reports (never runtime inputs)
+quality-artifacts/
+test-artifacts/
+.superpowers/
+.worktrees/
