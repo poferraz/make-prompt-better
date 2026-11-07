@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
+import hmac
 import itertools
 import json
 import math
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import time
@@ -29,8 +32,28 @@ SOURCE_FILES = ('downstream_evaluation.py', 'downstream_corpus.py',
                 'run_ollama_benchmarks.py', 'blind_stats_engine.py')
 
 
+class EvidenceWriteError(OSError):
+    pass
+
+
+class StopCell(Exception):
+    def __init__(self, reason: str):
+        self.reason = reason
+
+
+class WorkerDeadline(BaseException):
+    pass
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
 def save(path: Path, value: dict) -> None:
-    runner.atomic_write(path, json.dumps(value, ensure_ascii=False, indent=2) + '\n')
+    try:
+        runner.atomic_write(path, json.dumps(value, ensure_ascii=False, indent=2) + '\n')
+    except OSError as exc:
+        raise EvidenceWriteError('Could not save campaign evidence') from exc
 
 
 def digest(path: Path) -> str:
@@ -45,6 +68,7 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument('--candidate-skill-dir', type=Path, required=True)
     p.add_argument('--models', required=True)
     p.add_argument('--judge-model', required=True)
+    p.add_argument('--catalog-snapshot', type=Path, help='Optional saved provider /api/tags catalog for model identity evidence')
     p.add_argument('--seeds', required=True)
     p.add_argument('--tasks', default='ALL', help='Comma-separated case IDs, or ALL')
     p.add_argument('--output-dir', type=Path, required=True)
@@ -58,7 +82,19 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument('--allow-remote-http', action='store_true')
     p.add_argument('--run', action='store_true', help='Make bounded model requests; omit to plan without writing')
     p.add_argument('--cell-index', type=int, help=argparse.SUPPRESS)
+    p.add_argument('--worker-auth-fd', type=int, help=argparse.SUPPRESS)
     return p
+
+
+def canonical_model(model: str) -> str:
+    value = model.strip().lower()
+    for prefix in ('registry.ollama.ai/library/', 'library/'):
+        if value.startswith(prefix):
+            value = value[len(prefix):]
+            break
+    if ':' not in value:
+        value += ':latest'
+    return value
 
 
 def build_manifest(args: argparse.Namespace) -> dict:
@@ -67,7 +103,9 @@ def build_manifest(args: argparse.Namespace) -> dict:
     if not models or len(set(models)) != len(models) or any(
             not m or '/' in m or '\\' in m or m in {'.', '..'} for m in models):
         raise ValueError('Explicit unique model identifiers are required')
-    if not args.judge_model.strip() or args.judge_model.strip() in models:
+    if len({canonical_model(model) for model in models}) != len(models):
+        raise ValueError('Executor identifiers must not be known aliases of one another')
+    if not args.judge_model.strip() or canonical_model(args.judge_model) in {canonical_model(m) for m in models}:
         raise ValueError('The judge must be independent of every executor and optimizer')
     if not seeds or len(set(seeds)) != len(seeds):
         raise ValueError('Unique nonempty seeds are required')
@@ -75,6 +113,24 @@ def build_manifest(args: argparse.Namespace) -> dict:
             min(args.timeout, args.max_output_tokens, args.max_input_chars, args.max_attempts) <= 0):
         raise ValueError('Time, tokens, input size and attempts must be positive and finite')
     runner.validate_host(args.host, args.allow_remote_http)
+    for model in [*models, args.judge_model.strip()]:
+        runner.validate_cloud_model(model, args.host)
+    model_catalog = None
+    if args.catalog_snapshot:
+        catalog = json.loads(args.catalog_snapshot.read_text(encoding='utf-8'))
+        entries = catalog.get('models') if isinstance(catalog, dict) else None
+        if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):
+            raise ValueError('Catalog snapshot must contain a models list')
+        identities = {}
+        for model in [*models, args.judge_model.strip()]:
+            matching = [entry for entry in entries if entry.get('name') == model]
+            if len(matching) != 1 or not isinstance(matching[0].get('digest'), str) or not matching[0]['digest']:
+                raise ValueError('Catalog must identify each selected model exactly once with a digest')
+            identities[model] = matching[0]['digest']
+        if identities[args.judge_model.strip()] in {identities[m] for m in models}:
+            raise ValueError('Catalog reports the judge and an executor share an identity')
+        model_catalog = {'sha256': digest(args.catalog_snapshot), 'identities': identities,
+                         'status': 'snapshot supplied by operator; advertised identities may change'}
     corpus = load_corpus(args.corpus)
     corpus_hash = digest(args.corpus)
     if corpus['split'] == 'holdout':
@@ -101,10 +157,10 @@ def build_manifest(args: argparse.Namespace) -> dict:
     required = len(cases) * len(models) * len(seeds) * calls * args.max_attempts
     if args.max_requests < required:
         raise ValueError(f'Full experiment requires at least {required} reserved HTTP attempts')
-    return {'schema': 1, 'protocol': 'five-arm-downstream-v1', 'arms': list(ARMS), 'cases': cases,
+    return {'schema': 2, 'protocol': 'five-arm-downstream-v2', 'arms': list(ARMS), 'cases': cases,
             'corpus': {'path': str(args.corpus.resolve()), 'sha256': corpus_hash, 'split': corpus['split'],
                        'provenance': corpus['provenance']}, 'skills': skills,
-            'models': models, 'judge_model': args.judge_model.strip(), 'seeds': seeds,
+            'models': models, 'judge_model': args.judge_model.strip(), 'model_catalog': model_catalog, 'seeds': seeds,
             'host_sha256': runner.sha256_text(args.host), 'max_requests': args.max_requests,
             'calls_per_cell': calls, 'max_attempts': args.max_attempts,
             'required_request_allowance': required, 'deadline_seconds': args.deadline_seconds,
@@ -174,20 +230,27 @@ def parse_judge(content: str) -> dict:
     return result
 
 
-def run_cell(manifest: dict, cell: dict, path: Path, host: str) -> dict:
+def run_cell(manifest: dict, cell: dict, path: Path, host: str, deadline: float | None = None) -> dict:
     """No generated response is executed. This runner sends text and checks data only."""
-    if path.exists():
-        raise ValueError('Refusing to relaunch an existing cell')
     case = next(c for c in manifest['cases'] if c['id'] == cell['task_id'])
-    data = {'identity': cell, 'status': 'running', 'arms': {}, 'comparisons': {}, 'calls': [],
+    data = {'identity': cell, 'status': 'running', 'started_at_utc': utc_now(),
+            'arms': {}, 'comparisons': {}, 'calls': [],
             'failures': [], 'reserved_request_allowance': 0}
-    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.parent.is_symlink():
+        raise ValueError('Cell directory cannot be a symlink')
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    os.chmod(path.parent, 0o700)
+    try:
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0), 0o600)
+        os.close(fd)
+    except FileExistsError as exc:
+        raise ValueError('Refusing to relaunch an existing cell') from exc
     save(path, data)
 
     def call(stage: str, arm: str, model: str, messages: list[dict], validate=None):
         entry = {'stage': stage, 'arm': arm, 'model': model, 'seed': cell['seed'],
                  'request_sha256': runner.sha256_text(json.dumps(messages, ensure_ascii=False)), 'status': 'running',
-                 'reserved_attempts': manifest['max_attempts']}
+                 'started_at_utc': utc_now(), 'reserved_attempts': manifest['max_attempts']}
         if sum(len(m['content']) for m in messages) > manifest['max_input_chars']:
             entry.update(status='failed', error='InputLimitExceeded', reserved_attempts=0, dispatched=False)
             data['calls'].append(entry)
@@ -199,14 +262,38 @@ def run_cell(manifest: dict, cell: dict, path: Path, host: str) -> dict:
             raise ValueError('Cell request allowance exhausted')
         data['calls'].append(entry)
         save(path, data)  # Write intent before dispatch so interruption never turns usage into zero.
+        api_key = os.environ.get('OLLAMA_API_KEY')
+
+        def retain_request(payload: bytes):
+            if deadline is not None and time.time() >= deadline:
+                raise StopCell('deadline_exceeded')
+            body = payload.decode('utf-8')
+            if api_key and api_key in body:
+                raise StopCell('sensitive_request')
+            entry['request_body'] = body
+            entry['request_body_sha256'] = hashlib.sha256(payload).hexdigest()
+            save(path, data)
+
         try:
             response = runner.call_ollama_chat(model=model, messages=messages, host=host,
                 seed=cell['seed'], timeout=manifest['timeout'], max_retries=manifest['max_attempts'],
-                max_output_tokens=manifest['max_output_tokens'], api_key=os.environ.get('OLLAMA_API_KEY'))
+                max_output_tokens=manifest['max_output_tokens'], api_key=api_key,
+                stop_status_codes={401, 402, 403, 429}, stop_on_unknown_usage=True, request_observer=retain_request)
+            if api_key and api_key in json.dumps(response, ensure_ascii=False):
+                raise StopCell('sensitive_response')
             entry['response'] = response
             parsed = validate(response['content']) if validate else response.get('raw_content', response['content'])
             entry['status'] = 'completed'
             return parsed
+        except (runner.OllamaStopError, StopCell) as exc:
+            entry.update(status='failed', error=type(exc).__name__)
+            if getattr(exc, 'telemetry', None):
+                entry['telemetry'] = exc.telemetry
+            data['stop_reason'] = exc.reason
+            data['failures'].append({'stage': stage, 'arm': arm, 'error': type(exc).__name__})
+            return None
+        except EvidenceWriteError:
+            raise
         except Exception as exc:
             entry.update(status='failed', error=type(exc).__name__)
             if getattr(exc, 'telemetry', None):
@@ -214,9 +301,12 @@ def run_cell(manifest: dict, cell: dict, path: Path, host: str) -> dict:
             data['failures'].append({'stage': stage, 'arm': arm, 'error': type(exc).__name__})
             return None
         finally:
+            entry['finished_at_utc'] = utc_now()
             save(path, data)
 
     for arm in cell['arm_order']:
+        if data.get('stop_reason'):
+            break
         if arm in ('stable', 'candidate'):
             bundle = runner.load_skill_bundle(Path(manifest['skills'][arm]['directory']))
             if runner.sha256_text(bundle) != manifest['skills'][arm]['bundle_sha256']:
@@ -239,6 +329,8 @@ def run_cell(manifest: dict, cell: dict, path: Path, host: str) -> dict:
             item.update(answer=answer, objective_checks=evaluate_checks(answer, case['checks']))
             save(path, data)
     for left, right in PAIRS:
+        if data.get('stop_reason'):
+            break
         if any('answer' not in data['arms'].get(a, {}) for a in (left, right)):
             continue
         pair_key = left + '__' + right
@@ -246,6 +338,8 @@ def run_cell(manifest: dict, cell: dict, path: Path, host: str) -> dict:
         first = {label: left if variant == 'baseline' else right for label, variant in assignment.items()}
         passes = []
         for mapping in (first, {'A': first['B'], 'B': first['A']}):
+            if data.get('stop_reason'):
+                break
             result = call('judge', pair_key, manifest['judge_model'], judge_messages(case,
                 data['arms'][mapping['A']]['answer'], data['arms'][mapping['B']]['answer']), parse_judge)
             if result is not None:
@@ -258,7 +352,9 @@ def run_cell(manifest: dict, cell: dict, path: Path, host: str) -> dict:
                 'right_total': merged['optimized_total'], 'delta': merged['delta_total'],
                 'position_consistent': passes[0]['scores']['winner'] == passes[1]['scores']['winner'], 'passes': passes}
             save(path, data)
-    data['status'] = 'completed' if len(data['comparisons']) == len(PAIRS) and not data['failures'] else 'failed'
+    data['status'] = ('stopped' if data.get('stop_reason') else
+                      'completed' if len(data['comparisons']) == len(PAIRS) and not data['failures'] else 'failed')
+    data['finished_at_utc'] = utc_now()
     save(path, data)
     return data
 
@@ -316,13 +412,27 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
             'position_consistency_rate': sum(r['position_consistent'] for r in rows) / len(rows) if rows else None}
     bypass, outcomes = {}, {}
     case_by_id = {c['id']: c for c in manifest['cases']}
+    expected = len(list(cells(manifest)))
+    def success(item):
+        checks = item.get('objective_checks')
+        return all(c['status'] == 'passed' for c in checks) if checks else None
+
     for arm in ARMS:
         items = [r['arms'][arm] for r in records if arm in r.get('arms', {})]
+        arm_calls = [c for r in records for c in r.get('calls', []) if c['arm'] == arm]
+        preparation = [c for c in arm_calls if c['stage'] == 'preparation']
+        execution = [c for c in arm_calls if c['stage'] == 'execution']
         counts = lambda field: {status: sum(c['status'] == status for a in items for c in a.get(field, []))
                                 for status in ('passed', 'failed')}
         answered = [a for a in items if 'answer' in a]
         successes = sum(bool(a['objective_checks']) and all(c['status'] == 'passed' for c in a['objective_checks']) for a in answered)
-        outcomes[arm] = {'executions': len(answered), 'objective_successes': successes,
+        outcomes[arm] = {'expected': expected, 'answered': len(answered), 'unavailable': expected - len(answered),
+                         'preparation_attempts': len(preparation),
+                         'preparation_failures': sum(c['status'] == 'failed' for c in preparation),
+                         'execution_attempts': len(execution),
+                         'execution_failures': sum(c['status'] == 'failed' for c in execution),
+                         'execution_not_attempted': expected - len(execution),
+                         'executions': len(answered), 'objective_successes': successes,
                          'objective_failures': len(answered) - successes, 'objective_checks': counts('objective_checks'),
                          'preservation_checks': counts('preservation'),
                          'literal_audit_failures': sum(a['literal_audit']['status'] == 'failed' for a in items)}
@@ -335,7 +445,31 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
                 'bypass_count': sum(a['decision'] == 'bypass' for a in decisions),
                 'unchanged_rewrites': sum(a['decision'] == 'rewrite' and a['unchanged'] for a in decisions),
                 'expected_decision_cases': len(eligible),
-                'expected_decision_matches': sum((a['decision'] == 'bypass') == expected for a, expected in eligible)}
+                'expected_decision_matches': sum((a['decision'] == 'bypass') == expected for a, expected in eligible),
+                'decisions': [{'task_id': r['identity']['task_id'], 'model': r['identity']['model'],
+                               'seed': r['identity']['seed'], 'decision': r['arms'][arm]['decision'],
+                               'skill_answered': 'answer' in r['arms'][arm],
+                               'original_answered': 'answer' in r['arms'].get('original', {}),
+                               'skill_objective_success': success(r['arms'][arm]),
+                               'original_objective_success': success(r['arms'].get('original', {})),
+                               'usage': {stage: value for stage, value in summarize_usage([r], arm=arm).items()
+                                         if stage != 'judge'}}
+                              for r in records if arm in r.get('arms', {})]}
+    objective_pairs = {}
+    for left, right in PAIRS:
+        rows = []
+        for record in records:
+            arms = record.get('arms', {})
+            if not all('answer' in arms.get(a, {}) and arms[a].get('objective_checks') for a in (left, right)):
+                continue
+            row = {'task_id': record['identity']['task_id'], 'model': record['identity']['model'],
+                   'seed': record['identity']['seed']}
+            for label, arm in (('left_success', left), ('right_success', right)):
+                row[label] = all(c['status'] == 'passed' for c in arms[arm]['objective_checks'])
+            row['delta'] = int(row['right_success']) - int(row['left_success'])
+            rows.append(row)
+        objective_pairs[left + '__' + right] = {'paired_answers': len(rows), 'expected': expected,
+            'mean_delta': sum(row['delta'] for row in rows) / len(rows) if rows else None, 'pairs': rows}
     usage = summarize_usage(records)
     product_usage = {a: {stage: value for stage, value in summarize_usage(records, arm=a).items()
                          if stage != 'judge'} for a in ARMS}
@@ -353,9 +487,11 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
         for value in usage.values())
     return {'protocol': manifest['protocol'], 'description': 'Descriptive development evidence, not proof of efficacy.',
             'expected_cells': len(list(cells(manifest))), 'completed_cells': sum(r.get('status') == 'completed' for r in records),
-            'pair_summaries': pair_summaries, 'missing_pairs': missing_pairs, 'outcomes': outcomes, 'bypass': bypass,
+            'pair_summaries': pair_summaries, 'objective_pairs': objective_pairs,
+            'missing_pairs': missing_pairs, 'outcomes': outcomes, 'bypass': bypass,
             'failed_cells': {k: v for k, v in state['cells'].items() if v['status'] != 'completed'},
             'stage_usage': usage, 'product_usage_by_arm': product_usage, 'telemetry_incomplete': telemetry_incomplete,
+            'stop_reason': state.get('stop_reason'),
             'pricing_status': 'unknown', 'reserved_request_allowance': state.get('reserved_request_allowance', 0),
             'interpretation': 'Positive deltas favor the second arm. Task-cluster intervals are descriptive, unadjusted for multiple comparisons. '
                               'Seeds and models are not independent tasks. No effect or cost claim is warranted from mocked results.'}
@@ -363,8 +499,12 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
 
 def read_records(root: Path, manifest: dict) -> list[dict]:
     records = []
+    if (root / 'cells').is_symlink():
+        raise ValueError('Cell directory cannot be a symlink')
     for cell in cells(manifest):
         path = root / 'cells' / f"{cell['index']}.json"
+        if path.is_symlink():
+            raise ValueError('Cell record cannot be a symlink')
         if path.exists():
             data = json.loads(path.read_text(encoding='utf-8'))
             if data.get('identity') != cell:
@@ -375,10 +515,11 @@ def read_records(root: Path, manifest: dict) -> list[dict]:
 
 def run_campaign(args: argparse.Namespace, manifest: dict, argv: list[str]) -> int:
     root = args.output_dir
-    root.mkdir(parents=True, exist_ok=True)
+    root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    os.chmod(root, 0o700)
     lock = root / '.campaign.lock'
     try:
-        lock.mkdir()
+        lock.mkdir(mode=0o700)
     except FileExistsError as exc:
         raise ValueError('Campaign is locked; verify no worker exists before removing a stale lock') from exc
     try:
@@ -390,9 +531,16 @@ def run_campaign(args: argparse.Namespace, manifest: dict, argv: list[str]) -> i
         else:
             if any(p != lock for p in root.iterdir()):
                 raise ValueError('Refusing to overwrite nonempty output directory')
-            state = {'deadline_at': time.time() + manifest['deadline_seconds'], 'reserved_request_allowance': 0, 'cells': {}}
+            state = {'created_at_utc': utc_now(), 'python_version': sys.version, 'platform': sys.platform,
+                     'deadline_at': time.time() + manifest['deadline_seconds'], 'reserved_request_allowance': 0, 'cells': {}}
             save(manifest_path, manifest)
             save(state_path, state)
+        # A worker may have persisted a stop immediately before the parent crashed.
+        # Reconcile durable cell evidence before considering any further dispatch.
+        for record in read_records(root, manifest):
+            if record.get('stop_reason'):
+                state['stop_reason'] = record['stop_reason']
+                break
         for cell in cells(manifest):
             key = str(cell['index'])
             previous = state['cells'].get(key)
@@ -403,6 +551,10 @@ def run_campaign(args: argparse.Namespace, manifest: dict, argv: list[str]) -> i
             remaining = state['deadline_at'] - time.time()
             status = {'status': 'failed', 'error': 'DeadlineExceeded', 'reserved_request_allowance': 0}
             state['cells'][key] = status
+            if state.get('stop_reason'):
+                status.update(status='not_launched', error='CampaignStopped: ' + state['stop_reason'])
+                save(state_path, state)
+                continue
             allowance = manifest['calls_per_cell'] * manifest['max_attempts']
             if remaining <= 0:
                 save(state_path, state)
@@ -412,18 +564,39 @@ def run_campaign(args: argparse.Namespace, manifest: dict, argv: list[str]) -> i
                 save(state_path, state)
                 continue
             state['reserved_request_allowance'] += allowance
-            status.update(status='running', error=None, reserved_request_allowance=allowance)
+            token = os.urandom(32).hex().encode('ascii')
+            status.update(status='running', error=None, reserved_request_allowance=allowance,
+                          worker_token_sha256=hashlib.sha256(token).hexdigest())
             save(state_path, state)
-            command = [sys.executable, str(Path(__file__).resolve()), *argv, '--cell-index', key]
+            read_fd, write_fd = os.pipe()
             try:
-                result = subprocess.run(command, capture_output=True, text=True, timeout=remaining, check=False)
+                os.write(write_fd, token)
+                os.close(write_fd)
+                write_fd = -1
+                command = [sys.executable, str(Path(__file__).resolve()), *argv, '--cell-index', key,
+                           '--worker-auth-fd', str(read_fd)]
+                result = subprocess.run(command, capture_output=True, text=True, timeout=remaining, check=False,
+                                        pass_fds=(read_fd,))
                 status.update(status='completed' if result.returncode == 0 else 'failed',
                               error=None if result.returncode == 0 else 'CellFailed', returncode=result.returncode)
+                if result.returncode == 3:
+                    state['stop_reason'] = 'evidence_write_failed'
+                elif result.returncode == 4:
+                    state['stop_reason'] = 'deadline_exceeded'
                 # Do not persist stderr containing endpoint responses or environment values.
             except subprocess.TimeoutExpired:
                 status.update(status='failed', error='DeadlineExceeded; active worker killed; usage may be unknown')
             except OSError:
                 status.update(status='failed', error='WorkerLaunchFailed')
+                state['stop_reason'] = 'worker_launch_failed'
+            finally:
+                os.close(read_fd)
+                if write_fd >= 0:
+                    os.close(write_fd)
+            for record in read_records(root, manifest):
+                if record.get('stop_reason'):
+                    state['stop_reason'] = record['stop_reason']
+                    break
             save(state_path, state)
         records = read_records(root, manifest)
         summary = summarize(manifest, state, records)
@@ -435,6 +608,28 @@ def run_campaign(args: argparse.Namespace, manifest: dict, argv: list[str]) -> i
         lock.rmdir()
 
 
+def authorize_worker(args: argparse.Namespace, manifest: dict) -> tuple[dict, float]:
+    if args.worker_auth_fd is None:
+        raise ValueError('Worker requires a coordinator reservation')
+    token = os.read(args.worker_auth_fd, 65)
+    os.close(args.worker_auth_fd)
+    root = args.output_dir
+    if not (root / '.campaign.lock').is_dir():
+        raise ValueError('Worker requires the active campaign lock')
+    if json.loads((root / 'manifest.json').read_text()) != manifest:
+        raise ValueError('Worker manifest mismatch')
+    state = json.loads((root / 'state.json').read_text())
+    status = state['cells'][str(args.cell_index)]
+    if (status['status'] != 'running' or state.get('stop_reason') or
+            state['deadline_at'] <= time.time() or
+            status.get('reserved_request_allowance') != manifest['calls_per_cell'] * manifest['max_attempts'] or
+            state['reserved_request_allowance'] > manifest['max_requests'] or
+            not hmac.compare_digest(hashlib.sha256(token).hexdigest(), status.get('worker_token_sha256', ''))):
+        raise ValueError('Invalid or expired worker reservation')
+    cell = next(c for c in cells(manifest) if c['index'] == args.cell_index)
+    return cell, state['deadline_at']
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     args = parser().parse_args(argv)
@@ -443,16 +638,30 @@ def main(argv: list[str] | None = None) -> int:
         if not args.run:
             print(json.dumps({'manifest': manifest, 'calls_enabled': False}, ensure_ascii=False, indent=2))
             return 0
+        if runner.is_direct_ollama_cloud(args.host) and not os.environ.get('OLLAMA_API_KEY'):
+            raise ValueError('OLLAMA_API_KEY is required for direct Ollama Cloud runs')
         if '.private' not in args.output_dir.resolve().parts:
             raise ValueError('Generated output must be under a .private directory')
         if args.cell_index is not None:
-            saved = json.loads((args.output_dir / 'manifest.json').read_text())
-            if saved != manifest:
-                raise ValueError('Worker manifest mismatch')
-            cell = next(c for c in cells(manifest) if c['index'] == args.cell_index)
-            data = run_cell(manifest, cell, args.output_dir / 'cells' / f'{args.cell_index}.json', args.host)
+            cell, deadline = authorize_worker(args, manifest)
+            def expire(signum, frame):
+                raise WorkerDeadline()
+            signal.signal(signal.SIGALRM, expire)
+            signal.setitimer(signal.ITIMER_REAL, max(0.001, deadline - time.time()))
+            try:
+                data = run_cell(manifest, cell, args.output_dir / 'cells' / f'{args.cell_index}.json', args.host, deadline)
+            finally:
+                signal.setitimer(signal.ITIMER_REAL, 0)
             return int(data['status'] != 'completed')
+        if args.worker_auth_fd is not None:
+            raise ValueError('Worker authorization is valid only for a reserved cell')
         return run_campaign(args, manifest, argv)
+    except EvidenceWriteError:
+        print('Error: campaign evidence could not be saved', file=sys.stderr)
+        return 3
+    except WorkerDeadline:
+        print('Error: campaign deadline reached', file=sys.stderr)
+        return 4
     except (OSError, ValueError, KeyError, TypeError, StopIteration) as exc:
         print(f'Error: {exc}', file=sys.stderr)
         return 1

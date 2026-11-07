@@ -378,6 +378,18 @@ def open_ollama_request(request: urllib.request.Request, timeout: int):
     return urllib.request.build_opener(NoRedirectHandler()).open(request, timeout=timeout)
 
 
+class OllamaStopError(RuntimeError):
+    """An opt-in campaign stop with sanitized telemetry."""
+    def __init__(self, reason: str, telemetry: dict):
+        super().__init__(reason)
+        self.reason = reason
+        self.telemetry = telemetry
+
+
+def usage_count(value: Any) -> int | None:
+    return value if type(value) is int and value >= 0 else None
+
+
 def call_ollama_chat(
     model: str,
     messages: list[dict[str, str]],
@@ -390,6 +402,9 @@ def call_ollama_chat(
     max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
     max_output_tokens: int | None = None,
     api_key: str | None = None,
+    stop_status_codes: set[int] | None = None,
+    stop_on_unknown_usage: bool = False,
+    request_observer=None,
 ) -> dict[str, Any]:
     validate_cloud_model(model, host)
     if max_response_bytes <= 0:
@@ -413,6 +428,8 @@ def call_ollama_chat(
         "options": payload_options,
     }
     data = json.dumps(payload).encode("utf-8")
+    if request_observer is not None:
+        request_observer(data)  # Durable evidence must exist before any request is dispatched.
     delay = initial_delay
     started = time.monotonic()
     attempts = []
@@ -427,8 +444,8 @@ def call_ollama_chat(
     def record_failure(err: Exception) -> None:
         attempts.append({"attempt": attempt, "status": "failed", "error": type(err).__name__ if api_key else str(err),
                          "elapsed_seconds": round(time.monotonic() - t0, 4),
-                         "prompt_eval_count": body.get("prompt_eval_count") if body else None,
-                         "eval_count": body.get("eval_count") if body else None})
+                         "prompt_eval_count": usage_count(body.get("prompt_eval_count")) if body else None,
+                         "eval_count": usage_count(body.get("eval_count")) if body else None})
         err.telemetry = telemetry()
 
     for attempt in range(1, max_retries + 1):
@@ -472,18 +489,22 @@ def call_ollama_chat(
             if not content:
                 raise ConnectionError("Ollama stream completed without response content")
             words = len(content.split())
+            prompt_count = usage_count(body.get("prompt_eval_count"))
+            output_count = usage_count(body.get("eval_count"))
             attempts.append({"attempt": attempt, "status": "success",
                              "elapsed_seconds": elapsed,
-                             "prompt_eval_count": body.get("prompt_eval_count"),
-                             "eval_count": body.get("eval_count")})
+                             "prompt_eval_count": prompt_count,
+                             "eval_count": output_count})
+            if stop_on_unknown_usage and (prompt_count is None or output_count is None):
+                raise OllamaStopError("unknown_usage", telemetry())
             # Polite pause to avoid bursting cloud gateways
             time.sleep(1.5)
             return {
                 "content": content,
                 "raw_content": raw_content,
                 "words": words,
-                "prompt_eval_count": body.get("prompt_eval_count"),
-                "eval_count": body.get("eval_count"),
+                "prompt_eval_count": prompt_count,
+                "eval_count": output_count,
                 "elapsed_seconds": elapsed,
                 "telemetry": telemetry(),
             }
@@ -497,6 +518,10 @@ def call_ollama_chat(
             finally:
                 err.close()
 
+            if stop_status_codes and err.code in stop_status_codes:
+                raise OllamaStopError(f"http_{err.code}", telemetry()) from None
+            if stop_on_unknown_usage:
+                raise OllamaStopError("unknown_usage", telemetry()) from None
             # Retry transient server/gateway errors: 502, 503, 504, 500, 429, 520..527
             retryable = err.code in (502, 503, 504, 500, 429) or (520 <= err.code <= 527)
             if retryable and attempt < max_retries:
@@ -513,8 +538,12 @@ def call_ollama_chat(
             if api_key:
                 raise failure from None
             raise failure from err
+        except OllamaStopError:
+            raise
         except (urllib.error.URLError, TimeoutError, ConnectionResetError, OSError, http.client.IncompleteRead) as err:
             record_failure(err)
+            if stop_on_unknown_usage:
+                raise OllamaStopError("unknown_usage", telemetry()) from None
             if attempt < max_retries:
                 print(
                     f"      [WARN] Network error ({type(err).__name__ if api_key else err}) for {model}. "
@@ -531,6 +560,9 @@ def call_ollama_chat(
             raise
         except Exception as err:
             record_failure(err)
+            if stop_on_unknown_usage and (not body or usage_count(body.get("prompt_eval_count")) is None or
+                                          usage_count(body.get("eval_count")) is None):
+                raise OllamaStopError("unknown_usage", telemetry()) from None
             if api_key:
                 failure = RuntimeError(f"Ollama request failed: {type(err).__name__}")
                 failure.telemetry = telemetry()

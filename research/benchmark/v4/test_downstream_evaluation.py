@@ -318,8 +318,7 @@ class DownstreamFakeOllama(FakeOllama):
             response = '18'
         frames = [{'message': {'content': response[:3]}, 'done': False},
                   {'message': {'content': response[3:]}, 'done': True}]
-        if len(self.requests) % 3:
-            frames[-1].update(prompt_eval_count=12, eval_count=4)
+        frames[-1].update(prompt_eval_count=12, eval_count=4)
         payload = b''.join(json.dumps(frame).encode() + b'\n' for frame in frames)
         self.send_response(200)
         self.send_header('Content-Length', str(len(payload)))
@@ -351,7 +350,7 @@ class DownstreamHttpTests(unittest.TestCase):
                 self.assertEqual(summary['completed_cells'], 1)
                 self.assertFalse(summary['missing_pairs'])
                 self.assertEqual(summary['reserved_request_allowance'], 27)
-                self.assertIsNone(summary['stage_usage']['judge']['eval_count'])
+                self.assertEqual(summary['stage_usage']['judge']['eval_count'], 80)
                 self.assertEqual(summary['outcomes']['original']['objective_checks']['passed'], 1)
                 self.assertEqual(summary['bypass']['stable']['bypass_count'], 1)
                 self.assertEqual(len(DownstreamFakeOllama.requests), 27)
