@@ -178,6 +178,27 @@ class CampaignTests(unittest.TestCase):
         self.assertTrue(any(c.get('error') == 'Campaign subprocess deadline exceeded' for c in state['cells'].values()))
         self.assertEqual(state['reserved_request_allowance'], 55)
 
+    def test_interrupted_second_task_keeps_durable_usage_over_cached_summary(self):
+        def interrupted(cmd, **kwargs):
+            self.fake_runner(cmd, **kwargs)
+            model = cmd[cmd.index('--models') + 1]
+            path = Path(cmd[cmd.index('--results-dir') + 1]) / 'run' / runner.slugify_model(model) / 'metrics.json'
+            data = json.loads(path.read_text())
+            del data['tests']['2']
+            data['telemetry'] = runner.summarize_stage_usage(data)
+            data['in_progress']['2'] = {'optimize': {'response': {
+                'prompt_eval_count': 11, 'eval_count': 7, 'elapsed_seconds': .1}}}
+            path.write_text(json.dumps(data))
+            raise subprocess.TimeoutExpired(cmd, kwargs['timeout'])
+        with mock.patch.object(self.campaign.subprocess, 'run', side_effect=interrupted):
+            self.assertEqual(self.campaign.main(self.args), 1)
+        summary = json.loads((self.output / 'summary.json').read_text())
+        self.assertEqual(summary['completed_pairs'], 4)
+        for variant in ('baseline', 'candidate'):
+            stage = summary['stage_totals'][variant]['optimizer']
+            self.assertEqual(stage['known_eval_count'], 28)
+            self.assertIsNone(stage['eval_count'])
+
     def test_expired_campaign_does_not_launch_more_work(self):
         with mock.patch.object(self.campaign.time, 'time', side_effect=[100, 161, 161, 161, 161, 161, 161, 161, 161]), \
              mock.patch.object(self.campaign.subprocess, 'run', side_effect=AssertionError('deadline exceeded')):

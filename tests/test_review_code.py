@@ -92,6 +92,18 @@ class ReviewTests(unittest.TestCase):
             self.assertEqual(report['status'], 'model-review-failed')
             self.assertNotIn('secret-provider-response', output.read_text())
 
+    def test_existing_output_is_rejected_before_spending_a_model_request(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / 'report.json'
+            output.write_text('KEEP ORIGINAL')
+            args = ['review_code.py', '--model', 'reviewer', '--output', str(output)]
+            with patch.object(sys, 'argv', args), patch.object(self.review, 'model_review',
+                     return_value=([], {})) as call:
+                with self.assertRaises(FileExistsError):
+                    self.review.main()
+                self.assertEqual(call.call_count, 0)
+            self.assertEqual(output.read_text(), 'KEEP ORIGINAL')
+
     def test_workflow_never_exposes_inference_key_on_pull_requests(self):
         text = (ROOT / '.github/workflows/continuous-review.yml').read_text()
         self.assertNotIn('pull_request_target', text)

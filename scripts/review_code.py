@@ -8,6 +8,7 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
+import tempfile
 
 try:
     from file_scope import collect
@@ -137,6 +138,11 @@ def main() -> int:
               'model': args.model or None, 'findings': [],
               'scope_note': 'Partial model context is disclosed; no finding is not proof of correctness.'}
     result = 0
+    if args.output and not args.dry_run:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        # Reserve the destination before inference; collisions must never spend a request.
+        with args.output.open('x', encoding='utf-8') as stream:
+            json.dump(dict(report, status='review-incomplete'), stream, indent=2)
     if args.model and not args.dry_run:
         try:
             report['findings'], report['usage'] = model_review(context, args.model, args.host, args.timeout)
@@ -148,9 +154,16 @@ def main() -> int:
             result = 1
     text = json.dumps(report, indent=2) + '\n'
     if args.output and not args.dry_run:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        with args.output.open('x', encoding='utf-8') as stream:
-            stream.write(text)
+        fd, temporary = tempfile.mkstemp(prefix='.review.', dir=args.output.parent)
+        try:
+            with os.fdopen(fd, 'w', encoding='utf-8') as stream:
+                stream.write(text)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temporary, args.output)
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
     else:
         print(text, end='')
     return result

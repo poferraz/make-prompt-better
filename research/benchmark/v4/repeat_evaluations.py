@@ -133,7 +133,8 @@ def summarize_campaign(root: Path, manifest: dict, state: dict, host: str) -> di
         if 'telemetry' not in data or cell['status'] != 'completed':
             telemetry_incomplete = True
             incomplete_variants.add(variant)
-        usage[variant].append(data.get('telemetry') or runner.summarize_stage_usage(data))
+        # A killed worker may have durable stages newer than its cached task summary.
+        usage[variant].append(runner.summarize_stage_usage(data))
         audits = {tid: stages.get('preservation', {}) for tid, stages in data.get('in_progress', {}).items()}
         audits.update({tid: test.get('preservation', {}) for tid, test in data.get('tests', {}).items()})
         preservation[variant] += sum(audit.get('status') == 'failed' for audit in audits.values())
