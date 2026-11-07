@@ -21,7 +21,6 @@ REVIEW_DOCS = frozenset({
     'docs/installation.md', 'docs/compatibility.md', 'docs/releasing.md',
     'research/benchmark/v4/routing_cases.json',
     'research/benchmark/v4/EVALUATION_PROMPT_V4.md',
-    'research/benchmark/v4/SYNTHESIS_PROMPT_V4.md',
     'research/benchmark/v4/checkpoint-migration-hashes.json',
 })
 
