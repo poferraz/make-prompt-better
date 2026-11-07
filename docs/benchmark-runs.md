@@ -11,6 +11,16 @@ python3 research/benchmark/v4/run_ollama_benchmarks.py \
   --models example-model --tests 1,2 --run-id example --dry-run
 ```
 
+For direct Ollama Cloud (`--host https://ollama.com`, or the same `OLLAMA_HOST`), pass `--models` explicitly using the exact API model identifiers from the [cloud catalog](https://ollama.com/search?c=cloud). Local `:cloud` and `-cloud` routing aliases are rejected, including for `--judge-model`; they are not silently translated. Local discovery and `--tier` presets are only defaults for other hosts. With direct Cloud, `--list-models` prints the catalog link without calling the API or inspecting locally installed models. Catalog availability is not validated offline, and identifiers may be mutable. For example, preview an explicitly selected catalog ID without calling a model:
+
+```bash
+python3 research/benchmark/v4/run_ollama_benchmarks.py \
+  --host https://ollama.com --models gpt-oss:120b \
+  --tests 1 --max-output-tokens 512 --max-requests 25 --dry-run
+```
+
+Confirm the model's current API ID in the catalog before a live run. Normal local Ollama discovery, presets, and local cloud aliases remain unchanged. Rejudging through direct Cloud also requires an explicit catalog `--judge-model` instead of its local alias default. Custom proxies are not detected as direct Ollama Cloud, so provide the identifiers their provider expects.
+
 The output shows the run ID, location, number of logical generation stages, and an upper estimate of initial HTTP attempts including configured retries. `--max-requests` refuses a run whose estimate exceeds the specified count. Streaming responses are capped at 8 MiB per request and error bodies at 4 KiB. The request estimate is not a monetary, token, or wall-clock budget, and HTTP redirects are refused. A real run sends prompt contents to the configured Ollama endpoint and stores the submitted prompts and model responses locally; do not include data you cannot send or store there.
 
 To resume, pass the same `--run-id`, `--results-dir`, model, tests, host, seed, skill bytes, and other protocol flags. The manifest also hashes the test suite and runner/judge code. A mismatch produces an error and requires a new run ID. A model/provider identifier can refer to mutable weights, so its actual revision remains unknown unless recorded independently. A hard termination may leave a `.model-slug.lock` directory; remove it only after verifying that no process is using that model's run.

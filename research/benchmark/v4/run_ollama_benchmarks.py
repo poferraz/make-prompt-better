@@ -338,6 +338,19 @@ def load_skill_bundle(skill_dir: Path | None = None) -> str:
     )
 
 
+def is_direct_ollama_cloud(host: str) -> bool:
+    return urllib.parse.urlsplit(host).hostname == "ollama.com"
+
+
+def validate_cloud_model(model: str, host: str) -> None:
+    """Direct API identifiers are not local Ollama cloud-routing aliases."""
+    if is_direct_ollama_cloud(host) and (
+            not model.strip() or model.lower().endswith((":cloud", "-cloud"))):
+        raise ValueError("Direct Ollama Cloud requires exact catalog model identifiers; "
+                         "copy the API model ID from https://ollama.com/search?c=cloud, "
+                         "not a local :cloud or -cloud alias")
+
+
 def discover_ollama_cloud_models() -> list[str]:
     try:
         out = subprocess.check_output(["ollama", "list"], text=True, stderr=subprocess.STDOUT)
@@ -378,6 +391,7 @@ def call_ollama_chat(
     max_output_tokens: int | None = None,
     api_key: str | None = None,
 ) -> dict[str, Any]:
+    validate_cloud_model(model, host)
     if max_response_bytes <= 0:
         raise ValueError("Response size limit must be positive")
     if max_retries <= 0:
@@ -1104,7 +1118,7 @@ def main() -> int:
         "--models",
         type=str,
         default="",
-        help="Comma-separated list of Ollama models (e.g. 'glm-5.3-flash:cloud,deepseek-v4.1-flash:cloud').",
+        help="Comma-separated model IDs. Required for direct ollama.com; use exact catalog API IDs there, not local :cloud aliases.",
     )
     parser.add_argument(
         "--tier",
@@ -1183,7 +1197,7 @@ def main() -> int:
     parser.add_argument(
         "--list-models",
         action="store_true",
-        help="List discovered Ollama Cloud models and exit.",
+        help="List local cloud aliases, or show the direct Ollama Cloud catalog URL, and exit.",
     )
     args = parser.parse_args()
 
@@ -1192,6 +1206,25 @@ def main() -> int:
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
+
+    if args.list_models and is_direct_ollama_cloud(args.host):
+        print("Choose exact API model identifiers from https://ollama.com/search?c=cloud "
+              "and pass --models explicitly. Local discovery and presets do not apply.")
+        return 0
+
+    if is_direct_ollama_cloud(args.host):
+        if not args.models.strip():
+            print("Error: direct Ollama Cloud requires explicit --models from the catalog; "
+                  "local discovery and tier presets do not apply", file=sys.stderr)
+            return 1
+        try:
+            for model in args.models.split(","):
+                validate_cloud_model(model.strip(), args.host)
+            if args.judge_model is not None:
+                validate_cloud_model(args.judge_model, args.host)
+        except ValueError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
 
     if args.list_models:
         discovered = discover_ollama_cloud_models()
