@@ -17,7 +17,7 @@ class ChatStreamingTests(unittest.TestCase):
     @mock.patch.object(runner.time, "sleep")
     def test_oversized_stream_is_rejected_without_retry(self, _sleep):
         oversized = stream({"message": {"content": "x" * 256}, "done": True})
-        with mock.patch.object(runner.urllib.request, "urlopen", return_value=oversized) as request:
+        with mock.patch.object(runner, "open_ollama_request", return_value=oversized) as request:
             try:
                 runner.call_ollama_chat("model", [], max_response_bytes=64)
             except Exception as exc:
@@ -40,7 +40,7 @@ class ChatStreamingTests(unittest.TestCase):
                  "prompt_eval_count": 17, "eval_count": 3},
             )
 
-        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=response):
+        with mock.patch.object(runner, "open_ollama_request", side_effect=response):
             result = runner.call_ollama_chat("model", [{"role": "user", "content": "hi"}])
 
         self.assertEqual(result["content"], "Hello world!")
@@ -54,7 +54,7 @@ class ChatStreamingTests(unittest.TestCase):
             stream({"message": {"content": "partial"}, "done": False}),
             stream({"message": {"content": "complete"}, "done": True, "eval_count": 1}),
         ]
-        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=responses):
+        with mock.patch.object(runner, "open_ollama_request", side_effect=responses):
             result = runner.call_ollama_chat("model", [], max_retries=2, initial_delay=0)
 
         self.assertEqual(result["content"], "complete")
@@ -66,7 +66,7 @@ class ChatStreamingTests(unittest.TestCase):
             io.BytesIO(b'{"message":{"content":"partial'),
             stream({"message": {"content": "complete"}, "done": True}),
         ]
-        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=responses):
+        with mock.patch.object(runner, "open_ollama_request", side_effect=responses):
             try:
                 result = runner.call_ollama_chat("model", [], max_retries=2, initial_delay=0)
             except json.JSONDecodeError:
@@ -77,14 +77,14 @@ class ChatStreamingTests(unittest.TestCase):
     @mock.patch.object(runner.time, "sleep")
     def test_stream_error_does_not_return_a_successful_response(self, _sleep):
         response = stream({"error": "unexpected EOF"})
-        with mock.patch.object(runner.urllib.request, "urlopen", return_value=response):
+        with mock.patch.object(runner, "open_ollama_request", return_value=response):
             with self.assertRaisesRegex((RuntimeError, OSError), "unexpected EOF"):
                 runner.call_ollama_chat("model", [], max_retries=1)
 
     @mock.patch.object(runner.time, "sleep")
     def test_thinking_only_stream_cannot_be_saved_as_an_answer(self, _sleep):
         response = stream({"message": {"thinking": "thinking", "content": ""}, "done": True})
-        with mock.patch.object(runner.urllib.request, "urlopen", return_value=response):
+        with mock.patch.object(runner, "open_ollama_request", return_value=response):
             with self.assertRaisesRegex((RuntimeError, OSError), "without response content"):
                 runner.call_ollama_chat("model", [], max_retries=1)
 
@@ -96,7 +96,7 @@ class ChatStreamingTests(unittest.TestCase):
             if len(payloads) == 1:
                 raise TimeoutError("timed out")
             return stream({"message": {"content": "recovered"}, "done": True})
-        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=request):
+        with mock.patch.object(runner, "open_ollama_request", side_effect=request):
             result = runner.call_ollama_chat("judge", [], timeout=7, max_retries=2, initial_delay=0, seed=123)
         self.assertEqual(result["content"], "recovered")
         self.assertEqual([p[0]["options"]["seed"] for p in payloads], [123, 123])
@@ -106,17 +106,17 @@ class ChatStreamingTests(unittest.TestCase):
     @mock.patch.object(runner.time, "sleep")
     def test_http_retry_and_nonretryable_error(self, sleep):
         error = runner.urllib.error.HTTPError("http://example", 503, "unavailable", {}, io.BytesIO(b"temporary"))
-        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=[error, stream({"message": {"content": "ok"}, "done": True})]):
+        with mock.patch.object(runner, "open_ollama_request", side_effect=[error, stream({"message": {"content": "ok"}, "done": True})]):
             self.assertEqual(runner.call_ollama_chat("model", [], max_retries=2, initial_delay=0)["content"], "ok")
         error = runner.urllib.error.HTTPError("http://example", 401, "unauthorized", {}, io.BytesIO(b"denied"))
-        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=error) as urlopen:
+        with mock.patch.object(runner, "open_ollama_request", side_effect=error) as urlopen:
             with self.assertRaisesRegex(RuntimeError, "401"):
                 runner.call_ollama_chat("model", [], max_retries=3)
             self.assertEqual(urlopen.call_count, 1)
 
     @mock.patch.object(runner.time, "sleep")
     def test_exhausted_timeouts_raise(self, sleep):
-        with mock.patch.object(runner.urllib.request, "urlopen", side_effect=TimeoutError("timed out")) as urlopen:
+        with mock.patch.object(runner, "open_ollama_request", side_effect=TimeoutError("timed out")) as urlopen:
             with self.assertRaises(TimeoutError):
                 runner.call_ollama_chat("model", [], max_retries=2, initial_delay=0)
             self.assertEqual(urlopen.call_count, 2)

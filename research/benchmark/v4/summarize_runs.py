@@ -26,8 +26,10 @@ def summarize(results_dir: Path) -> dict:
     for path in files:
         data = json.loads(path.read_text(encoding="utf-8"))
         manifest = data.get("manifest")
-        if not isinstance(manifest, dict) or not REQUIRED <= manifest.keys() or manifest["schema"] != 1:
+        if not isinstance(manifest, dict) or not REQUIRED <= manifest.keys() or manifest["schema"] not in (1, 2):
             raise ValueError(f"Missing or unsupported manifest: {path}")
+        if manifest["schema"] == 2 and not {"protocol", "skill_dir", "strict_preservation", "max_output_tokens", "pricing_status"} <= manifest.keys():
+            raise ValueError(f"Incomplete outcome-v2 manifest: {path}")
         model = data.get("model")
         if model != manifest["model"]:
             raise ValueError(f"Model differs from manifest: {path}")

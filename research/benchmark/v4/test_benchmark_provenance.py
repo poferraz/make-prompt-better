@@ -56,7 +56,9 @@ class ProvenanceTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'manifest'):
                     runner.run_model_benchmark('model', 'skill', [1], resume=True, swap_positions=True)
             self.assertEqual(json.loads(path.read_text())['manifest'], old_manifest)
-            with mock.patch.object(runner, 'RESULTS_ROOT', root), \
+            # Simulate approval of this successor without modifying the historical audit hashes.
+            with mock.patch.object(runner, 'migration_code_is_approved', return_value=True), \
+                 mock.patch.object(runner, 'RESULTS_ROOT', root), \
                  mock.patch.object(runner, 'call_ollama_chat', side_effect=[response(SCORES), response('report')]) as chat:
                 self.assertTrue(runner.run_model_benchmark('model', 'skill', [1], resume=True, swap_positions=True))
             self.assertEqual(chat.call_count, 2)  # second judge and final synthesis only
