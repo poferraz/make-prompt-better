@@ -39,6 +39,36 @@ class DesignTests(unittest.TestCase):
         self.assertEqual(design.required_tasks(0.05, 0), 1)
         self.assertIn('approximation', design.build_design(CONFIG)['power_method'])
 
+    def test_unrepresentable_sample_estimate_fails_as_invalid_input(self):
+        try:
+            design.required_tasks(1e-160, 0.4)
+        except Exception as exc:
+            error_type = type(exc)
+        else:
+            error_type = None
+        self.assertIs(error_type, ValueError)
+
+    def test_subnormal_inputs_preserve_their_ratio_before_squaring(self):
+        self.assertEqual(design.required_tasks(2e-162, 1e-162), 2)
+        try:
+            zero_variance = design.required_tasks(5e-324, 0)
+        except Exception as exc:
+            zero_variance = type(exc).__name__
+        self.assertEqual(zero_variance, 1)
+
+    def test_cli_reports_unrepresentable_estimate_without_traceback(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            config_path = Path(tmp) / 'config.json'
+            config_path.write_text(json.dumps({**CONFIG, 'effect': 1e-160}))
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                try:
+                    result = design.main(['--config', str(config_path)])
+                except Exception as exc:
+                    result = type(exc).__name__
+            self.assertEqual(result, 1)
+            self.assertEqual(output.getvalue(), 'Error: ValueError\n')
+
     def test_invalid_design_values_fail_closed(self):
         invalid = [{'tasks':True}, {'tasks':0}, {'executors':-1}, {'seeds_per_executor':1.2},
                    {'aa_tasks':601}, {'feasibility_tasks':-1}, {'effect':float('nan')},

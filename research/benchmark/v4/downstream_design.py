@@ -36,9 +36,11 @@ def required_tasks(effect: float, task_sd: float) -> int:
     """Normal approximation for 80% power, two-sided alpha 0.05."""
     effect = _number(effect, name='effect', minimum=0, maximum=1, exclusive_min=True)
     task_sd = _number(task_sd, name='task_sd', minimum=0, maximum=1)
-    if effect * effect == 0:
-        raise ValueError('effect is too small to represent')
-    return max(1, math.ceil((1.96 + 0.84) ** 2 * task_sd ** 2 / effect ** 2))
+    scaled = (1.96 + 0.84) * (task_sd / effect)
+    estimate = scaled * scaled
+    if not math.isfinite(estimate):
+        raise ValueError('required task count is too large to represent')
+    return max(1, math.ceil(estimate))
 
 
 def simulate_task_power(n_tasks: int, effect: float, task_sd: float,
