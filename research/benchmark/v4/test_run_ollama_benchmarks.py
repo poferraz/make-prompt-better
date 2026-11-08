@@ -167,7 +167,7 @@ class BenchmarkResumeTests(unittest.TestCase):
         calls = []
         seeds = []
 
-        def chat(*, model, messages, host, timeout, seed=42):
+        def chat(*, model, messages, host, timeout, seed=42, api_key=None):
             calls.append(messages[0]["content"])
             seeds.append(seed)
             content = next(contents)
@@ -179,11 +179,13 @@ class BenchmarkResumeTests(unittest.TestCase):
             results = root / "results"
             with mock.patch.object(runner, "REPO_ROOT", root), \
                  mock.patch.object(runner, "RESULTS_ROOT", results), \
+                 mock.patch.dict(runner.os.environ, {"OLLAMA_API_KEY": "isolated-test-key"}), \
                  mock.patch.object(runner, "call_ollama_chat", side_effect=chat):
                 self.assertTrue(runner.run_model_benchmark("model", "", [1], "http://localhost", False, 10, seed=17))
             saved = json.loads((results / "model" / "metrics.json").read_text(encoding="utf-8"))
             report = (results / "model" / "EVALUATION_RESULTS.md").read_text(encoding="utf-8")
 
+        self.assertNotIn("isolated-test-key", json.dumps(saved) + report)
         test = saved["tests"]["1"]
         self.assertEqual(test["optimized_prompt"]["content"], "Review the function")
         self.assertEqual(test.get("executed_optimized_prompt"), calls[2])

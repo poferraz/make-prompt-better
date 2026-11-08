@@ -120,6 +120,65 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(caught.exception.reason, 'unknown_usage')
         self.assertEqual(request.call_count, 1)
 
+    def test_empty_response_with_known_usage_stops_and_retains_stream(self):
+        frames = [{'message': {'thinking': 'partial reasoning', 'content': ''}, 'done': False},
+                  {'message': {'content': ''}, 'done': True, 'prompt_eval_count': 15494, 'eval_count': 1024}]
+        body = io.BytesIO(b''.join(json.dumps(frame).encode() + b'\n' for frame in frames))
+        with mock.patch.object(runner, 'open_ollama_request', return_value=body) as request:
+            with self.assertRaises(runner.OllamaStopError) as caught:
+                runner.call_ollama_chat('executor', [{'role': 'user', 'content': 'hello'}],
+                                        max_retries=3, stop_on_unknown_usage=True)
+        self.assertEqual(caught.exception.reason, 'empty_response')
+        self.assertEqual(caught.exception.response['raw_frames'], frames)
+        attempt = caught.exception.telemetry['attempts'][0]
+        self.assertEqual((attempt['prompt_eval_count'], attempt['eval_count']), (15494, 1024))
+        self.assertEqual(request.call_count, 1)
+
+    def test_empty_response_with_missing_usage_retains_stream_and_stops(self):
+        frames = [{'message': {'thinking': 'partial', 'content': ''}, 'done': True, 'eval_count': 1024}]
+        body = io.BytesIO(json.dumps(frames[0]).encode() + b'\n')
+        with mock.patch.object(runner, 'open_ollama_request', return_value=body):
+            with self.assertRaises(runner.OllamaStopError) as caught:
+                runner.call_ollama_chat('executor', [], stop_on_unknown_usage=True)
+        self.assertEqual(caught.exception.reason, 'unknown_usage')
+        self.assertEqual(caught.exception.response['raw_frames'], frames)
+        self.assertIsNone(caught.exception.telemetry['attempts'][0]['prompt_eval_count'])
+
+    def test_empty_response_never_retains_frames_containing_credential(self):
+        body = io.BytesIO(b'{"message":{"thinking":"private-token","content":""},"done":true,"prompt_eval_count":5,"eval_count":2}\n')
+        with mock.patch.object(runner, 'open_ollama_request', return_value=body):
+            with self.assertRaises(runner.OllamaStopError) as caught:
+                runner.call_ollama_chat('executor', [], api_key='private-token', stop_on_unknown_usage=True)
+        self.assertEqual(caught.exception.reason, 'sensitive_response')
+        self.assertFalse(hasattr(caught.exception, 'response'))
+        self.assertNotIn('private-token', json.dumps(caught.exception.telemetry))
+
+    def test_empty_response_never_retains_credential_split_across_frames(self):
+        frames = [{'message': {'thinking': 'private-', 'content': ''}, 'done': False},
+                  {'message': {'thinking': 'token', 'content': ''}, 'done': True,
+                   'prompt_eval_count': 5, 'eval_count': 2}]
+        body = io.BytesIO(b''.join(json.dumps(frame).encode() + b'\n' for frame in frames))
+        with mock.patch.object(runner, 'open_ollama_request', return_value=body):
+            with self.assertRaises(runner.OllamaStopError) as caught:
+                runner.call_ollama_chat('executor', [], api_key='private-token', stop_on_unknown_usage=True)
+        self.assertEqual(caught.exception.reason, 'sensitive_response')
+        self.assertFalse(hasattr(caught.exception, 'response'))
+
+    def test_empty_response_evidence_is_saved_before_cell_stops(self):
+        manifest = evaluation.build_manifest(self.args())
+        cell = next(evaluation.cells(manifest))
+        frames = [{'message': {'thinking': 'partial', 'content': ''}, 'done': True,
+                   'prompt_eval_count': 7, 'eval_count': 3}]
+        body = io.BytesIO(json.dumps(frames[0]).encode() + b'\n')
+        with mock.patch.dict(os.environ, {'OLLAMA_API_KEY': ''}), \
+             mock.patch.object(runner, 'open_ollama_request', return_value=body) as request:
+            result = evaluation.run_cell(manifest, cell, self.root / 'cells' / '0.json', 'http://localhost:11434')
+        saved = json.loads((self.root / 'cells' / '0.json').read_text())
+        self.assertEqual(result['stop_reason'], 'empty_response')
+        self.assertEqual(saved['calls'][0]['response']['raw_frames'], frames)
+        self.assertEqual(len(saved['calls']), 1)
+        self.assertEqual(request.call_count, 1)
+
     def test_only_one_concurrent_worker_can_claim_the_same_cell(self):
         manifest = evaluation.build_manifest(self.args())
         cell = next(evaluation.cells(manifest))
@@ -191,9 +250,13 @@ class LimitedHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         self.__class__.count += 1
         self.rfile.read(int(self.headers['Content-Length']))
-        response = (b'{"message":{"content":"answer"},"done":true,"eval_count":1}\n'
-                    if self.mode == 'missing_usage' else b'')
-        self.send_response(200 if self.mode == 'missing_usage' else 429)
+        if self.mode == 'missing_usage':
+            response = b'{"message":{"content":"answer"},"done":true,"eval_count":1}\n'
+        elif self.mode == 'empty_response':
+            response = b'{"message":{"thinking":"partial","content":""},"done":true,"prompt_eval_count":7,"eval_count":3}\n'
+        else:
+            response = b''
+        self.send_response(200 if self.mode in {'missing_usage', 'empty_response'} else 429)
         self.send_header('Content-Length', str(len(response)))
         self.end_headers()
         self.wfile.write(response)
@@ -226,6 +289,9 @@ class CampaignStopTests(unittest.TestCase):
                 if expected_reason == 'unknown_usage':
                     self.assertEqual(record['calls'][0]['response']['content'], 'answer')
                     self.assertIsNone(record['calls'][0]['response']['prompt_eval_count'])
+                if expected_reason == 'empty_response':
+                    self.assertEqual(record['calls'][0]['response']['raw_frames'][0]['message']['thinking'], 'partial')
+                    self.assertEqual(record['calls'][0]['response']['prompt_eval_count'], 7)
                 # Simulate a coordinator crash before its state was updated with the stop.
                 state_path = output / 'state.json'
                 state = json.loads(state_path.read_text())
@@ -240,6 +306,9 @@ class CampaignStopTests(unittest.TestCase):
             server.shutdown()
             server.server_close()
             thread.join(timeout=3)
+
+    def test_empty_response_stops_remaining_cells_and_resume(self):
+        self.run_stop('empty_response', 'empty_response')
 
     def test_429_stops_remaining_cells_and_resume(self):
         self.run_stop('rate_limit', 'http_429')

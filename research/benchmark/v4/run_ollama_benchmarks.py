@@ -460,6 +460,7 @@ def call_ollama_chat(
         try:
             with open_ollama_request(req, timeout=timeout) as resp:
                 parts: list[str] = []
+                raw_frames: list[dict[str, Any]] = []
                 body = None
                 received = 0
                 while True:
@@ -477,6 +478,8 @@ def call_ollama_chat(
                         raise ConnectionError("Ollama stream contained a malformed or truncated JSON frame") from err
                     if chunk.get("error"):
                         raise ConnectionError(f"Ollama stream error: {chunk['error']}")
+                    if stop_on_unknown_usage:
+                        raw_frames.append(chunk)
                     parts.append((chunk.get("message") or {}).get("content", ""))
                     if chunk.get("done") is True:
                         body = chunk
@@ -487,6 +490,23 @@ def call_ollama_chat(
             raw_content = "".join(parts)
             content = raw_content.strip()
             if not content:
+                if stop_on_unknown_usage:
+                    prompt_count = usage_count(body.get("prompt_eval_count"))
+                    output_count = usage_count(body.get("eval_count"))
+                    attempts.append({"attempt": attempt, "status": "failed", "error": "EmptyResponse",
+                                     "elapsed_seconds": elapsed, "prompt_eval_count": prompt_count,
+                                     "eval_count": output_count})
+                    result = {"content": content, "raw_content": raw_content, "raw_frames": raw_frames,
+                              "prompt_eval_count": prompt_count, "eval_count": output_count,
+                              "elapsed_seconds": elapsed, "telemetry": telemetry()}
+                    thinking = ((frame.get("message") or {}).get("thinking") for frame in raw_frames)
+                    thinking_text = "".join(part for part in thinking if isinstance(part, str))
+                    if api_key and (api_key in json.dumps(result, ensure_ascii=False) or api_key in thinking_text):
+                        raise OllamaStopError("sensitive_response", telemetry())
+                    reason = "unknown_usage" if prompt_count is None or output_count is None else "empty_response"
+                    failure = OllamaStopError(reason, telemetry())
+                    failure.response = result
+                    raise failure
                 raise ConnectionError("Ollama stream completed without response content")
             words = len(content.split())
             prompt_count = usage_count(body.get("prompt_eval_count"))
