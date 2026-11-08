@@ -69,3 +69,8 @@ Rollback: remove the new tool, public corpus/check helpers and their tests/docs,
 ## Offline parser reanalysis
 
 `downstream_reanalysis.py --campaign-dir PATH --output-dir NEW_PRIVATE_DIR` reads v2/v3 evidence without launching workers or making provider calls. It verifies request hashes and anonymous answer mappings, and writes a new derived view with input and analysis-source hashes. The source campaign remains unchanged. Only parse-format failures with two valid passes can be recovered; unknown usage, transport failures and missing answers remain missing. Recovered comparisons use the original campaign's rubric, not the v3 rubric. Both official and derived outcomes are reported separately.
+
+
+## Offline study design
+
+`downstream_design.py --config PATH` prints a proposed, launch-disabled request budget and normal-approximation sample-size rationale. It never calls a model or treats a proposed spending cap as authorization. The calculator does not establish independent holdout custody, provider funding controls or statistical power. Until selectable recipes are implemented and verified, their calculated request counts are planning estimates only.
