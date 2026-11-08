@@ -11,6 +11,7 @@ import json
 import math
 import os
 from pathlib import Path
+import random
 import signal
 import subprocess
 import sys
@@ -19,11 +20,13 @@ import time
 try:
     from research.benchmark.v4 import run_ollama_benchmarks as runner
     from research.benchmark.v4 import downstream_protocol as protocol
+    from research.benchmark.v4 import downstream_design as design
     from research.benchmark.v4.downstream_corpus import load_corpus, evaluate_checks
     from research.benchmark.v4.blind_stats_engine import cluster_bootstrap_mean_ci
 except ImportError:
     import run_ollama_benchmarks as runner
     import downstream_protocol as protocol
+    import downstream_design as design
     from downstream_corpus import load_corpus, evaluate_checks
     from blind_stats_engine import cluster_bootstrap_mean_ci
 
@@ -31,7 +34,8 @@ ARMS = ('original', 'minimal_clarity', 'strong_direct', 'stable', 'candidate')
 PAIRS = tuple(itertools.combinations(ARMS, 2))
 STAGES = ('preparation', 'execution', 'judge')
 SOURCE_FILES = ('downstream_evaluation.py', 'downstream_corpus.py',
-                'run_ollama_benchmarks.py', 'blind_stats_engine.py', 'downstream_protocol.py')
+                'run_ollama_benchmarks.py', 'blind_stats_engine.py', 'downstream_protocol.py',
+                'downstream_design.py')
 
 
 class EvidenceWriteError(OSError):
@@ -67,7 +71,10 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument('--corpus', type=Path, default=Path(__file__).with_name('downstream_cases.json'))
     p.add_argument('--holdout-sha256', help='Explicitly acknowledge opening a private sealed corpus with this digest')
     p.add_argument('--stable-skill-dir', type=Path, default=runner.REPO_ROOT / 'make-prompt-better')
-    p.add_argument('--candidate-skill-dir', type=Path, required=True)
+    p.add_argument('--candidate-skill-dir', type=Path)
+    p.add_argument('--candidate-bundle-mode', choices=['full', 'core-only'], default='full')
+    p.add_argument('--recipe', choices=['five-arm', 'primary', 'primary-aa'], default='five-arm')
+    p.add_argument('--schedule-seed', type=int)
     p.add_argument('--models', required=True)
     p.add_argument('--judge-model', required=True)
     p.add_argument('--catalog-snapshot', type=Path, help='Optional saved provider /api/tags catalog for model identity evidence')
@@ -97,6 +104,38 @@ def canonical_model(model: str) -> str:
     if ':' not in value:
         value += ':latest'
     return value
+
+
+
+def load_preparation_bundle(skill_dir: Path, mode: str) -> dict:
+    """Load precisely the declared bundle without changing consumer installation."""
+    directory = Path(skill_dir)
+    if mode == 'full':
+        text = runner.load_skill_bundle(directory)
+        names = ('SKILL.md', 'references/domain-templates.md', 'references/research-principles.md')
+    elif mode == 'core-only':
+        text = '# SKILL FILE 1: make-prompt-better/SKILL.md\n\n' + (directory / 'SKILL.md').read_text(encoding='utf-8') + '\n\n'
+        names = ('SKILL.md',)
+    else:
+        raise ValueError('Unknown preparation bundle mode')
+    return {'text': text, 'mode': mode, 'bundle_sha256': runner.sha256_text(text),
+            'source_sha256': {name: digest(directory / name) for name in names}}
+
+
+def build_cell_schedule(cases: list[dict], models: list[str], seeds: list[int],
+                        arms: list[str], schedule_seed: int | None) -> list[dict]:
+    if schedule_seed is not None and type(schedule_seed) is not int:
+        raise ValueError('Schedule seed must be an integer')
+    if not cases or not models or not seeds or len(set(arms)) != len(arms) or not arms:
+        raise ValueError('Schedule requires nonempty unique arms and inputs')
+    identities = list(itertools.product((case['id'] for case in cases), models, seeds))
+    if len(set(identities)) != len(identities):
+        raise ValueError('Schedule identities must be unique')
+    if schedule_seed is not None:
+        random.Random(schedule_seed).shuffle(identities)
+    return [{'index': index, 'task_id': task, 'model': model, 'seed': seed,
+             'arm_order': arm_order(index, arms)}
+            for index, (task, model, seed) in enumerate(identities)]
 
 
 def build_manifest(args: argparse.Namespace) -> dict:
@@ -146,23 +185,33 @@ def build_manifest(args: argparse.Namespace) -> dict:
     if not selected or len(set(selected)) != len(selected) or not set(selected) <= {c['id'] for c in corpus['cases']}:
         raise ValueError('Tasks must be unique members of the selected corpus')
     cases = [c for c in corpus['cases'] if c['id'] in selected]
+    recipe = design.recipe_definition(args.recipe)
+    if args.candidate_bundle_mode != 'full' and args.recipe != 'five-arm':
+        raise ValueError('Experimental candidate mode requires the five-arm recipe')
     skills = {}
-    for arm in ('stable', 'candidate'):
-        directory = getattr(args, arm + '_skill_dir').resolve()
-        bundle = runner.load_skill_bundle(directory)
-        if len(bundle) + max(len(c['original_request']) for c in cases) + 2000 > args.max_input_chars:
+    for arm in recipe['preparation_arms']:
+        path = getattr(args, arm + '_skill_dir')
+        if path is None:
+            raise ValueError(f'{arm} skill directory is required')
+        directory = path.resolve()
+        mode = args.candidate_bundle_mode if arm == 'candidate' else 'full'
+        bundle = load_preparation_bundle(directory, mode)
+        if len(bundle['text']) + max(len(c['original_request']) for c in cases) + 2000 > args.max_input_chars:
             raise ValueError('Skill preparation exceeds max-input-chars')
-        skills[arm] = {'directory': str(directory), 'bundle_sha256': runner.sha256_text(bundle),
-                       'source_sha256': {p: digest(directory / p) for p in
-                          ('SKILL.md', 'references/domain-templates.md', 'references/research-principles.md')}}
-    calls = 2 + len(ARMS) + 2 * len(PAIRS)
+        skills[arm] = {'directory': str(directory), **{k: v for k, v in bundle.items() if k != 'text'}}
+    if args.recipe == 'primary-aa' and skills['stable']['bundle_sha256'] != skills['candidate']['bundle_sha256']:
+        raise ValueError('A/A recipe requires identical effective bundles')
+    calls = recipe['calls_per_cell']
     required = len(cases) * len(models) * len(seeds) * calls * args.max_attempts
     if args.max_requests < required:
         raise ValueError(f'Full experiment requires at least {required} reserved HTTP attempts')
+    schedule = build_cell_schedule(cases, models, seeds, recipe['arms'], args.schedule_seed)
     return {'schema': 3, 'protocol': 'five-arm-downstream-v3',
             'contracts': {'judge_parser': 'markdown-dimensions-v2', 'preparation': 'json-decision-v2',
                           'judge_rubric': 'downstream-contract-v1', 'response_metadata': 'terminal-v1',
-                          'summary': 'availability-v1'}, 'arms': list(ARMS), 'cases': cases,
+                          'summary': 'availability-v1'}, 'recipe': args.recipe,
+            'arms': recipe['arms'], 'pairs': recipe['pairs'], 'schedule_seed': args.schedule_seed,
+            'cell_schedule': schedule, 'cases': cases,
             'corpus': {'path': str(args.corpus.resolve()), 'sha256': corpus_hash, 'split': corpus['split'],
                        'provenance': corpus['provenance']}, 'skills': skills,
             'models': models, 'judge_model': args.judge_model.strip(), 'model_catalog': model_catalog, 'seeds': seeds,
@@ -171,20 +220,25 @@ def build_manifest(args: argparse.Namespace) -> dict:
             'required_request_allowance': required, 'deadline_seconds': args.deadline_seconds,
             'timeout': args.timeout, 'max_output_tokens': args.max_output_tokens,
             'max_input_chars': args.max_input_chars, 'counterbalance': 'rotating arms and reversed blocks; both judge positions',
-            'preparation': 'full skill bundle; explicit JSON rewrite or bypass; no repair of omissions',
+            'preparation': 'explicit JSON rewrite or bypass; see each skill mode for loaded files; no repair of omissions',
             'pricing_status': 'unknown', 'provider_revision': 'unknown; identifiers may be mutable or aliases',
             'source_sha256': {p: digest(Path(__file__).with_name(p)) for p in SOURCE_FILES}}
 
 
-def arm_order(index: int) -> list[str]:
-    order = list(ARMS[index % len(ARMS):] + ARMS[:index % len(ARMS)])
-    return order if (index // len(ARMS)) % 2 == 0 else list(reversed(order))
+def arm_order(index: int, arms: list[str] | tuple[str, ...] = ARMS) -> list[str]:
+    selected = tuple(arms)
+    if not selected:
+        raise ValueError('Arm order requires at least one arm')
+    order = list(selected[index % len(selected):] + selected[:index % len(selected)])
+    return order if (index // len(selected)) % 2 == 0 else list(reversed(order))
 
 
 def cells(manifest: dict):
-    for index, (case, model, seed) in enumerate(itertools.product(
-            manifest['cases'], manifest['models'], manifest['seeds'])):
-        yield {'index': index, 'task_id': case['id'], 'model': model, 'seed': seed, 'arm_order': arm_order(index)}
+    if 'cell_schedule' in manifest:
+        yield from manifest['cell_schedule']
+    else:
+        yield from build_cell_schedule(manifest['cases'], manifest['models'], manifest['seeds'],
+                                       manifest.get('arms', list(ARMS)), None)
 
 
 def parse_preparation(content: str, original: str) -> dict:
@@ -300,10 +354,11 @@ def run_cell(manifest: dict, cell: dict, path: Path, host: str, deadline: float 
         if data.get('stop_reason'):
             break
         if arm in ('stable', 'candidate'):
-            bundle = runner.load_skill_bundle(Path(manifest['skills'][arm]['directory']))
-            if runner.sha256_text(bundle) != manifest['skills'][arm]['bundle_sha256']:
+            skill = manifest['skills'][arm]
+            bundle = load_preparation_bundle(Path(skill['directory']), skill.get('mode', 'full'))
+            if bundle['bundle_sha256'] != skill['bundle_sha256'] or bundle['source_sha256'] != skill['source_sha256']:
                 raise ValueError('Skill source changed during campaign')
-            prepared = call('preparation', arm, cell['model'], preparation_messages(bundle, case['original_request']),
+            prepared = call('preparation', arm, cell['model'], preparation_messages(bundle['text'], case['original_request']),
                             lambda content: parse_preparation(content, case['original_request']))
             if prepared is None:
                 continue
@@ -320,7 +375,7 @@ def run_cell(manifest: dict, cell: dict, path: Path, host: str, deadline: float 
         if answer is not None:
             item.update(answer=answer, objective_checks=evaluate_checks(answer, case['checks']))
             save(path, data)
-    for left, right in PAIRS:
+    for left, right in manifest.get('pairs', PAIRS):
         if data.get('stop_reason'):
             break
         if any('answer' not in data['arms'].get(a, {}) for a in (left, right)):
@@ -346,7 +401,7 @@ def run_cell(manifest: dict, cell: dict, path: Path, host: str, deadline: float 
                 'position_consistent': passes[0]['scores']['winner'] == passes[1]['scores']['winner'], 'passes': passes}
             save(path, data)
     data['status'] = ('stopped' if data.get('stop_reason') else
-                      'completed' if len(data['comparisons']) == len(PAIRS) and not data['failures'] else 'failed')
+                      'completed' if len(data['comparisons']) == len(manifest.get('pairs', PAIRS)) and not data['failures'] else 'failed')
     data['finished_at_utc'] = utc_now()
     save(path, data)
     return data
@@ -423,7 +478,7 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
     missing_pairs, pair_summaries = [], {}
     scheduled_cells = list(cells(manifest))
     launched = _launched_indexes(state, by_index)
-    for left, right in PAIRS:
+    for left, right in manifest.get('pairs', PAIRS):
         key = left + '__' + right
         rows = []
         reasons = {}
@@ -473,7 +528,7 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
         checks = item.get('objective_checks')
         return all(c['status'] == 'passed' for c in checks) if checks else None
 
-    for arm in ARMS:
+    for arm in manifest['arms']:
         items = [r['arms'][arm] for r in records if arm in r.get('arms', {})]
         arm_calls = [c for r in records for c in r.get('calls', []) if c['arm'] == arm]
         preparation = [c for c in arm_calls if c['stage'] == 'preparation']
@@ -514,14 +569,14 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
                 'decisions': [{'task_id': r['identity']['task_id'], 'model': r['identity']['model'],
                                'seed': r['identity']['seed'], 'decision': r['arms'][arm]['decision'],
                                'skill_answered': 'answer' in r['arms'][arm],
-                               'original_answered': 'answer' in r['arms'].get('original', {}),
+                               'original_answered': ('answer' in r['arms'].get('original', {})) if 'original' in manifest['arms'] else None,
                                'skill_objective_success': success(r['arms'][arm]),
                                'original_objective_success': success(r['arms'].get('original', {})),
                                'usage': {stage: value for stage, value in summarize_usage([r], arm=arm).items()
                                          if stage != 'judge'}}
                               for r in records if arm in r.get('arms', {})]}
     objective_pairs = {}
-    for left, right in PAIRS:
+    for left, right in manifest.get('pairs', PAIRS):
         rows = []
         for record in records:
             arms = record.get('arms', {})
@@ -537,7 +592,7 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
             'mean_delta': sum(row['delta'] for row in rows) / len(rows) if rows else None, 'pairs': rows}
     usage = summarize_usage(records)
     product_usage = {a: {stage: value for stage, value in summarize_usage(records, arm=a).items()
-                         if stage != 'judge'} for a in ARMS}
+                         if stage != 'judge'} for a in manifest['arms']}
     missing_records = any(int(key) not in by_index and value.get('reserved_request_allowance',
                           state.get('reserved_request_allowance', 0)) > 0
                           for key, value in state['cells'].items())

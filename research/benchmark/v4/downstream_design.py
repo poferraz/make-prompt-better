@@ -79,6 +79,28 @@ def simulate_task_power(n_tasks: int, effect: float, task_sd: float,
             'limitation': 'Hypothetical independent families, not calibration of the final clustered bootstrap.'}
 
 
+def recipe_definition(name: str) -> dict:
+    """Return the fixed arms, judged pairs and call allowance for one recipe."""
+    arms = {
+        'five-arm': ['original', 'minimal_clarity', 'strong_direct', 'stable', 'candidate'],
+        'primary': ['strong_direct', 'stable'],
+        'primary-aa': ['strong_direct', 'stable', 'candidate'],
+    }
+    if name not in arms:
+        raise ValueError('Unknown recipe')
+    selected = arms[name]
+    if name == 'five-arm':
+        import itertools
+        pairs = [list(pair) for pair in itertools.combinations(selected, 2)]
+    elif name == 'primary':
+        pairs = [['strong_direct', 'stable']]
+    else:
+        pairs = [['strong_direct', 'stable'], ['stable', 'candidate']]
+    preparation = [arm for arm in selected if arm in ('stable', 'candidate')]
+    return {'arms': list(selected), 'pairs': pairs, 'preparation_arms': preparation,
+            'calls_per_cell': len(preparation) + len(selected) + 2 * len(pairs)}
+
+
 def build_design(config: dict) -> dict:
     """Calculate request allowances, never granting authorization or dispatch capability."""
     if not isinstance(config, dict) or set(config) != FIELDS:
@@ -114,15 +136,17 @@ def build_design(config: dict) -> dict:
         unresolved.append('independent_review')
     unresolved.extend(['provider_controls_verified', 'live_authorization'])
     cells_per_task = executors * seeds
-    primary = tasks * cells_per_task * 5
-    aa_increment = aa * cells_per_task * 4
+    primary_cost = recipe_definition('primary')['calls_per_cell']
+    aa_cost = recipe_definition('primary-aa')['calls_per_cell']
+    primary = tasks * cells_per_task * primary_cost
+    aa_increment = aa * cells_per_task * (aa_cost - primary_cost)
     return {'schema': 1, 'calls_enabled': False, 'launch_ready': False,
-            'authorization_status': 'not_requested', 'runner_recipe_support': 'not_verified',
+            'authorization_status': 'not_requested', 'runner_recipe_support': 'implemented',
             'tasks': tasks, 'executors': executors, 'seeds_per_executor': seeds,
             'aa_tasks': aa, 'feasibility_tasks': feasibility,
             'primary_calls': primary, 'incremental_aa_calls': aa_increment,
             'confirmatory_calls': primary + aa_increment,
-            'feasibility_calls': feasibility * cells_per_task * 5,
+            'feasibility_calls': feasibility * cells_per_task * primary_cost,
             'required_tasks': required_tasks(effect, sd), 'effect': effect, 'task_sd': sd,
             'power_method': 'normal approximation, 80% power, two-sided alpha 0.05',
             'power_caveat': 'Assumes independent task clusters and the supplied standard deviation; not a guarantee.',

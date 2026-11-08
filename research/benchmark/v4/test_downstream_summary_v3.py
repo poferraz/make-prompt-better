@@ -81,6 +81,8 @@ class SummaryV3Tests(unittest.TestCase):
         manifest = copy.deepcopy(self.manifest)
         manifest['cases'] = load_corpus()['cases'][:5]
         manifest['seeds'] = [1]
+        manifest['cell_schedule'] = evaluation.build_cell_schedule(
+            manifest['cases'], manifest['models'], manifest['seeds'], manifest['arms'], None)
         cases = list(evaluation.cells(manifest))
         comparison = {'left_total':20, 'right_total':21, 'delta':1, 'position_consistent':True,
                       'passes':[{'scores':{'delta_total':1}},{'scores':{'delta_total':1}}]}

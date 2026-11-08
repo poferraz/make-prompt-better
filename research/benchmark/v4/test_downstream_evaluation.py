@@ -412,5 +412,38 @@ class DownstreamHttpTests(unittest.TestCase):
             thread.join(timeout=3)
 
 
+    def test_primary_recipes_over_real_streamed_http(self):
+        import downstream_reanalysis
+        DownstreamFakeOllama.requests = []
+        server = ThreadingHTTPServer(('127.0.0.1', 0), DownstreamFakeOllama)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with tempfile.TemporaryDirectory() as temporary:
+                private = Path(temporary) / '.private'
+                for recipe, allowance, pairs in [('primary', 5, 1), ('primary-aa', 9, 2)]:
+                    output = private / recipe
+                    argv = ['--models', 'executor', '--judge-model', 'independent-judge', '--seeds', '42',
+                            '--tasks', 'net-apples', '--max-requests', str(allowance), '--deadline-seconds', '60',
+                            '--max-output-tokens', '128', '--timeout', '3', '--run', '--recipe', recipe,
+                            '--candidate-skill-dir', str(runner.REPO_ROOT / 'make-prompt-better'),
+                            '--host', f'http://127.0.0.1:{server.server_port}', '--output-dir', str(output)]
+                    env = {**os.environ, 'OLLAMA_API_KEY': '', 'OLLAMA_HOST': ''}
+                    result = subprocess.run([sys.executable, evaluation.__file__, *argv],
+                                            capture_output=True, text=True, timeout=65, env=env)
+                    self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+                    summary = json.loads((output / 'summary.json').read_text())
+                    self.assertEqual(summary['completed_cells'], 1)
+                    self.assertEqual(len(summary['pair_summaries']), pairs)
+                    self.assertFalse(summary['missing_pairs'])
+                    replay = downstream_reanalysis.reanalyze(output, private / (recipe + '-derived'))
+                    self.assertEqual(replay['derived_completed_pairs'], pairs)
+                self.assertEqual(len(DownstreamFakeOllama.requests), 14)
+        finally:
+            server.shutdown()
+            thread.join(timeout=3)
+            server.server_close()
+
+
 if __name__ == '__main__':
     unittest.main()
