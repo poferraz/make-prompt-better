@@ -143,6 +143,79 @@ class ReanalysisTests(unittest.TestCase):
         self.assertEqual(result['official_missing_pairs'], 10)
         self.assertEqual(result['derived_missing_pairs'], 9)
 
+    def test_rejects_invalid_manifests_without_creating_output(self):
+        variants = [dict(self.manifest, schema=9), dict(self.manifest, protocol='five-arm-downstream-v3'),
+                    dict(self.manifest, seeds=[42,42]), dict(self.manifest, cell_schedule=[])]
+        for manifest in variants:
+            with self.subTest(manifest=manifest):
+                self.manifest = manifest
+                self.save()
+                with self.assertRaises(ValueError):
+                    analysis.reanalyze(self.campaign, self.output)
+                self.assertFalse(self.output.exists())
+
+    def test_missing_launched_record_never_reports_zero_usage(self):
+        (self.campaign/'cells'/'0.json').unlink()
+        result = analysis.reanalyze(self.campaign, self.output)
+        self.assertEqual(result['missing_cell_indexes'], [0])
+        self.assertEqual(result['missing_launched_cells'], [0])
+        self.assertIsNone(result['usage']['execution']['eval_count'])
+        self.assertEqual(result['usage']['execution']['known_eval_count'], 0)
+
+    def test_corrupt_hash_or_identity_is_rejected(self):
+        self.record['calls'][0]['request_body_sha256'] = 'bad'
+        self.save()
+        with self.assertRaises(ValueError):
+            analysis.reanalyze(self.campaign, self.output)
+        self.assertFalse(self.output.exists())
+        self.record['calls'][0]['request_body_sha256'] = hashlib.sha256(
+            self.record['calls'][0]['request_body'].encode()).hexdigest()
+        self.record['identity']['model'] = 'different'
+        self.save()
+        with self.assertRaises(ValueError):
+            analysis.reanalyze(self.campaign, self.output)
+
+    def test_invalid_format_stays_missing(self):
+        self.record['calls'][1]['response']['content'] = 'not a rubric'
+        self.save()
+        result = analysis.reanalyze(self.campaign, self.output)
+        self.assertEqual((result['derived_completed_pairs'], result['orphan_valid_passes']), (0, 1))
+        self.assertEqual(result['excluded_passes']['invalid_judge_format'], 1)
+
+    def test_atomic_output_cleanup_leaves_input_untouched(self):
+        before = self.files()
+        with mock.patch.object(analysis.os, 'replace', side_effect=OSError('disk failure')):
+            with self.assertRaises(OSError):
+                analysis.reanalyze(self.campaign, self.output)
+        self.assertFalse(self.output.exists())
+        self.assertEqual(self.files(), before)
+
+    def test_cli_reports_errors_without_private_response_contents(self):
+        import contextlib
+        import io
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(analysis.main(['--campaign-dir', str(self.campaign),
+                                            '--output-dir', str(self.output)]), 0)
+            self.assertEqual(analysis.main(['--campaign-dir', str(self.campaign),
+                                            '--output-dir', str(self.output)]), 1)
+        self.assertIn('Error: ValueError', output.getvalue())
+
+    def test_saved_v3_schedule_and_mapping_are_checked(self):
+        self.manifest.update(schema=3, protocol='five-arm-downstream-v3', cell_schedule=[self.identity])
+        for i, call in enumerate(self.record['calls'], 1):
+            data = json.loads(json.loads(call['request_body'])['messages'][1]['content'])
+            first = 'original' if data['candidate_A'] == 'first' else 'candidate'
+            call.update(judge_pair='original__candidate', judge_pass_index=i,
+                        judge_mapping={'A':first,'B':'candidate' if first=='original' else 'original'})
+        self.save()
+        result = analysis.reanalyze(self.campaign, self.output)
+        self.assertEqual(result['derived_completed_pairs'], 1)
+        self.record['calls'][1]['judge_pass_index'] = 1
+        self.save()
+        with self.assertRaises(ValueError):
+            analysis.reanalyze(self.campaign, self.private/'another-output')
+
     def test_v3_orphan_remains_orphan(self):
         self.manifest['schema'] = 3
         self.manifest['protocol'] = 'five-arm-downstream-v3'

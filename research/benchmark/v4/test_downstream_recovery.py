@@ -308,9 +308,12 @@ class LimitedHandler(BaseHTTPRequestHandler):
             response = b'{"message":{"content":"answer"},"done":true,"eval_count":1}\n'
         elif self.mode == 'empty_response':
             response = b'{"message":{"thinking":"partial","content":""},"done":true,"prompt_eval_count":7,"eval_count":3}\n'
+        elif self.mode == 'truncated':
+            response = b'{"message":{"content":"partial"},"done":false}\n'
         else:
             response = b''
-        self.send_response(200 if self.mode in {'missing_usage', 'empty_response'} else 429)
+        code = int(self.mode) if self.mode in {'401', '402', '403', '429'} else 429
+        self.send_response(200 if self.mode in {'missing_usage', 'empty_response', 'truncated'} else code)
         self.send_header('Content-Length', str(len(response)))
         self.end_headers()
         self.wfile.write(response)
@@ -340,9 +343,12 @@ class CampaignStopTests(unittest.TestCase):
                 record = json.loads((output / 'cells' / '0.json').read_text())
                 self.assertEqual(record['stop_reason'], expected_reason)
                 self.assertIn('request_body', record['calls'][0])
-                if expected_reason == 'unknown_usage':
+                if expected_reason == 'unknown_usage' and mode == 'missing_usage':
                     self.assertEqual(record['calls'][0]['response']['content'], 'answer')
                     self.assertIsNone(record['calls'][0]['response']['prompt_eval_count'])
+                if mode == 'truncated':
+                    self.assertFalse(record['calls'][0]['telemetry']['terminal']['completed_stream'])
+                    self.assertIsNone(record['calls'][0]['telemetry']['attempts'][0]['eval_count'])
                 if expected_reason == 'empty_response':
                     self.assertEqual(record['calls'][0]['response']['raw_frames'][0]['message']['thinking'], 'partial')
                     self.assertEqual(record['calls'][0]['response']['prompt_eval_count'], 7)
@@ -369,3 +375,11 @@ class CampaignStopTests(unittest.TestCase):
 
     def test_missing_usage_stops_remaining_cells_and_resume(self):
         self.run_stop('missing_usage', 'unknown_usage')
+
+    def test_truncated_stream_stops_remaining_cells_and_resume(self):
+        self.run_stop('truncated', 'unknown_usage')
+
+    def test_auth_and_quota_http_stops_are_not_retried(self):
+        for code in ('401', '402', '403', '429'):
+            with self.subTest(code=code):
+                self.run_stop(code, 'http_' + code)
