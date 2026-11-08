@@ -390,6 +390,24 @@ def usage_count(value: Any) -> int | None:
     return value if type(value) is int and value >= 0 else None
 
 
+def extract_terminal_metadata(body: dict | None) -> dict:
+    """Keep only bounded terminal counters; provider text and reasoning are excluded."""
+    completed = isinstance(body, dict) and body.get('done') is True
+    source = body if completed else {}
+    reason = source.get('done_reason')
+    if not isinstance(reason, str):
+        reason = None
+    elif reason not in {'stop', 'length', 'load', 'unload'}:
+        reason = 'other'
+    result = {'schema': 1, 'completed_stream': completed, 'done_reason': reason}
+    for name in ('total_duration', 'load_duration', 'prompt_eval_duration', 'eval_duration',
+                 'prompt_eval_cached_count'):
+        value = source.get(name)
+        key = name if name.endswith('_count') else name + '_ns'
+        result[key] = value if type(value) is int and 0 <= value <= 2**63 - 1 else None
+    return result
+
+
 def call_ollama_chat(
     model: str,
     messages: list[dict[str, str]],
@@ -405,6 +423,8 @@ def call_ollama_chat(
     stop_status_codes: set[int] | None = None,
     stop_on_unknown_usage: bool = False,
     request_observer=None,
+    *,
+    retain_terminal_metadata: bool = False,
 ) -> dict[str, Any]:
     validate_cloud_model(model, host)
     if max_response_bytes <= 0:
@@ -434,12 +454,16 @@ def call_ollama_chat(
     started = time.monotonic()
     attempts = []
     backoff = 0.0
+    body = None
 
     def telemetry() -> dict[str, Any]:
-        return {"attempts": attempts, "attempt_count": len(attempts),
-                "retry_count": max(len(attempts) - 1, 0),
-                "backoff_seconds": backoff,
-                "total_elapsed_seconds": round(time.monotonic() - started, 4)}
+        result = {"attempts": attempts, "attempt_count": len(attempts),
+                  "retry_count": max(len(attempts) - 1, 0),
+                  "backoff_seconds": backoff,
+                  "total_elapsed_seconds": round(time.monotonic() - started, 4)}
+        if retain_terminal_metadata:
+            result['terminal'] = extract_terminal_metadata(body)
+        return result
 
     def record_failure(err: Exception) -> None:
         attempts.append({"attempt": attempt, "status": "failed", "error": type(err).__name__ if api_key else str(err),
@@ -499,6 +523,8 @@ def call_ollama_chat(
                     result = {"content": content, "raw_content": raw_content, "raw_frames": raw_frames,
                               "prompt_eval_count": prompt_count, "eval_count": output_count,
                               "elapsed_seconds": elapsed, "telemetry": telemetry()}
+                    if retain_terminal_metadata:
+                        result['terminal'] = extract_terminal_metadata(body)
                     thinking = ((frame.get("message") or {}).get("thinking") for frame in raw_frames)
                     thinking_text = "".join(part for part in thinking if isinstance(part, str))
                     if api_key and (api_key in json.dumps(result, ensure_ascii=False) or api_key in thinking_text):
@@ -524,6 +550,8 @@ def call_ollama_chat(
                 "elapsed_seconds": elapsed,
                 "telemetry": telemetry(),
             }
+            if retain_terminal_metadata:
+                result['terminal'] = extract_terminal_metadata(body)
             if stop_on_unknown_usage and (prompt_count is None or output_count is None):
                 if api_key and api_key in json.dumps(result, ensure_ascii=False):
                     raise OllamaStopError("sensitive_response", telemetry())

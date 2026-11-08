@@ -120,6 +120,59 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(caught.exception.reason, 'unknown_usage')
         self.assertEqual(request.call_count, 1)
 
+    def test_opt_in_terminal_metadata_preserves_raw_answer(self):
+        self.assertTrue(hasattr(runner, 'extract_terminal_metadata'))
+        frames = [{'message': {'content': ' 42 ', 'thinking': 'private thought'}, 'done': False},
+                  {'message': {'content': ''}, 'done': True, 'done_reason': 'length',
+                   'prompt_eval_count': 7, 'eval_count': 3, 'total_duration': 19}]
+        body = io.BytesIO(b''.join(json.dumps(frame).encode() + b'\n' for frame in frames))
+        with mock.patch.object(runner, 'open_ollama_request', return_value=body), \
+                mock.patch.object(runner.time, 'sleep'):
+            result = runner.call_ollama_chat('executor', [], stop_on_unknown_usage=True,
+                                             retain_terminal_metadata=True)
+        self.assertEqual(result['raw_content'], ' 42 ')
+        self.assertEqual(result['terminal']['schema'], 1)
+        self.assertTrue(result['terminal']['completed_stream'])
+        self.assertEqual(result['terminal']['done_reason'], 'length')
+        self.assertEqual(result['terminal']['total_duration_ns'], 19)
+        self.assertNotIn('raw_frames', result)
+        self.assertNotIn('private thought', json.dumps(result))
+
+    def test_terminal_metadata_is_allowlisted_and_typed(self):
+        self.assertTrue(hasattr(runner, 'extract_terminal_metadata'))
+        body = {'done': True, 'done_reason': 'private-sentinel', 'total_duration': True,
+                'load_duration': -1, 'prompt_eval_duration': 1.5, 'eval_duration': 2**63,
+                'prompt_eval_cached_count': '12', 'unknown': 'private-sentinel'}
+        terminal = runner.extract_terminal_metadata(body)
+        self.assertEqual(terminal['done_reason'], 'other')
+        self.assertNotIn('private-sentinel', json.dumps(terminal))
+        for field in ('total_duration_ns', 'load_duration_ns', 'prompt_eval_duration_ns',
+                      'eval_duration_ns', 'prompt_eval_cached_count'):
+            self.assertIsNone(terminal[field])
+        self.assertEqual(runner.extract_terminal_metadata({'done': True, 'eval_duration': 2**63 - 1})['eval_duration_ns'], 2**63 - 1)
+
+    def test_missing_done_frame_remains_unknown_and_stops(self):
+        self.assertTrue(hasattr(runner, 'extract_terminal_metadata'))
+        body = io.BytesIO(b'{"message":{"content":"partial"},"done":false}\n')
+        with mock.patch.object(runner, 'open_ollama_request', return_value=body):
+            with self.assertRaises(runner.OllamaStopError) as caught:
+                runner.call_ollama_chat('executor', [], stop_on_unknown_usage=True,
+                                        retain_terminal_metadata=True)
+        self.assertEqual(caught.exception.reason, 'unknown_usage')
+        self.assertFalse(caught.exception.telemetry['terminal']['completed_stream'])
+        self.assertIsNone(caught.exception.telemetry['attempts'][0]['eval_count'])
+        self.assertEqual(caught.exception.telemetry['attempt_count'], 1)
+
+    def test_metadata_opt_out_keeps_legacy_result_shape(self):
+        frame = {'message': {'content': 'yes'}, 'done': True, 'done_reason': 'stop',
+                 'prompt_eval_count': 1, 'eval_count': 1}
+        body = io.BytesIO(json.dumps(frame).encode() + b'\n')
+        with mock.patch.object(runner, 'open_ollama_request', return_value=body), \
+                mock.patch.object(runner.time, 'sleep'):
+            result = runner.call_ollama_chat('executor', [], stop_on_unknown_usage=True)
+        self.assertNotIn('terminal', result)
+        self.assertNotIn('terminal', result['telemetry'])
+
     def test_empty_response_with_known_usage_stops_and_retains_stream(self):
         frames = [{'message': {'thinking': 'partial reasoning', 'content': ''}, 'done': False},
                   {'message': {'content': ''}, 'done': True, 'prompt_eval_count': 15494, 'eval_count': 1024}]
