@@ -9,14 +9,17 @@ import itertools
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import tempfile
 
 try:
     from research.benchmark.v4 import downstream_protocol as protocol
+    from research.benchmark.v4 import downstream_design as design
     from research.benchmark.v4.blind_stats_engine import deterministic_ab_assignment, unblind_parsed_scores
 except ImportError:
     import downstream_protocol as protocol
+    import downstream_design as design
     from blind_stats_engine import deterministic_ab_assignment, unblind_parsed_scores
 
 
@@ -46,6 +49,49 @@ def _read(path: Path, inputs: dict) -> dict:
     return value
 
 
+
+def _scheduled_pairs(manifest: dict) -> list[tuple[str, str]]:
+    arms = manifest.get('arms')
+    if (not isinstance(arms, list) or not arms or
+            any(not isinstance(arm, str) or not arm for arm in arms) or len(set(arms)) != len(arms)):
+        raise ValueError('Invalid campaign arms')
+    pairs = manifest['pairs'] if 'pairs' in manifest else list(itertools.combinations(arms, 2))
+    if not isinstance(pairs, list) or not pairs:
+        raise ValueError('Invalid scheduled pairs')
+    normalized = []
+    seen = set()
+    for pair in pairs:
+        if (not isinstance(pair, (tuple, list)) or len(pair) != 2 or
+                not all(isinstance(arm, str) and arm in arms for arm in pair) or pair[0] == pair[1]):
+            raise ValueError('Invalid scheduled pair endpoints')
+        identity = frozenset(pair)
+        if identity in seen:
+            raise ValueError('Duplicate scheduled pair')
+        seen.add(identity)
+        normalized.append((pair[0], pair[1]))
+    if 'recipe' in manifest:
+        recipe = design.recipe_definition(manifest['recipe'])
+        if (manifest.get('schema') != 3 or arms != recipe['arms'] or
+                [list(pair) for pair in normalized] != recipe['pairs'] or
+                manifest.get('calls_per_cell') != recipe['calls_per_cell']):
+            raise ValueError('Recipe differs from scheduled work')
+        if manifest['recipe'] == 'primary-aa':
+            skills = manifest.get('skills', {})
+            stable, candidate = skills.get('stable', {}), skills.get('candidate', {})
+            if (stable.get('mode') != 'full' or candidate.get('mode') != 'full' or
+                    not isinstance(stable.get('bundle_sha256'), str) or
+                    not re.fullmatch(r'[0-9a-f]{64}', stable['bundle_sha256']) or
+                    stable['bundle_sha256'] != candidate.get('bundle_sha256')):
+                raise ValueError('A/A recipe requires identical full bundles')
+    return normalized
+
+
+def _valid_arm_order(order, arms: list[str]) -> bool:
+    return (isinstance(order, list) and len(order) == len(arms) and
+            all(isinstance(arm, str) for arm in order) and len(set(order)) == len(order) and
+            set(order) == set(arms))
+
+
 def _expected(manifest: dict) -> list[dict]:
     if manifest.get('schema') not in (2, 3) or manifest.get('protocol') not in (
             'five-arm-downstream-v2', 'five-arm-downstream-v3'):
@@ -63,8 +109,10 @@ def _expected(manifest: dict) -> list[dict]:
         actual = [(c['task_id'], c['model'], c['seed']) for c in schedule]
         if len(set(actual)) != len(actual) or set(actual) != set(identities):
             raise ValueError('Invalid schedule identities')
-        if [c['index'] for c in schedule] != list(range(len(schedule))):
+        if any(type(c.get('index')) is not int for c in schedule) or [c['index'] for c in schedule] != list(range(len(schedule))):
             raise ValueError('Invalid schedule indexes')
+        if not all(_valid_arm_order(c.get('arm_order'), manifest['arms']) for c in schedule):
+            raise ValueError('Invalid scheduled arm order')
         return schedule
     return [{'index': i, 'task_id': task, 'model': model, 'seed': seed}
             for i, (task, model, seed) in enumerate(identities)]
@@ -120,11 +168,22 @@ def reanalyze(campaign_dir: Path, output_dir: Path) -> dict:
         raise ValueError('Output cannot be in an evidence extraction or archive tree')
     if not campaign.is_dir():
         raise ValueError('Campaign directory is unavailable')
+    # The first directory beneath the nearest .private root is the evidence collection.
+    # Derived output belongs in a separate sibling tree, never alongside its source records.
+    private_positions = [i for i, part in enumerate(campaign.parts) if part == '.private']
+    if private_positions:
+        position = private_positions[-1]
+        if position + 1 < len(campaign.parts):
+            evidence_root = Path(*campaign.parts[:position + 2])
+            if output == evidence_root or evidence_root in output.parents:
+                raise ValueError('Output must be outside the source evidence root')
 
     inputs = {}
     manifest = _read(campaign / 'manifest.json', inputs)
     state = _read(campaign / 'state.json', inputs)
     official_summary = _read(campaign / 'summary.json', inputs)
+    scheduled_pairs = _scheduled_pairs(manifest)
+    allowed_pairs = {left + '__' + right for left, right in scheduled_pairs}
     expected = _expected(manifest)
     case_by_id = {case['id']: case for case in manifest['cases']}
     records = []
@@ -140,6 +199,8 @@ def reanalyze(campaign_dir: Path, output_dir: Path) -> dict:
             raise ValueError('Cell identity differs from manifest')
         if 'arm_order' in identity and record['identity'].get('arm_order') != identity['arm_order']:
             raise ValueError('Cell arm order differs from schedule')
+        if not _valid_arm_order(record['identity'].get('arm_order'), manifest['arms']):
+            raise ValueError('Invalid recorded arm order')
         records.append(record)
 
     results, official, orphan = [], 0, 0
@@ -147,11 +208,16 @@ def reanalyze(campaign_dir: Path, output_dir: Path) -> dict:
     for record in records:
         cell = record['identity']
         grouped = defaultdict(list)
-        official += len(record.get('comparisons', {}))
+        comparisons = record.get('comparisons', {})
+        if not isinstance(comparisons, dict) or not set(comparisons) <= allowed_pairs:
+            raise ValueError('Official comparison is not scheduled')
+        official += len(comparisons)
         for call in record.get('calls', []):
             if call.get('stage') == 'judge':
                 grouped[call['arm']].append(call)
         for pair, calls in grouped.items():
+            if pair not in allowed_pairs:
+                raise ValueError('Judge comparison is not scheduled')
             if len(calls) > 2:
                 raise ValueError('Duplicate judge passes')
             names = pair.split('__')
@@ -206,7 +272,6 @@ def reanalyze(campaign_dir: Path, output_dir: Path) -> dict:
                             'valid_passes': len(parsed_passes), 'delta': delta})
 
     derived = sum(row['delta'] is not None for row in results)
-    scheduled_pairs = manifest.get('pairs') or list(itertools.combinations(manifest['arms'], 2))
     expected_pairs = len(expected) * len(scheduled_pairs)
     pair_summaries = {}
     for left, right in scheduled_pairs:
@@ -234,7 +299,7 @@ def reanalyze(campaign_dir: Path, output_dir: Path) -> dict:
     summary['missing_launched_cells'] = missing_launched
     analysis_manifest = {'schema': 1, 'campaign_schema': manifest['schema'],
         'parser': 'markdown-dimensions-v2', 'algorithm': 'downstream-reanalysis-v1',
-        'source_sha256': {p.name: _sha(p.read_bytes()) for p in (Path(__file__), Path(protocol.__file__), Path(__file__).with_name('blind_stats_engine.py'))},
+        'source_sha256': {p.name: _sha(p.read_bytes()) for p in (Path(__file__), Path(protocol.__file__), Path(__file__).with_name('blind_stats_engine.py'), Path(design.__file__))},
         'inputs_sha256': inputs}
     verification = {'network_calls_enabled': False, 'original_file_hashes_unchanged': True,
                     'original_statuses_preserved': True}

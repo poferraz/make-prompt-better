@@ -106,6 +106,12 @@ class ReanalysisTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             analysis.reanalyze(link / 'campaign', self.private / 'other')
 
+    def test_output_cannot_be_inside_the_source_evidence_root(self):
+        sibling = self.private / 'input' / 'derived'
+        with self.assertRaises(ValueError):
+            analysis.reanalyze(self.campaign, sibling)
+        self.assertFalse(sibling.exists())
+
     def test_v2_mapping_reconstruction_matches_requests(self):
         entry = self.record['calls'][1]
         payload = json.loads(entry['request_body'])
@@ -215,6 +221,64 @@ class ReanalysisTests(unittest.TestCase):
         self.save()
         with self.assertRaises(ValueError):
             analysis.reanalyze(self.campaign, self.private/'another-output')
+
+    def test_unscheduled_v3_comparison_is_rejected_before_output(self):
+        self.manifest.update(schema=3, protocol='five-arm-downstream-v3',
+                             arms=['original','stable','candidate'],
+                             pairs=[['original','stable'],['stable','candidate']])
+        for i, call in enumerate(self.record['calls'], 1):
+            data = json.loads(json.loads(call['request_body'])['messages'][1]['content'])
+            first = 'original' if data['candidate_A'] == 'first' else 'candidate'
+            call.update(judge_pair='original__candidate', judge_pass_index=i,
+                        judge_mapping={'A':first,'B':'candidate' if first=='original' else 'original'})
+        self.save()
+        with self.assertRaises(ValueError):
+            analysis.reanalyze(self.campaign, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_recipe_metadata_cannot_contradict_scheduled_pairs(self):
+        self.manifest.update(schema=3, protocol='five-arm-downstream-v3', recipe='primary-aa',
+                             arms=['strong_direct','stable','candidate'],
+                             pairs=[['strong_direct','stable'],['stable','candidate']],
+                             calls_per_cell=9, skills={
+                                 'stable': {'mode':'full','bundle_sha256':'a'*64},
+                                 'candidate': {'mode':'full','bundle_sha256':'b'*64}})
+        self.record['calls'] = []
+        self.record['arms'] = {}
+        self.record['identity']['arm_order'] = ['strong_direct','stable','candidate']
+        self.save()
+        with self.assertRaises(ValueError):
+            analysis.reanalyze(self.campaign, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_null_duplicate_or_self_pairs_are_invalid(self):
+        for index, pairs in enumerate((None, [], [['original','original']],
+                                       [['original','candidate'],['candidate','original']])):
+            with self.subTest(pairs=pairs):
+                self.output = self.private / ('output-' + str(index))
+                self.manifest['pairs'] = pairs
+                self.save()
+                with self.assertRaises(ValueError):
+                    analysis.reanalyze(self.campaign, self.output)
+                self.assertFalse(self.output.exists())
+
+    def test_invalid_saved_arm_permutation_is_rejected(self):
+        self.identity['arm_order'] = ['candidate','candidate']
+        self.manifest.update(schema=3, protocol='five-arm-downstream-v3', cell_schedule=[self.identity])
+        self.record['calls'] = []
+        self.save()
+        with self.assertRaises(ValueError):
+            analysis.reanalyze(self.campaign, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_unscheduled_official_comparison_is_rejected(self):
+        self.manifest['pairs'] = [['original','stable']]
+        self.record['comparisons'] = {'original__candidate': {'delta': 0}}
+        self.record['calls'] = []
+        self.save()
+        with self.assertRaises(ValueError):
+            analysis.reanalyze(self.campaign, self.output)
+        self.assertFalse(self.output.exists())
 
     def test_v3_orphan_remains_orphan(self):
         self.manifest['schema'] = 3

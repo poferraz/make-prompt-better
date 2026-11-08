@@ -39,7 +39,8 @@ def _cells(line: str) -> list[str] | None:
 
 
 def _candidate(value: str, label: str) -> bool:
-    return bool(re.match(r'^candidate\s+' + label + r'(?:\b|\s|\()', _unbold(value), re.IGNORECASE))
+    return bool(re.fullmatch(r'candidate\s+' + label + r'(?:\s*\(\s*1\s*[-\u2010\u2011\u2013]\s*5\s*\))?',
+                             _unbold(value), re.IGNORECASE))
 
 
 def _score(value: str) -> float:
@@ -62,7 +63,7 @@ def parse_judge_table(content: str) -> dict:
         if row and len(row) >= 3 and _unbold(row[0]).lower() == 'dimension':
             if (_candidate(row[1], 'a') and _candidate(row[2], 'b')):
                 headers.append(i)
-            elif _candidate(row[1], 'b') or _candidate(row[2], 'a'):
+            elif any('candidate' in _unbold(column).lower() for column in row[1:3]):
                 raise ProtocolFormatError('judge_table_ambiguous')
     if not headers:
         raise ProtocolFormatError('judge_table_missing')
@@ -70,14 +71,16 @@ def parse_judge_table(content: str) -> dict:
         raise ProtocolFormatError('judge_table_ambiguous')
 
     dimensions = {}
-    for line in lines[headers[0] + 1:]:
-        row = _cells(line)
+    end = len(lines)
+    for index in range(headers[0] + 1, len(lines)):
+        row = _cells(lines[index])
         if row is None:
+            end = index
             break
         if not row or _SEPARATOR.fullmatch(row[0]):
             continue
         label = _unbold(row[0]).lower()
-        if label.startswith('total'):
+        if re.fullmatch(r'total(?:\s*\(\s*/\s*25\s*\))?', label):
             continue
         if label not in DIMENSIONS:
             raise ProtocolFormatError('judge_unknown_dimension')
@@ -89,6 +92,10 @@ def parse_judge_table(content: str) -> dict:
         dimensions[label] = {'baseline': left, 'optimized': right, 'delta': round(right - left, 2)}
     if len(dimensions) != len(DIMENSIONS):
         raise ProtocolFormatError('judge_dimension_missing')
+    for line in lines[:headers[0]] + lines[end:]:
+        row = _cells(line)
+        if row and len(row) >= 3 and _unbold(row[0]).lower() in DIMENSIONS:
+            raise ProtocolFormatError('judge_dimension_duplicate')
     left_total = sum(value['baseline'] for value in dimensions.values())
     right_total = sum(value['optimized'] for value in dimensions.values())
     delta = round(right_total - left_total, 2)

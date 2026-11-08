@@ -46,6 +46,28 @@ class JudgeProtocolTests(unittest.TestCase):
             protocol.parse_judge_table(table() + '\n' + table())
         self.assertEqual(caught.exception.code, 'judge_table_ambiguous')
 
+    def test_unambiguous_unicode_range_header_is_accepted(self):
+        header = HEADER.replace('Candidate A (1-5)', 'Candidate\u202fA (1\u20115)').replace(
+            'Candidate B (1-5)', 'Candidate\u202fB (1\u20115)')
+        parsed = protocol.parse_judge_table(table().replace(HEADER, header))
+        self.assertEqual((parsed['baseline_total'], parsed['optimized_total']), (20.0, 22.0))
+
+    def test_ambiguous_candidate_header_is_rejected(self):
+        bad = HEADER.replace('Candidate A (1-5)', 'Candidate A or Candidate B')
+        with self.assertRaises(protocol.ProtocolFormatError) as caught:
+            protocol.parse_judge_table(table().replace(HEADER, bad))
+        self.assertEqual(caught.exception.code, 'judge_table_ambiguous')
+
+    def test_contradictory_dimension_after_blank_line_is_rejected(self):
+        with self.assertRaises(protocol.ProtocolFormatError) as caught:
+            protocol.parse_judge_table(table() + '\n\n| Accuracy | 5 | 1 | -4 | correction |')
+        self.assertEqual(caught.exception.code, 'judge_dimension_duplicate')
+
+    def test_total_prefix_does_not_hide_unknown_scored_dimension(self):
+        with self.assertRaises(protocol.ProtocolFormatError) as caught:
+            protocol.parse_judge_table(table(ROWS + ['| Totality | 3 | 4 | 1 | not total |']))
+        self.assertEqual(caught.exception.code, 'judge_unknown_dimension')
+
     def test_score_tokens_are_full_and_bounded(self):
         for value in ['0', '6', 'NaN', 'inf', 'True', '5abc', '**5', '5**', '-1', '+5', '1e0']:
             rows = ['| Accuracy | ' + value + ' | 5 | 0 | no |', *ROWS[1:]]

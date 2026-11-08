@@ -65,6 +65,12 @@ class DesignTests(unittest.TestCase):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 design.simulate_task_power(**args)
 
+    def test_degenerate_simulation_intervals_are_reported(self):
+        result = design.simulate_task_power(10, 0, 0, n_trials=2, seed=42)
+        self.assertEqual(result['degenerate_intervals'], 2)
+        self.assertEqual(result['degenerate_interval_policy'], 'point interval when sample variance is zero')
+        self.assertEqual((result['coverage'], result['rejection_rate']), (1.0, 0.0))
+
     def test_missing_custody_or_spend_cap_remains_explicit(self):
         result = design.build_design(CONFIG)
         self.assertIn('independent_custody', result['unresolved_prerequisites'])

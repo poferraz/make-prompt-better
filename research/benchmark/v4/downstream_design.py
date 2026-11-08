@@ -60,14 +60,16 @@ def simulate_task_power(n_tasks: int, effect: float, task_sd: float,
     if negative < 0 or positive < 0 or positive + negative > 1:
         raise ValueError('Effect and standard deviation do not define valid probabilities')
     rng = random.Random(seed)
-    rejected = covered = 0
+    rejected = covered = degenerate = 0
     for _ in range(n_trials):
         samples = []
         for _ in range(families):
             draw = rng.random()
             samples.append(1 if draw < positive else -1 if draw < positive + negative else 0)
         mean = statistics.fmean(samples)
-        half_width = 1.96 * statistics.stdev(samples) / math.sqrt(families)
+        sample_sd = statistics.stdev(samples)
+        degenerate += sample_sd == 0
+        half_width = 1.96 * sample_sd / math.sqrt(families)
         low, high = mean - half_width, mean + half_width
         rejected += low > 0 or high < 0
         covered += low <= effect <= high
@@ -76,6 +78,8 @@ def simulate_task_power(n_tasks: int, effect: float, task_sd: float,
             'independent_families': families, 'family_size': family_size, 'n_trials': n_trials,
             'seed': seed, 'effect': effect, 'task_sd': task_sd, 'rejection_rate': rejection,
             'coverage': covered / n_trials, 'monte_carlo_se': math.sqrt(rejection * (1 - rejection) / n_trials),
+            'degenerate_intervals': degenerate,
+            'degenerate_interval_policy': 'point interval when sample variance is zero',
             'limitation': 'Hypothetical independent families, not calibration of the final clustered bootstrap.'}
 
 
