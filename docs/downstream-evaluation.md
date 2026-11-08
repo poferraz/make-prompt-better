@@ -64,3 +64,8 @@ Standard checks load only the tracked development corpus and work without `.priv
 Remaining limits include a small synthetic corpus, uncalibrated judge preferences, provider seed/model mutability, full-bundle overhead, literal-only preservation checks, and no measured live-model efficacy. Keep the primary comparison, minimum meaningful effect, sample size, safety review and monetary cap fixed before a future pilot. Never execute model-produced code on the host; code-based checks require a separately designed isolated sandbox.
 
 Rollback: remove the new tool, public corpus/check helpers and their tests/docs, and revert the additive adapter raw-text field if no longer needed. Existing v4 campaigns and consumer skill files remain usable. Preserve private evidence separately; do not rewrite old manifests to make a new source version appear identical.
+
+
+## Offline parser reanalysis
+
+`downstream_reanalysis.py --campaign-dir PATH --output-dir NEW_PRIVATE_DIR` reads v2/v3 evidence without launching workers or making provider calls. It verifies request hashes and anonymous answer mappings, and writes a new derived view with input and analysis-source hashes. The source campaign remains unchanged. Only parse-format failures with two valid passes can be recovered; unknown usage, transport failures and missing answers remain missing. Recovered comparisons use the original campaign's rubric, not the v3 rubric. Both official and derived outcomes are reported separately.
