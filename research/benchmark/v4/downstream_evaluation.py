@@ -380,17 +380,72 @@ def summarize_usage(records: list[dict], *, arm: str | None = None) -> dict:
     return result
 
 
+
+def _rate(numerator: int, denominator: int) -> dict:
+    return {'numerator': numerator, 'denominator': denominator,
+            'value': numerator / denominator if denominator else None}
+
+
+def _launched_indexes(state: dict, by_index: dict) -> set[int]:
+    # A reservation is a launch attempt, not proof of HTTP dispatch.
+    indexes = set(by_index)
+    for key, value in state.get('cells', {}).items():
+        reservation = value.get('reserved_request_allowance')
+        if reservation is None and value.get('status') in {'running', 'failed', 'completed'}:
+            reservation = state.get('reserved_request_allowance', 0)
+        if reservation and reservation > 0:
+            indexes.add(int(key))
+    return indexes
+
+
+def _missing_pair_reason(cell: dict, record: dict | None, state: dict, left: str, right: str) -> str:
+    if record is None:
+        status = state.get('cells', {}).get(str(cell['index']), {})
+        reserved = status.get('reserved_request_allowance')
+        if reserved is None and status.get('status') in {'running', 'failed', 'completed'}:
+            reserved = state.get('reserved_request_allowance', 0)
+        return 'cell_record_missing' if reserved else 'cell_not_launched'
+    if any('answer' not in record.get('arms', {}).get(arm, {}) for arm in (left, right)):
+        return 'answer_unavailable'
+    key = left + '__' + right
+    calls = [c for c in record.get('calls', []) if c.get('stage') == 'judge' and c.get('arm') == key]
+    if any(c.get('format_error') for c in calls):
+        return 'judge_format_invalid'
+    if any(c.get('status') == 'failed' for c in calls):
+        return 'judge_transport_failed'
+    if any(c.get('status') == 'running' for c in calls):
+        return 'incomplete_evidence'
+    return 'judge_not_attempted' if len(calls) < 2 else 'incomplete_evidence'
+
+
 def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
     by_index = {r['identity']['index']: r for r in records}
     missing_pairs, pair_summaries = [], {}
+    scheduled_cells = list(cells(manifest))
+    launched = _launched_indexes(state, by_index)
     for left, right in PAIRS:
         key = left + '__' + right
         rows = []
-        for cell in cells(manifest):
-            comparison = by_index.get(cell['index'], {}).get('comparisons', {}).get(key)
+        reasons = {}
+        valid_passes = orphan_passes = reversals = tie_disagreements = 0
+        for cell in scheduled_cells:
+            record = by_index.get(cell['index'])
+            comparison = (record or {}).get('comparisons', {}).get(key)
+            calls = [c for c in (record or {}).get('calls', [])
+                     if c.get('stage') == 'judge' and c.get('arm') == key]
+            valid = sum(c.get('status') == 'completed' and 'parsed_scores' in c for c in calls)
+            valid_passes += valid
             if comparison is None:
-                missing_pairs.append({'task_id': cell['task_id'], 'model': cell['model'], 'seed': cell['seed'], 'pair': key})
+                orphan_passes += valid
+                reason = _missing_pair_reason(cell, record, state, left, right)
+                reasons[reason] = reasons.get(reason, 0) + 1
+                missing_pairs.append({'task_id': cell['task_id'], 'model': cell['model'], 'seed': cell['seed'], 'pair': key, 'reason': reason})
             else:
+                passes = comparison.get('passes', [])
+                if len(passes) == 2:
+                    first, second = (p['scores']['delta_total'] for p in passes)
+                    reversals += first * second < 0
+                    tie_disagreements += (first == 0) != (second == 0)
                 rows.append({'task_id': cell['task_id'], 'model': cell['model'], 'seed': cell['seed'],
                              'baseline_total': comparison['left_total'], 'optimized_total': comparison['right_total'],
                              'delta': comparison['delta'], 'position_consistent': comparison['position_consistent']})
@@ -399,10 +454,18 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
         if clusters >= 5:
             _, low, high = cluster_bootstrap_mean_ci(rows, cluster_key='task_id')
             interval = [low, high]
-        pair_summaries[key] = {'completed_pairs': len(rows), 'task_clusters': clusters,
+        pair_summaries[key] = {'expected_pairs': len(scheduled_cells), 'completed_pairs': len(rows),
+            'missing_by_reason': reasons, 'valid_judge_passes': valid_passes, 'orphan_valid_passes': orphan_passes,
+            'wins': sum(r['delta'] > 0 for r in rows), 'ties': sum(r['delta'] == 0 for r in rows),
+            'losses': sum(r['delta'] < 0 for r in rows), 'strict_reversals': reversals,
+            'tie_disagreements': tie_disagreements,
+            'interval_method': {'estimand': 'mean available-pair right-minus-left total',
+                'task_clusters': clusters, 'minimum_task_clusters': 5, 'resamples': 5000, 'seed': 42,
+                'weighting': 'available cells within task clusters', 'multiplicity': 'unadjusted'},
+            'task_clusters': clusters,
             'mean_delta': sum(r['delta'] for r in rows) / len(rows) if rows else None,
             'task_cluster_95_ci': interval, 'pairs': rows,
-            'position_consistency_rate': sum(r['position_consistent'] for r in rows) / len(rows) if rows else None}
+            'position_consistency_rate': _rate(sum(r['position_consistent'] for r in rows), len(rows))}
     bypass, outcomes = {}, {}
     case_by_id = {c['id']: c for c in manifest['cases']}
     expected = len(list(cells(manifest)))
@@ -419,7 +482,14 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
                                 for status in ('passed', 'failed')}
         answered = [a for a in items if 'answer' in a]
         successes = sum(bool(a['objective_checks']) and all(c['status'] == 'passed' for c in a['objective_checks']) for a in answered)
-        outcomes[arm] = {'expected': expected, 'answered': len(answered), 'unavailable': expected - len(answered),
+        outcomes[arm] = {'expected': expected, 'launched_cells': len(launched),
+                         'answered': len(answered), 'unavailable': expected - len(answered),
+                         'objective_rate_answered': _rate(successes, len(answered)),
+                         'delivered_success_rate_launched': _rate(successes, len(launched)),
+                         'preservation': {'literal_checks': counts('preservation'),
+                             'anchor_audit': {'evaluated': len(items),
+                                 'failed': sum(a['literal_audit']['status'] == 'failed' for a in items)},
+                             'semantic_review_status': 'not_evaluated'},
                          'preparation_attempts': len(preparation),
                          'preparation_failures': sum(c['status'] == 'failed' for c in preparation),
                          'execution_attempts': len(execution),
@@ -435,6 +505,8 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
             eligible = [(r['arms'][arm], case_by_id[r['identity']['task_id']]['expected_bypass'])
                         for r in records if arm in r.get('arms', {}) and 'expected_bypass' in case_by_id[r['identity']['task_id']]]
             bypass[arm] = {'attempted': attempted, 'valid_decisions': len(decisions),
+                'routing_expectation_status': 'advisory_fixture_label',
+                'rewrite_count': sum(a['decision'] == 'rewrite' for a in decisions),
                 'bypass_count': sum(a['decision'] == 'bypass' for a in decisions),
                 'unchanged_rewrites': sum(a['decision'] == 'rewrite' and a['unchanged'] for a in decisions),
                 'expected_decision_cases': len(eligible),
