@@ -209,7 +209,7 @@ def build_manifest(args: argparse.Namespace) -> dict:
     return {'schema': 3, 'protocol': 'five-arm-downstream-v3',
             'contracts': {'judge_parser': 'markdown-dimensions-v2', 'preparation': 'json-decision-v2',
                           'judge_rubric': 'downstream-contract-v1', 'response_metadata': 'terminal-v1',
-                          'summary': 'availability-v1'}, 'recipe': args.recipe,
+                          'summary': 'availability-v2'}, 'recipe': args.recipe,
             'arms': recipe['arms'], 'pairs': recipe['pairs'], 'schedule_seed': args.schedule_seed,
             'cell_schedule': schedule, 'cases': cases,
             'corpus': {'path': str(args.corpus.resolve()), 'sha256': corpus_hash, 'split': corpus['split'],
@@ -453,6 +453,38 @@ def _launched_indexes(state: dict, by_index: dict) -> set[int]:
     return indexes
 
 
+def _objective_success(item: dict) -> bool | None:
+    """Return a grade only when an answer and unambiguous checks were retained."""
+    checks = item.get('objective_checks')
+    if 'answer' not in item or not isinstance(checks, list) or not checks:
+        return None
+    if any(isinstance(c, dict) and c.get('status') == 'failed' and 'error' not in c for c in checks):
+        return False
+    if any(not isinstance(c, dict) or c.get('status') not in {'passed', 'failed'} or 'error' in c
+           for c in checks):
+        return None
+    return True
+
+
+def _workflow_disposition(arm: str, record: dict | None, cell_launched: bool) -> str:
+    """Classify observable workflow outcomes without imputing missing work."""
+    if record is None:
+        return 'missing_record' if cell_launched else 'not_started'
+    item = record.get('arms', {}).get(arm, {})
+    calls = [c for c in record.get('calls', [])
+             if c.get('arm') == arm and c.get('stage') in ('preparation', 'execution')]
+    if 'answer' in item:
+        if any(c.get('status') != 'completed' for c in calls):
+            return 'incomplete'
+        grade = _objective_success(item)
+        return 'ungraded' if grade is None else 'success' if grade else 'failure'
+    if any(c.get('status') not in ('completed', 'failed') for c in calls):
+        return 'incomplete'
+    if any(c.get('status') == 'failed' for c in calls):
+        return 'failure'
+    return 'incomplete' if calls or item else 'not_started'
+
+
 def _missing_pair_reason(cell: dict, record: dict | None, state: dict, left: str, right: str) -> str:
     if record is None:
         status = state.get('cells', {}).get(str(cell['index']), {})
@@ -523,43 +555,68 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
             'position_consistency_rate': _rate(sum(r['position_consistent'] for r in rows), len(rows))}
     bypass, outcomes = {}, {}
     case_by_id = {c['id']: c for c in manifest['cases']}
-    expected = len(list(cells(manifest)))
-    def success(item):
-        checks = item.get('objective_checks')
-        return all(c['status'] == 'passed' for c in checks) if checks else None
+    expected = len(scheduled_cells)
+    dispositions = {cell['index']: {arm: _workflow_disposition(
+        arm, by_index.get(cell['index']), cell['index'] in launched) for arm in manifest['arms']}
+        for cell in scheduled_cells}
+
+    def grade_for_record(record, arm):
+        if dispositions.get(record['identity']['index'], {}).get(arm) not in ('success', 'failure'):
+            return None
+        return _objective_success(record.get('arms', {}).get(arm, {}))
 
     for arm in manifest['arms']:
         items = [r['arms'][arm] for r in records if arm in r.get('arms', {})]
         arm_calls = [c for r in records for c in r.get('calls', []) if c['arm'] == arm]
         preparation = [c for c in arm_calls if c['stage'] == 'preparation']
         execution = [c for c in arm_calls if c['stage'] == 'execution']
-        counts = lambda field: {status: sum(c['status'] == status for a in items for c in a.get(field, []))
-                                for status in ('passed', 'failed')}
+        def check_records(field):
+            return [check for item in items if isinstance(item.get(field), list)
+                    for check in item[field] if isinstance(check, dict)]
+
+        def counts(field):
+            checks = check_records(field)
+            return {status: sum(c.get('status') == status and 'error' not in c for c in checks)
+                    for status in ('passed', 'failed')}
         answered = [a for a in items if 'answer' in a]
-        successes = sum(bool(a['objective_checks']) and all(c['status'] == 'passed' for c in a['objective_checks']) for a in answered)
+        graded = [result for r in records if (result := grade_for_record(r, arm)) is not None]
+        successes = sum(graded)
+        arm_dispositions = {status: sum(row[arm] == status for row in dispositions.values())
+                            for status in ('success', 'failure', 'ungraded', 'incomplete', 'not_started', 'missing_record')}
+        observed = arm_dispositions['success'] + arm_dispositions['failure']
         outcomes[arm] = {'expected': expected, 'launched_cells': len(launched),
                          'answered': len(answered), 'unavailable': expected - len(answered),
-                         'objective_rate_answered': _rate(successes, len(answered)),
-                         'delivered_success_rate_launched': _rate(successes, len(launched)),
+                         'objective_rate_graded': _rate(successes, len(graded)),
+                         'delivered_success_rate_observed': _rate(arm_dispositions['success'], observed),
+                         'workflow_dispositions': arm_dispositions,
+                         'pre_dispatch_rejections': sum(any(c.get('arm') == arm and
+                             c.get('stage') in ('preparation', 'execution') and c.get('status') == 'failed' and
+                             c.get('dispatched') is False for c in r.get('calls', [])) for r in records),
                          'preservation': {'literal_checks': counts('preservation'),
+                             'literal_check_errors': sum('error' in c for c in check_records('preservation')),
                              'anchor_audit': {'evaluated': len(items),
                                  'failed': sum(a['literal_audit']['status'] == 'failed' for a in items)},
                              'semantic_review_status': 'not_evaluated'},
-                         'preparation_attempts': len(preparation),
+                         'preparation_call_records': len(preparation),
+                         'preparation_launch_intents': sum(c.get('dispatched') is not False for c in preparation),
                          'preparation_failures': sum(c['status'] == 'failed' for c in preparation),
-                         'execution_attempts': len(execution),
+                         'execution_call_records': len(execution),
+                         'execution_launch_intents': sum(c.get('dispatched') is not False for c in execution),
                          'execution_failures': sum(c['status'] == 'failed' for c in execution),
-                         'execution_not_attempted': expected - len(execution),
+                         'execution_without_saved_call': expected - len(execution),
                          'executions': len(answered), 'objective_successes': successes,
-                         'objective_failures': len(answered) - successes, 'objective_checks': counts('objective_checks'),
+                         'objective_failures': len(graded) - successes, 'ungraded_answers': len(answered) - len(graded),
+                         'objective_checks': counts('objective_checks'),
+                         'objective_check_errors': sum('error' in c for c in check_records('objective_checks')),
                          'preservation_checks': counts('preservation'),
                          'literal_audit_failures': sum(a['literal_audit']['status'] == 'failed' for a in items)}
         if arm in ('stable', 'candidate'):
-            attempted = sum(c['stage'] == 'preparation' and c['arm'] == arm for r in records for c in r.get('calls', []))
             decisions = [r['arms'][arm] for r in records if arm in r.get('arms', {})]
             eligible = [(r['arms'][arm], case_by_id[r['identity']['task_id']]['expected_bypass'])
                         for r in records if arm in r.get('arms', {}) and 'expected_bypass' in case_by_id[r['identity']['task_id']]]
-            bypass[arm] = {'attempted': attempted, 'valid_decisions': len(decisions),
+            bypass[arm] = {'preparation_call_records': len(preparation),
+                'preparation_launch_intents': sum(c.get('dispatched') is not False for c in preparation),
+                'valid_decisions': len(decisions),
                 'routing_expectation_status': 'advisory_fixture_label',
                 'rewrite_count': sum(a['decision'] == 'rewrite' for a in decisions),
                 'bypass_count': sum(a['decision'] == 'bypass' for a in decisions),
@@ -570,26 +627,47 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
                                'seed': r['identity']['seed'], 'decision': r['arms'][arm]['decision'],
                                'skill_answered': 'answer' in r['arms'][arm],
                                'original_answered': ('answer' in r['arms'].get('original', {})) if 'original' in manifest['arms'] else None,
-                               'skill_objective_success': success(r['arms'][arm]),
-                               'original_objective_success': success(r['arms'].get('original', {})),
+                               'skill_objective_success': grade_for_record(r, arm),
+                               'original_objective_success': grade_for_record(r, 'original'),
                                'usage': {stage: value for stage, value in summarize_usage([r], arm=arm).items()
                                          if stage != 'judge'}}
                               for r in records if arm in r.get('arms', {})]}
     objective_pairs = {}
     for left, right in manifest.get('pairs', PAIRS):
         rows = []
+        answer_text_pairs = 0
         for record in records:
             arms = record.get('arms', {})
-            if not all('answer' in arms.get(a, {}) and arms[a].get('objective_checks') for a in (left, right)):
+            answer_text_pairs += all('answer' in arms.get(arm, {}) for arm in (left, right))
+            if any(grade_for_record(record, arm) is None for arm in (left, right)):
                 continue
             row = {'task_id': record['identity']['task_id'], 'model': record['identity']['model'],
                    'seed': record['identity']['seed']}
             for label, arm in (('left_success', left), ('right_success', right)):
-                row[label] = all(c['status'] == 'passed' for c in arms[arm]['objective_checks'])
+                row[label] = grade_for_record(record, arm)
             row['delta'] = int(row['right_success']) - int(row['left_success'])
             rows.append(row)
-        objective_pairs[left + '__' + right] = {'paired_answers': len(rows), 'expected': expected,
+        objective_pairs[left + '__' + right] = {'answer_text_pairs': answer_text_pairs,
+            'paired_graded_answers': len(rows), 'expected': expected,
             'mean_delta': sum(row['delta'] for row in rows) / len(rows) if rows else None, 'pairs': rows}
+    service_pairs = {}
+    for left, right in manifest.get('pairs', PAIRS):
+        rows, missing, reasons = [], [], {}
+        for cell in scheduled_cells:
+            left_status, right_status = (dispositions[cell['index']][arm] for arm in (left, right))
+            identity = {key: cell[key] for key in ('task_id', 'model', 'seed')}
+            if left_status not in ('success', 'failure') or right_status not in ('success', 'failure'):
+                reason = left_status + '__' + right_status
+                reasons[reason] = reasons.get(reason, 0) + 1
+                missing.append({**identity, 'left_disposition': left_status, 'right_disposition': right_status})
+                continue
+            left_success, right_success = left_status == 'success', right_status == 'success'
+            rows.append({**identity, 'left_success': left_success, 'right_success': right_success,
+                         'delta': int(right_success) - int(left_success)})
+        service_pairs[left + '__' + right] = {'expected_pairs': expected, 'observed_pairs': len(rows),
+            'mean_delta': sum(row['delta'] for row in rows) / len(rows) if rows else None,
+            'missing_by_disposition': reasons, 'pairs': rows, 'missing_pairs': missing,
+            'interpretation': 'Descriptive available workflow pairs; missing outcomes can bias this estimate.'}
     usage = summarize_usage(records)
     product_usage = {a: {stage: value for stage, value in summarize_usage(records, arm=a).items()
                          if stage != 'judge'} for a in manifest['arms']}
@@ -608,6 +686,7 @@ def summarize(manifest: dict, state: dict, records: list[dict]) -> dict:
     return {'protocol': manifest['protocol'], 'description': 'Descriptive development evidence, not proof of efficacy.',
             'expected_cells': len(list(cells(manifest))), 'completed_cells': sum(r.get('status') == 'completed' for r in records),
             'pair_summaries': pair_summaries, 'objective_pairs': objective_pairs,
+            'paired_service_outcomes': service_pairs,
             'missing_pairs': missing_pairs, 'outcomes': outcomes, 'bypass': bypass,
             'failed_cells': {k: v for k, v in state['cells'].items() if v['status'] != 'completed'},
             'stage_usage': usage, 'product_usage_by_arm': product_usage, 'telemetry_incomplete': telemetry_incomplete,

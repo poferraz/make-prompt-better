@@ -57,7 +57,7 @@ class DownstreamTests(unittest.TestCase):
         self.assertEqual((manifest['schema'], manifest['protocol']), (3, 'five-arm-downstream-v3'))
         self.assertEqual(manifest['contracts'], {'judge_parser': 'markdown-dimensions-v2',
             'preparation': 'json-decision-v2', 'judge_rubric': 'downstream-contract-v1',
-            'response_metadata': 'terminal-v1', 'summary': 'availability-v1'})
+            'response_metadata': 'terminal-v1', 'summary': 'availability-v2'})
         self.assertIn('downstream_protocol.py', manifest['source_sha256'])
 
     def test_v2_campaign_cannot_resume_under_v3(self):
@@ -250,7 +250,9 @@ class DownstreamTests(unittest.TestCase):
         summary = evaluation.summarize(manifest, {'cells': {str(cell['index']): {'status': 'completed'}}}, [data])
         self.assertEqual(summary['completed_cells'], 1)
         self.assertEqual(summary['bypass']['stable']['bypass_count'], 1)
-        self.assertEqual(summary['bypass']['stable']['attempted'], 1)
+        self.assertIn('preparation_call_records', summary['bypass']['stable'])
+        self.assertEqual(summary['bypass']['stable']['preparation_call_records'], 1)
+        self.assertEqual(summary['bypass']['stable']['preparation_launch_intents'], 1)
         self.assertEqual(summary['pair_summaries']['original__stable']['mean_delta'], 0)
         self.assertEqual(summary['pair_summaries']['original__stable']['task_clusters'], 1)
         self.assertIsNone(summary['pair_summaries']['original__stable']['task_cluster_95_ci'])
