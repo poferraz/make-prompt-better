@@ -84,5 +84,49 @@ class JudgeProtocolTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, 'content_limit')
 
 
+class PreparationProtocolTests(unittest.TestCase):
+    def setUp(self):
+        self.assertIsNotNone(protocol)
+        self.assertTrue(hasattr(protocol, 'parse_preparation_json'))
+
+    def test_bypass_preserves_exact_original_and_unchanged_rewrite_is_distinct(self):
+        original = '  count x\n'
+        for value in ['{"decision":"bypass"}', '{"decision":"bypass","prompt":null}']:
+            self.assertEqual(protocol.parse_preparation_json(value, original),
+                             {'decision': 'bypass', 'prompt': original, 'unchanged': True})
+        self.assertEqual(protocol.parse_preparation_json('{"decision":"rewrite","prompt":"  count x\\n"}', original),
+                         {'decision': 'rewrite', 'prompt': original, 'unchanged': True})
+
+    def test_invalid_envelopes_are_rejected_with_controlled_codes(self):
+        values = [('3', 'preparation_shape_invalid'), ('[]', 'preparation_shape_invalid'),
+                  ('{"decision":"bypass","decision":"rewrite"}', 'preparation_json_invalid'),
+                  ('{"decision":"bypass","extra":1}', 'preparation_shape_invalid'),
+                  ('```json\n{}\n```', 'preparation_json_invalid'),
+                  ('{"decision":"bypass","prompt":"changed"}', 'preparation_bypass_changed'),
+                  ('{"decision":"rewrite","prompt":"   "}', 'preparation_prompt_invalid'),
+                  ('{"decision":"run"}', 'preparation_decision_invalid'),
+                  ('{"decision":"bypass","prompt":NaN}', 'preparation_json_invalid'),
+                  ('{"decision":"bypass","extra":1e999}', 'preparation_json_invalid')]
+        for text, code in values:
+            with self.subTest(text=text), self.assertRaises(protocol.ProtocolFormatError) as caught:
+                protocol.parse_preparation_json(text, 'original')
+            self.assertEqual(caught.exception.code, code)
+
+    def test_downstream_judge_uses_untrusted_anonymous_data(self):
+        self.assertTrue(hasattr(protocol, 'build_downstream_judge_messages'))
+        case = {'original_request': 'JSON only', 'checks': ['SECRET_CHECK'],
+                'reference': 'SECRET_ANSWER'}
+        messages = protocol.build_downstream_judge_messages(case, 'answer one', 'answer two')
+        import json
+        payload = json.dumps(messages)
+        self.assertNotIn('SECRET_CHECK', payload)
+        self.assertNotIn('SECRET_ANSWER', payload)
+        self.assertNotIn('placeholder', payload.lower())
+        self.assertNotIn('stable', payload.lower())
+        self.assertIn('answer one', payload)
+        self.assertIn('Traceability', payload)
+        self.assertIn('do not penalize', payload.lower())
+
+
 if __name__ == '__main__':
     unittest.main()

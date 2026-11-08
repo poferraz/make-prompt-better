@@ -52,6 +52,51 @@ class DownstreamTests(unittest.TestCase):
         self.assertIn('downstream_evaluation.py', manifest['source_sha256'])
         self.assertNotIn('api_key', json.dumps(manifest))
 
+    def test_v3_manifest_binds_contracts_and_new_source(self):
+        manifest = self.manifest()
+        self.assertEqual((manifest['schema'], manifest['protocol']), (3, 'five-arm-downstream-v3'))
+        self.assertEqual(manifest['contracts'], {'judge_parser': 'markdown-dimensions-v2',
+            'preparation': 'json-decision-v2', 'judge_rubric': 'downstream-contract-v1',
+            'response_metadata': 'terminal-v1', 'summary': 'availability-v1'})
+        self.assertIn('downstream_protocol.py', manifest['source_sha256'])
+
+    def test_v2_campaign_cannot_resume_under_v3(self):
+        args = self.args()
+        manifest = self.manifest()
+        args.output_dir.mkdir()
+        old = dict(manifest, schema=2, protocol='five-arm-downstream-v2')
+        (args.output_dir / 'manifest.json').write_text(json.dumps(old))
+        (args.output_dir / 'state.json').write_text('{"stop_reason":"unknown_usage"}')
+        before = {p.name: p.read_bytes() for p in args.output_dir.iterdir()}
+        with mock.patch.object(evaluation.subprocess, 'run', side_effect=AssertionError('worker started')):
+            with self.assertRaisesRegex(ValueError, 'Manifest mismatch'):
+                evaluation.run_campaign(args, manifest, self.argv)
+        self.assertEqual(before, {p.name: p.read_bytes() for p in args.output_dir.iterdir()})
+
+    def test_preparation_wrapper_preserves_language_and_avoids_solving(self):
+        system = evaluation.preparation_messages('SKILL', 'A task')[0]['content'].lower()
+        self.assertIn('instruction language', system)
+        self.assertIn('answer language', system)
+        self.assertIn('newly computed answer', system)
+
+    def test_judge_mapping_saved_before_dispatch(self):
+        manifest = self.manifest()
+        cell = next(evaluation.cells(manifest))
+        path = self.root / 'mapping.json'
+        seen = []
+        def chat(**kwargs):
+            if kwargs['model'] == 'independent-judge':
+                entry = json.loads(path.read_text())['calls'][-1]
+                seen.append((entry['judge_pair'], entry['judge_pass_index'], entry['judge_mapping']))
+            return self.fake_chat(**kwargs)
+        with mock.patch.object(runner, 'call_ollama_chat', side_effect=chat):
+            result = evaluation.run_cell(manifest, cell, path, 'http://localhost:11434')
+        self.assertEqual(result['status'], 'completed')
+        self.assertEqual([x[1] for x in seen[:2]], [1, 2])
+        self.assertEqual(seen[0][2]['A'], seen[1][2]['B'])
+        self.assertEqual(len(seen), 20)
+        self.assertTrue(all('parsed_scores' in c for c in result['calls'] if c['stage'] == 'judge'))
+
     def test_default_is_a_read_only_plan(self):
         with mock.patch.object(runner, 'call_ollama_chat') as chat, contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(evaluation.main(self.argv), 0)
@@ -120,8 +165,9 @@ class DownstreamTests(unittest.TestCase):
         if messages[0]['content'].startswith('Prepare a prompt'):
             text = '{"decision":"bypass"}'
         elif messages[0]['content'].startswith('You are an independent'):
-            text = '\n'.join(f'| {d} | 3 | 4 | 1 | evidence |' for d in
-                             ['Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'])
+            text = '| Dimension | Candidate A (1-5) | Candidate B (1-5) | Delta | Evidence |\n' + \
+                '\n'.join(f'| {d} | 3 | 4 | 1 | evidence |' for d in
+                          ['Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'])
         else:
             text = '42'
         return {'content': text, 'words': len(text.split()), 'prompt_eval_count': 10, 'eval_count': 5,
@@ -312,8 +358,9 @@ class DownstreamFakeOllama(FakeOllama):
         if system.startswith('Prepare a prompt'):
             response = '{"decision":"bypass"}'
         elif system.startswith('You are an independent'):
-            response = '\n'.join(f'| {d} | 4 | 4 | 0 | Both return 18. |' for d in
-                                 ['Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'])
+            response = '| Dimension | Candidate A (1-5) | Candidate B (1-5) | Delta | Evidence |\n' + \
+                '\n'.join(f'| {d} | 4 | 4 | 0 | Both return 18. |' for d in
+                          ['Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'])
         else:
             response = '18'
         frames = [{'message': {'content': response[:3]}, 'done': False},

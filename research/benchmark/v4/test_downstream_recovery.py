@@ -244,8 +244,9 @@ class RecoveryTests(unittest.TestCase):
             if message.startswith('Prepare a prompt'):
                 text = '{"decision":"bypass"}'
             elif message.startswith('You are an independent'):
-                text = '\n'.join(f'| {d} | 4 | 4 | 0 | Evidence |' for d in
-                                 ('Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'))
+                text = '| Dimension | Candidate A (1-5) | Candidate B (1-5) | Delta | Evidence |\n' + \
+                    '\n'.join(f'| {d} | 4 | 4 | 0 | Evidence |' for d in
+                              ('Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'))
             else:
                 text = '18'
             return {'content': text, 'telemetry': {'attempts': [], 'attempt_count': 1,
