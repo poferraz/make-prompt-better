@@ -1,4 +1,8 @@
+import contextlib
+import hashlib
+import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -7,7 +11,146 @@ from unittest import mock
 import rejudge_saved_outputs as rejudge
 
 
+class RejudgeConnectionTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        model = self.root / 'model'
+        model.mkdir()
+        (model / 'metrics.json').write_text(json.dumps({'model': 'model', 'tests': {
+            '1': {'raw_prompt': 'saved task', 'baseline': {'content': 'base'},
+                  'optimized_response': {'content': 'opt'}}
+        }}))
+        self.output = self.root / 'derived' / 'rejudge.json'
+        self.args = ['--results-dir', str(self.root), '--judge-model', 'fixture-judge',
+                     '--output', str(self.output)]
+        rows = '\n'.join(f'| {name} | 3 | 5 |' for name in
+                         ['Accuracy', 'Completeness', 'Structure', 'Actionability', 'Traceability'])
+        self.response = {'content': rows, 'raw_content': rows, 'words': len(rows.split()),
+                         'prompt_eval_count': 10, 'eval_count': 20, 'elapsed_seconds': 0,
+                         'telemetry': {'attempt_count': 1, 'retry_count': 0, 'attempts': [
+                             {'status': 'success', 'prompt_eval_count': 10, 'eval_count': 20}]}}
+        self.api_key = 'dummy-rejudge-api-key-for-offline-test'
+
+    def run_main(self, environment, arguments=None, side_effect=None):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with mock.patch.dict(os.environ, environment, clear=True), \
+                mock.patch.object(rejudge, 'call_ollama_chat', return_value=self.response,
+                                  side_effect=side_effect) as chat, \
+                contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            result = rejudge.main(self.args if arguments is None else arguments)
+        return result, chat, stdout.getvalue() + stderr.getvalue()
+
+    def test_environment_host_and_key_reach_both_swapped_passes_without_serialization(self):
+        host = 'https://ollama.com'
+        result, chat, printed = self.run_main(
+            {'OLLAMA_HOST': host, 'OLLAMA_API_KEY': self.api_key}, self.args + ['--swap-positions'])
+        self.assertEqual(result, 0)
+        self.assertEqual(chat.call_count, 2)
+        for call in chat.call_args_list:
+            self.assertEqual(call.kwargs['host'], host)
+            self.assertTrue(call.kwargs.get('api_key') == self.api_key, 'API key was not forwarded')
+        checkpoint = self.output.read_text()
+        state = json.loads(checkpoint)
+        self.assertEqual(len(state['pairs']['model:1']['passes']), 2)
+        self.assertEqual(state['manifest']['host_sha256'], hashlib.sha256(host.encode()).hexdigest())
+        self.assertNotIn('api_key', state['manifest'])
+        self.assertNotIn(self.api_key, checkpoint + printed)
+
+    def test_explicit_host_wins_and_rotated_key_resumes_only_missing_pass(self):
+        host = 'http://127.0.0.1:11434'
+        args = self.args + ['--host', host, '--swap-positions']
+        environment = {'OLLAMA_HOST': 'https://ollama.com', 'OLLAMA_API_KEY': self.api_key}
+        result, first, printed = self.run_main(environment, args,
+                                              [self.response, RuntimeError('interrupted')])
+        self.assertNotEqual(result, 0)
+        self.assertEqual(first.call_count, 2)
+        for call in first.call_args_list:
+            self.assertEqual(call.kwargs['host'], host)
+            self.assertTrue(call.kwargs.get('api_key') == self.api_key, 'Initial API key was not forwarded')
+        saved = json.loads(self.output.read_text())
+        self.assertEqual(len(saved['pairs']['model:1']['passes']), 1)
+        rotated_key = 'dummy-rejudge-rotated-api-key-for-offline-test'
+        result, resumed, resumed_printed = self.run_main(
+            {'OLLAMA_HOST': 'https://different.invalid', 'OLLAMA_API_KEY': rotated_key}, args)
+        self.assertEqual(result, 0)
+        self.assertEqual(resumed.call_count, 1)
+        self.assertEqual(resumed.call_args.kwargs['host'], host)
+        self.assertTrue(resumed.call_args.kwargs.get('api_key') == rotated_key,
+                        'Rotated API key was not forwarded to missing pass')
+        checkpoint = self.output.read_text()
+        state = json.loads(checkpoint)
+        self.assertEqual(state['manifest'], saved['manifest'])
+        self.assertEqual(len(state['pairs']['model:1']['passes']), 2)
+        for key in (self.api_key, rotated_key):
+            self.assertNotIn(key, checkpoint + printed + resumed_printed)
+
+    def test_host_environment_is_resolved_for_each_invocation(self):
+        for index, host in enumerate(('https://first.invalid', 'https://second.invalid')):
+            output = self.root / f'output-{index}.json'
+            args = self.args[:-2] + ['--output', str(output)]
+            result, chat, _ = self.run_main({'OLLAMA_HOST': host}, args)
+            self.assertEqual(result, 0)
+            self.assertEqual(chat.call_args.kwargs['host'], host)
+            self.assertEqual(json.loads(output.read_text())['manifest']['host_sha256'],
+                             hashlib.sha256(host.encode()).hexdigest())
+
+    def test_local_default_without_key_remains_usable(self):
+        result, chat, _ = self.run_main({})
+        self.assertEqual(result, 0)
+        self.assertEqual(chat.call_args.kwargs['host'], 'http://localhost:11434')
+        self.assertIsNone(chat.call_args.kwargs.get('api_key'))
+        self.assertEqual(len(json.loads(self.output.read_text())['pairs']['model:1']['passes']), 1)
+
+    def test_changed_environment_host_rejects_checkpoint_without_new_calls(self):
+        result, _, _ = self.run_main({'OLLAMA_HOST': 'https://first.invalid'})
+        self.assertEqual(result, 0)
+        checkpoint = self.output.read_bytes()
+        result, chat, _ = self.run_main({'OLLAMA_HOST': 'https://second.invalid'})
+        self.assertNotEqual(result, 0)
+        chat.assert_not_called()
+        self.assertEqual(self.output.read_bytes(), checkpoint)
+
+    def test_direct_cloud_dry_run_makes_no_calls_or_output(self):
+        before = {str(p.relative_to(self.root)) for p in self.root.rglob('*')}
+        for api_key in (self.api_key, None):
+            with self.subTest(authenticated=api_key is not None):
+                environment = {'OLLAMA_HOST': 'https://ollama.com'}
+                if api_key is not None:
+                    environment['OLLAMA_API_KEY'] = api_key
+                result, chat, printed = self.run_main(
+                    environment, self.args + ['--dry-run', '--swap-positions'])
+                self.assertEqual(result, 0)
+                chat.assert_not_called()
+                self.assertEqual({str(p.relative_to(self.root)) for p in self.root.rglob('*')}, before)
+                self.assertNotIn(self.api_key, printed)
+
+    def test_environment_cleartext_remote_host_is_rejected_before_output_or_request(self):
+        result, chat, printed = self.run_main(
+            {'OLLAMA_HOST': 'http://provider.invalid:11434', 'OLLAMA_API_KEY': self.api_key})
+        self.assertNotEqual(result, 0)
+        chat.assert_not_called()
+        self.assertFalse(self.output.parent.exists())
+        self.assertNotIn(self.api_key, printed)
+
+    def test_direct_cloud_local_model_alias_is_rejected_before_output_or_request(self):
+        args = self.args + ['--host', 'https://ollama.com', '--judge-model', 'fixture-judge:cloud']
+        result, chat, printed = self.run_main({'OLLAMA_API_KEY': self.api_key}, args)
+        self.assertNotEqual(result, 0)
+        chat.assert_not_called()
+        self.assertFalse(self.output.parent.exists())
+        self.assertNotIn(self.api_key, printed)
+
+
 class SavedPairsTests(unittest.TestCase):
+    def setUp(self):
+        environment = mock.patch.dict(os.environ)
+        environment.start()
+        self.addCleanup(environment.stop)
+        os.environ.pop('OLLAMA_HOST', None)
+        os.environ.pop('OLLAMA_API_KEY', None)
+
     def test_malformed_second_pass_is_retained_and_retried_on_resume(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
