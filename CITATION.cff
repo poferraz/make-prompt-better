@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: "make-prompt-better: Research-Grounded Prompt, Context, and Harness Optimization via Semi-Formal Reasoning"
-message: "If you use this methodology or skill, please cite both this repository and the underlying research papers listed in README.md."
+message: "If you use this methodology or skill, please cite both this repository and the underlying research papers listed in make-prompt-better/references/research-principles.md."
 type: software
 authors:
   - family-names: Ferraz

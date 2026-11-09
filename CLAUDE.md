@@ -8,10 +8,10 @@ This repository is a research-informed prompt, context, and harness optimization
 
 - `make-prompt-better/SKILL.md`: Core optimization workflow (under 500 lines, universal frontmatter)
 - `make-prompt-better/references/domain-templates.md`: 12 domain certificate templates
-- `make-prompt-better/references/research-principles.md`: Quick-reference for 11 papers
+- `make-prompt-better/references/research-principles.md`: Quick-reference for 11 principle groups citing 14 papers
 - `make-prompt-better/references/examples.md`: 9 before/after transformations
 - `docs/`: Essential installation, usage, testing and release guides
-- `README.md`: Project overview with full attribution and cross-tool install instructions
+- `README.md`: Project overview with research links and cross-tool install instructions
 - `install.sh`: One-command installer for all major coding agent skill directories
 
 Internal plans, audits, drafts and generated outputs belong under `.private/`. The public checkout and all required checks must work without that directory.
@@ -48,7 +48,7 @@ When incorporating a new paper:
 2. Add the paper to the Research Foundation section in `SKILL.md`
 3. Update the Prompt Structure Framework table in `SKILL.md` if the paper affects component mapping
 4. Keep full citations, arXiv links and methodological limits in the functional research reference
-5. Add to `README.md` Attribution section with full citation
+5. Update the research overview in `README.md` when its paper count or source link changes; keep full citations in the functional research reference
 6. Record relevant cost/benefit limitations beside the affected functional reference or template
 7. Verify the paper is consistently cited across all files using the format: `(Author, Year)`
 
