@@ -20,9 +20,9 @@ arXiv: 2602.09504
 
 **Finding:** The authors study purpose-conditioned bias in a financial prediction setting. The findings do not establish that every mention of a deadline, audience, or evaluation criterion should be removed.
 
-**Constraint:** Omit evaluation criteria, downstream use cases, business stakes, and success metrics from the prompt. Specify what to measure, trace, or build, never why or how the result will be judged downstream.
+**Constraint:** As a project adaptation of Cao, Jiang & Xu (2026), remove pressure toward a predetermined finding while preserving requested deliverables, evaluation criteria, and decision-relevant context. Keep budgets, timelines, audiences, use cases, and success metrics when they affect the requested analysis or output. State the task neutrally and retain those constraints in the premises.
 
-**When to cite:** Explaining why language like "this will be used to...", "the goal is to predict...", or "we are a small startup negotiating with..." was removed from the prompt.
+**When to cite:** Explaining why a presupposed verdict such as "prove this investment is good" was neutralized while the requested investment assessment and relevant business constraints were retained.
 
 ---
 

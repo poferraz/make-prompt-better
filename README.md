@@ -128,7 +128,7 @@ The workflow draws on **11 research principle groups citing 14 papers**. Its par
 
 Earlier exploratory evaluations produced mixed outcomes, including regressions. They do not establish the quality of the current skill. There is no universal quality or safety guarantee. Use a direct prompt for a simple question or a request that is already clear; verify consequential outputs against original requirements and reliable sources.
 
-[Research sources](make-prompt-better/references/research-principles.md) · [Run your own evaluation](https://github.com/poferraz/make-prompt-better/blob/main/docs/benchmark-runs.md)
+[Research sources](make-prompt-better/references/research-principles.md) · [Historical evidence and new evaluations](https://github.com/poferraz/make-prompt-better/blob/main/docs/benchmark-runs.md)
 
 ## Questions before you start
 
