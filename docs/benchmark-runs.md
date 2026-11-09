@@ -15,7 +15,7 @@ The output shows the run ID, location, number of logical generation stages, and 
 
 To resume, pass the same `--run-id`, `--results-dir`, model, tests, host, seed, skill bytes, and other protocol flags. The manifest also hashes the test suite and runner/judge code. A mismatch produces an error and requires a new run ID. A model/provider identifier can refer to mutable weights, so its actual revision remains unknown unless recorded independently. A hard termination may leave a `.model-slug.lock` directory; remove it only after verifying that no process is using that model's run.
 
-Completed baseline, optimization, execution, and judge stages are written atomically with their requests and responses. Both swapped judge passes and their assignments are retained. A malformed but successfully returned judge response is retained as evidence; there is currently no selective stage reset, so start a new run if that response cannot be parsed. Report generation is retried separately when incomplete.
+Completed baseline, optimization, execution, and judge stages are written atomically with their requests and responses. Both swapped judge passes and their assignments are retained. A malformed but successfully returned judge response is retained as evidence; resuming retries the invalid judge stage while reusing completed generation stages and preserving failed judge attempts. Report generation is retried separately when incomplete.
 
 Remote cleartext HTTP is refused unless `--allow-remote-http` is explicitly supplied. HTTPS and loopback HTTP are allowed. These checks do not validate provider privacy, model quality, redirects, or remote service security. The queue uses one run ID and returns a failure status for failed models; it does not automatically aggregate new runs or modify the historical aggregate.
 
@@ -24,3 +24,13 @@ For completed new-style runs, `python3 research/benchmark/v4/summarize_runs.py -
 The rejudge script accepts `--results-dir` for either historical model folders or one new run directory. Use `--dry-run` and, optionally, `--max-requests` to inspect and bound the estimated request count. A live rejudge requires a separate `--output` JSON file, which retains each judge prompt, response, position mapping, and manifest; repeat the same command to resume. A changed input or protocol requires a new output file. If the original task text was not saved, live rejudging refuses to substitute today's suite unless `--allow-missing-original-task` is explicitly passed; that fallback remains unverified.
 
 No live-model efficacy, cost, availability, or safety claim follows from a dry run or fixture test. No new model evaluation was performed for v4.5.0.
+
+## Historical public evidence
+
+The internal-material cleanup removed historical reports from the current source tree. Their previously published versions remain available at the immutable pre-cleanup revision:
+
+- [Historical v4.2.0 synthesis and protocol limitations](https://github.com/poferraz/make-prompt-better/blob/38e30de3713ee9f70247f16bfdfd57425692c0f3/research/benchmark/v4/SUMMARY_V4_ALL_MODELS.md).
+- [Aggregate metrics and individual model records](https://github.com/poferraz/make-prompt-better/tree/38e30de3713ee9f70247f16bfdfd57425692c0f3/research/benchmark/v4/results).
+- [Claims and evidence register](https://github.com/poferraz/make-prompt-better/blob/38e30de3713ee9f70247f16bfdfd57425692c0f3/docs/claims.md).
+
+These records include mixed evaluation protocols, self-judging and regressions. They are historical evidence, not measurements of the current skill or the current runner. Their publication in Git history does not establish that every record is suitable for reuse in a new evaluation.

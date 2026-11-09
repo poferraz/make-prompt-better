@@ -45,7 +45,7 @@ To incorporate a new paper into the methodology:
 2. Add the paper to the Research Foundation section in `make-prompt-better/SKILL.md`
 3. Update the Prompt Structure Framework table in `make-prompt-better/SKILL.md` if the paper affects component mapping
 4. Keep full citations, arXiv links and methodological limits in the functional research reference
-5. Add to `README.md` Attribution section with full citation
+5. Update the research overview in `README.md` when its paper count or source link changes; keep full citations in the functional research reference
 6. Record relevant cost/benefit limitations beside the affected functional reference or template
 7. Verify consistent citation across all files using the format: (Author, Year)
 
