@@ -23,8 +23,8 @@ class FakeOllama(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'temporary')
             return
-        frames = [{'message': {'content': 'local '}, 'done': False},
-                  {'message': {'content': 'answer'}, 'done': True, 'eval_count': 2}]
+        frames = [{'message': {'content': ' local '}, 'done': False},
+                  {'message': {'content': 'answer\n'}, 'done': True, 'eval_count': 2}]
         body = b''.join(json.dumps(frame).encode() + b'\n' for frame in frames)
         self.send_response(200)
         self.send_header('Content-Length', str(len(body)))
@@ -48,6 +48,7 @@ class HttpServiceTests(unittest.TestCase):
             server.server_close()
             thread.join(timeout=3)
         self.assertEqual(result['content'], 'local answer')
+        self.assertEqual(result['raw_content'], ' local answer\n')
         self.assertEqual(result['eval_count'], 2)
         self.assertEqual(len(FakeOllama.requests), 2)
         self.assertEqual([path for path, _ in FakeOllama.requests], ['/api/chat'] * 2)

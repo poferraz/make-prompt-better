@@ -338,6 +338,19 @@ def load_skill_bundle(skill_dir: Path | None = None) -> str:
     )
 
 
+def is_direct_ollama_cloud(host: str) -> bool:
+    return urllib.parse.urlsplit(host).hostname == "ollama.com"
+
+
+def validate_cloud_model(model: str, host: str) -> None:
+    """Direct API identifiers are not local Ollama cloud-routing aliases."""
+    if is_direct_ollama_cloud(host) and (
+            not model.strip() or model.lower().endswith((":cloud", "-cloud"))):
+        raise ValueError("Direct Ollama Cloud requires exact catalog model identifiers; "
+                         "copy the API model ID from https://ollama.com/search?c=cloud, "
+                         "not a local :cloud or -cloud alias")
+
+
 def discover_ollama_cloud_models() -> list[str]:
     try:
         out = subprocess.check_output(["ollama", "list"], text=True, stderr=subprocess.STDOUT)
@@ -365,6 +378,36 @@ def open_ollama_request(request: urllib.request.Request, timeout: int):
     return urllib.request.build_opener(NoRedirectHandler()).open(request, timeout=timeout)
 
 
+class OllamaStopError(RuntimeError):
+    """An opt-in campaign stop with sanitized telemetry."""
+    def __init__(self, reason: str, telemetry: dict):
+        super().__init__(reason)
+        self.reason = reason
+        self.telemetry = telemetry
+
+
+def usage_count(value: Any) -> int | None:
+    return value if type(value) is int and value >= 0 else None
+
+
+def extract_terminal_metadata(body: dict | None) -> dict:
+    """Keep only bounded terminal counters; provider text and reasoning are excluded."""
+    completed = isinstance(body, dict) and body.get('done') is True
+    source = body if completed else {}
+    reason = source.get('done_reason')
+    if not isinstance(reason, str):
+        reason = None
+    elif reason not in {'stop', 'length', 'load', 'unload'}:
+        reason = 'other'
+    result = {'schema': 1, 'completed_stream': completed, 'done_reason': reason}
+    for name in ('total_duration', 'load_duration', 'prompt_eval_duration', 'eval_duration',
+                 'prompt_eval_cached_count'):
+        value = source.get(name)
+        key = name if name.endswith('_count') else name + '_ns'
+        result[key] = value if type(value) is int and 0 <= value <= 2**63 - 1 else None
+    return result
+
+
 def call_ollama_chat(
     model: str,
     messages: list[dict[str, str]],
@@ -377,7 +420,13 @@ def call_ollama_chat(
     max_response_bytes: int = DEFAULT_MAX_RESPONSE_BYTES,
     max_output_tokens: int | None = None,
     api_key: str | None = None,
+    stop_status_codes: set[int] | None = None,
+    stop_on_unknown_usage: bool = False,
+    request_observer=None,
+    *,
+    retain_terminal_metadata: bool = False,
 ) -> dict[str, Any]:
+    validate_cloud_model(model, host)
     if max_response_bytes <= 0:
         raise ValueError("Response size limit must be positive")
     if max_retries <= 0:
@@ -399,22 +448,28 @@ def call_ollama_chat(
         "options": payload_options,
     }
     data = json.dumps(payload).encode("utf-8")
+    if request_observer is not None:
+        request_observer(data)  # Durable evidence must exist before any request is dispatched.
     delay = initial_delay
     started = time.monotonic()
     attempts = []
     backoff = 0.0
+    body = None
 
     def telemetry() -> dict[str, Any]:
-        return {"attempts": attempts, "attempt_count": len(attempts),
-                "retry_count": max(len(attempts) - 1, 0),
-                "backoff_seconds": backoff,
-                "total_elapsed_seconds": round(time.monotonic() - started, 4)}
+        result = {"attempts": attempts, "attempt_count": len(attempts),
+                  "retry_count": max(len(attempts) - 1, 0),
+                  "backoff_seconds": backoff,
+                  "total_elapsed_seconds": round(time.monotonic() - started, 4)}
+        if retain_terminal_metadata:
+            result['terminal'] = extract_terminal_metadata(body)
+        return result
 
     def record_failure(err: Exception) -> None:
         attempts.append({"attempt": attempt, "status": "failed", "error": type(err).__name__ if api_key else str(err),
                          "elapsed_seconds": round(time.monotonic() - t0, 4),
-                         "prompt_eval_count": body.get("prompt_eval_count") if body else None,
-                         "eval_count": body.get("eval_count") if body else None})
+                         "prompt_eval_count": usage_count(body.get("prompt_eval_count")) if body else None,
+                         "eval_count": usage_count(body.get("eval_count")) if body else None})
         err.telemetry = telemetry()
 
     for attempt in range(1, max_retries + 1):
@@ -429,6 +484,7 @@ def call_ollama_chat(
         try:
             with open_ollama_request(req, timeout=timeout) as resp:
                 parts: list[str] = []
+                raw_frames: list[dict[str, Any]] = []
                 body = None
                 received = 0
                 while True:
@@ -446,6 +502,8 @@ def call_ollama_chat(
                         raise ConnectionError("Ollama stream contained a malformed or truncated JSON frame") from err
                     if chunk.get("error"):
                         raise ConnectionError(f"Ollama stream error: {chunk['error']}")
+                    if stop_on_unknown_usage:
+                        raw_frames.append(chunk)
                     parts.append((chunk.get("message") or {}).get("content", ""))
                     if chunk.get("done") is True:
                         body = chunk
@@ -453,24 +511,57 @@ def call_ollama_chat(
                 if body is None:
                     raise ConnectionError("Ollama stream ended before the done frame")
             elapsed = round(time.monotonic() - t0, 4)
-            content = "".join(parts).strip()
+            raw_content = "".join(parts)
+            content = raw_content.strip()
             if not content:
+                if stop_on_unknown_usage:
+                    prompt_count = usage_count(body.get("prompt_eval_count"))
+                    output_count = usage_count(body.get("eval_count"))
+                    attempts.append({"attempt": attempt, "status": "failed", "error": "EmptyResponse",
+                                     "elapsed_seconds": elapsed, "prompt_eval_count": prompt_count,
+                                     "eval_count": output_count})
+                    result = {"content": content, "raw_content": raw_content, "raw_frames": raw_frames,
+                              "prompt_eval_count": prompt_count, "eval_count": output_count,
+                              "elapsed_seconds": elapsed, "telemetry": telemetry()}
+                    if retain_terminal_metadata:
+                        result['terminal'] = extract_terminal_metadata(body)
+                    thinking = ((frame.get("message") or {}).get("thinking") for frame in raw_frames)
+                    thinking_text = "".join(part for part in thinking if isinstance(part, str))
+                    if api_key and (api_key in json.dumps(result, ensure_ascii=False) or api_key in thinking_text):
+                        raise OllamaStopError("sensitive_response", telemetry())
+                    reason = "unknown_usage" if prompt_count is None or output_count is None else "empty_response"
+                    failure = OllamaStopError(reason, telemetry())
+                    failure.response = result
+                    raise failure
                 raise ConnectionError("Ollama stream completed without response content")
             words = len(content.split())
+            prompt_count = usage_count(body.get("prompt_eval_count"))
+            output_count = usage_count(body.get("eval_count"))
             attempts.append({"attempt": attempt, "status": "success",
                              "elapsed_seconds": elapsed,
-                             "prompt_eval_count": body.get("prompt_eval_count"),
-                             "eval_count": body.get("eval_count")})
-            # Polite pause to avoid bursting cloud gateways
-            time.sleep(1.5)
-            return {
+                             "prompt_eval_count": prompt_count,
+                             "eval_count": output_count})
+            result = {
                 "content": content,
+                "raw_content": raw_content,
                 "words": words,
-                "prompt_eval_count": body.get("prompt_eval_count"),
-                "eval_count": body.get("eval_count"),
+                "prompt_eval_count": prompt_count,
+                "eval_count": output_count,
                 "elapsed_seconds": elapsed,
                 "telemetry": telemetry(),
             }
+            if retain_terminal_metadata:
+                result['terminal'] = extract_terminal_metadata(body)
+            if stop_on_unknown_usage and (prompt_count is None or output_count is None):
+                if api_key and api_key in json.dumps(result, ensure_ascii=False):
+                    raise OllamaStopError("sensitive_response", telemetry())
+                failure = OllamaStopError("unknown_usage", telemetry())
+                failure.response = result
+                raise failure
+            # Polite pause to avoid bursting cloud gateways
+            time.sleep(1.5)
+            result['telemetry'] = telemetry()
+            return result
         except urllib.error.HTTPError as err:
             record_failure(err)
             err_body = ""
@@ -481,6 +572,10 @@ def call_ollama_chat(
             finally:
                 err.close()
 
+            if stop_status_codes and err.code in stop_status_codes:
+                raise OllamaStopError(f"http_{err.code}", telemetry()) from None
+            if stop_on_unknown_usage:
+                raise OllamaStopError("unknown_usage", telemetry()) from None
             # Retry transient server/gateway errors: 502, 503, 504, 500, 429, 520..527
             retryable = err.code in (502, 503, 504, 500, 429) or (520 <= err.code <= 527)
             if retryable and attempt < max_retries:
@@ -497,8 +592,12 @@ def call_ollama_chat(
             if api_key:
                 raise failure from None
             raise failure from err
+        except OllamaStopError:
+            raise
         except (urllib.error.URLError, TimeoutError, ConnectionResetError, OSError, http.client.IncompleteRead) as err:
             record_failure(err)
+            if stop_on_unknown_usage:
+                raise OllamaStopError("unknown_usage", telemetry()) from None
             if attempt < max_retries:
                 print(
                     f"      [WARN] Network error ({type(err).__name__ if api_key else err}) for {model}. "
@@ -515,6 +614,9 @@ def call_ollama_chat(
             raise
         except Exception as err:
             record_failure(err)
+            if stop_on_unknown_usage and (not body or usage_count(body.get("prompt_eval_count")) is None or
+                                          usage_count(body.get("eval_count")) is None):
+                raise OllamaStopError("unknown_usage", telemetry()) from None
             if api_key:
                 failure = RuntimeError(f"Ollama request failed: {type(err).__name__}")
                 failure.telemetry = telemetry()
@@ -1104,7 +1206,7 @@ def main() -> int:
         "--models",
         type=str,
         default="",
-        help="Comma-separated list of Ollama models (e.g. 'glm-5.3-flash:cloud,deepseek-v4.1-flash:cloud').",
+        help="Comma-separated model IDs. Required for direct ollama.com; use exact catalog API IDs there, not local :cloud aliases.",
     )
     parser.add_argument(
         "--tier",
@@ -1183,7 +1285,7 @@ def main() -> int:
     parser.add_argument(
         "--list-models",
         action="store_true",
-        help="List discovered Ollama Cloud models and exit.",
+        help="List local cloud aliases, or show the direct Ollama Cloud catalog URL, and exit.",
     )
     args = parser.parse_args()
 
@@ -1192,6 +1294,25 @@ def main() -> int:
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
+
+    if args.list_models and is_direct_ollama_cloud(args.host):
+        print("Choose exact API model identifiers from https://ollama.com/search?c=cloud "
+              "and pass --models explicitly. Local discovery and presets do not apply.")
+        return 0
+
+    if is_direct_ollama_cloud(args.host):
+        if not args.models.strip():
+            print("Error: direct Ollama Cloud requires explicit --models from the catalog; "
+                  "local discovery and tier presets do not apply", file=sys.stderr)
+            return 1
+        try:
+            for model in args.models.split(","):
+                validate_cloud_model(model.strip(), args.host)
+            if args.judge_model is not None:
+                validate_cloud_model(args.judge_model, args.host)
+        except ValueError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
 
     if args.list_models:
         discovered = discover_ollama_cloud_models()

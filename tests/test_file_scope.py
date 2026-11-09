@@ -39,6 +39,15 @@ class FileScopeTests(unittest.TestCase):
             self.assertEqual(tracked.splitlines(), ['.gitignore'])
             self.assertIn('.private', self.scope.codeql_config(root)['paths-ignore'])
 
+    def test_downstream_tools_are_reviewed_but_not_packaged(self):
+        for name in ('downstream_protocol.py', 'downstream_reanalysis.py', 'downstream_design.py'):
+            path = 'research/benchmark/v4/' + name
+            with self.subTest(path=path):
+                self.assertTrue(self.scope.included(path, 'review'))
+                self.assertFalse(self.scope.included(path, 'runtime'))
+        self.assertTrue(self.scope.included('tests/fixtures/downstream_protocol/example.json', 'review'))
+        self.assertFalse(self.scope.included('tests/fixtures/downstream_protocol/example.json', 'runtime'))
+
     def test_runtime_retains_functional_prompts_only(self):
         for path in ['bin/cli.mjs', 'install.sh', 'make-prompt-better/SKILL.md',
                      'make-prompt-better/references/domain-templates.md']:
@@ -54,6 +63,8 @@ class FileScopeTests(unittest.TestCase):
                      'research/benchmark/v4/run_ollama_benchmarks.py',
                      'research/benchmark/v4/EVALUATION_PROMPT_V4.md',
                      'research/benchmark/v4/checkpoint-migration-hashes.json',
+                     'research/benchmark/v4/downstream_cases.json',
+                     'docs/downstream-evaluation.md',
                      'make-prompt-better/references/examples.md']:
             self.assertTrue(self.scope.included(path, 'review'), path)
         for path in ['docs/clief/audits/security.md', '.private/notes/plan.md',
