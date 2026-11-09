@@ -1,7 +1,9 @@
 """Historical reanalysis must remain read-only, explicit and offline."""
 import hashlib
 import json
+import shutil
 import socket
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -89,6 +91,78 @@ class ReanalysisTests(unittest.TestCase):
         with mock.patch.object(socket, 'create_connection', side_effect=AssertionError('network')):
             result = analysis.reanalyze(self.campaign, self.output)
         self.assertEqual(result['derived_completed_pairs'], 1)
+
+    @unittest.skipUnless(sys.platform == 'darwin', 'Darwin system path aliases')
+    def test_macos_system_temp_aliases_allow_reanalysis(self):
+        for directory in ('/var/tmp', '/tmp'):
+            with self.subTest(directory=directory), tempfile.TemporaryDirectory(dir=directory) as temporary:
+                private = Path(temporary) / '.private'
+                campaign = private / 'input' / 'campaign'
+                shutil.copytree(self.campaign, campaign)
+                before = {str(p.relative_to(campaign)): p.read_bytes()
+                          for p in campaign.rglob('*') if p.is_file()}
+                output = private / 'derived'
+                try:
+                    result = analysis.reanalyze(campaign, output)
+                except ValueError as exc:
+                    self.fail(f'Standard macOS temporary path was rejected: {exc}')
+                self.assertEqual(result['derived_completed_pairs'], 1)
+                self.assertTrue((output / 'summary.json').is_file())
+                self.assertEqual(before, {str(p.relative_to(campaign)): p.read_bytes()
+                                          for p in campaign.rglob('*') if p.is_file()})
+
+    @unittest.skipUnless(sys.platform == 'darwin', 'Darwin system path aliases')
+    def test_macos_aliases_preserve_relative_and_parent_path_semantics(self):
+        for directory in ('/var/tmp', '/tmp'):
+            with self.subTest(directory=directory), tempfile.TemporaryDirectory(dir=directory) as temporary:
+                base = Path(temporary)
+                with mock.patch.object(Path, 'cwd', return_value=base):
+                    try:
+                        actual = analysis._safe_path(Path('new-output'))
+                    except ValueError as exc:
+                        self.fail(f'Relative path under a macOS alias was rejected: {exc}')
+                self.assertEqual(actual, base.resolve() / 'new-output')
+        for alias in ('/var', '/tmp'):
+            with self.subTest(alias=alias):
+                try:
+                    actual = analysis._safe_path(Path(alias) / '..' / 'mpb-path-probe')
+                except ValueError as exc:
+                    self.fail(f'MacOS alias parent traversal was rejected: {exc}')
+                self.assertEqual(actual, Path('/private/mpb-path-probe'))
+
+    def test_user_symlinks_remain_rejected_before_parent_normalization(self):
+        private = self.private.resolve()
+        link = private / 'redirect'
+        link.symlink_to(private / 'input', target_is_directory=True)
+        dangling = private / 'dangling'
+        dangling.symlink_to(private / 'missing')
+        for path in (link, link / 'campaign', link / '..' / 'derived', dangling):
+            with self.subTest(path=path), self.assertRaisesRegex(ValueError, 'Symlinked'):
+                analysis._safe_path(path)
+
+    @unittest.skipUnless(sys.platform == 'darwin', 'Darwin system path aliases')
+    def test_macos_aliases_do_not_hide_child_links_or_evidence_overlap(self):
+        with tempfile.TemporaryDirectory(dir='/tmp') as temporary:
+            private = Path(temporary) / '.private'
+            campaign = private / 'input' / 'campaign'
+            shutil.copytree(self.campaign, campaign)
+            link = private / 'redirect'
+            link.symlink_to(private / 'input', target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, 'Symlinked'):
+                analysis._safe_path(link / '..' / 'derived')
+            for output in (campaign / 'derived', campaign.resolve() / 'derived'):
+                with self.subTest(output=output), self.assertRaises(ValueError):
+                    analysis.reanalyze(campaign, output)
+                self.assertFalse(output.exists())
+
+    @unittest.skipUnless(sys.platform == 'darwin', 'Darwin system path aliases')
+    def test_macos_alias_exception_rejects_changed_targets_and_other_platforms(self):
+        with mock.patch.object(Path, 'readlink', return_value=Path('/private/unexpected')):
+            with self.assertRaisesRegex(ValueError, 'Symlinked'):
+                analysis._safe_path(Path('/var/tmp'))
+        with mock.patch('sys.platform', 'linux'):
+            with self.assertRaisesRegex(ValueError, 'Symlinked'):
+                analysis._safe_path(Path('/var/tmp'))
 
     def test_refuses_overwrite_symlinks_and_input_overlap(self):
         self.output.mkdir()

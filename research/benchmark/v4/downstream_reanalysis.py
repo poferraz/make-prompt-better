@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import sys
 import tempfile
 
 try:
@@ -29,10 +30,18 @@ def _sha(data: bytes) -> str:
 
 def _safe_path(path: Path) -> Path:
     lexical = path if path.is_absolute() else Path.cwd() / path
+    if sys.platform == 'darwin':
+        for name in ('var', 'tmp'):
+            alias, target = Path('/') / name, Path('/private') / name
+            if lexical.is_relative_to(alias) and alias.is_symlink():
+                if alias.readlink() in (target, Path('private') / name):
+                    # Preserve '..' until caller-controlled symlinks have been checked.
+                    lexical = target / lexical.relative_to(alias)
+                break
     for component in (lexical, *lexical.parents):
         if component.is_symlink():
             raise ValueError('Symlinked paths are not accepted')
-    absolute = Path(os.path.abspath(path))
+    absolute = Path(os.path.abspath(lexical))
     for component in (absolute, *absolute.parents):
         if component.is_symlink():
             raise ValueError('Symlinked paths are not accepted')
