@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 import unittest
@@ -42,6 +43,7 @@ try:
         migration_code_is_approved,
         call_ollama_chat,
         parse_scores,
+        validate_cloud_model,
         validate_host,
     )
 except ImportError:
@@ -62,6 +64,7 @@ except ImportError:
         migration_code_is_approved,
         call_ollama_chat,
         parse_scores,
+        validate_cloud_model,
         validate_host,
     )
 
@@ -169,7 +172,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--models", type=str, default="", help="Comma-separated model names or slugs (default: all with metrics.json).")
     parser.add_argument("--tests", type=str, default="", help="Comma-separated test IDs (default: all saved).")
     parser.add_argument("--judge-model", type=str, default="glm-5.3:cloud", help="Independent judge model for re-scoring.")
-    parser.add_argument("--host", type=str, default="http://localhost:11434", help="Ollama API host.")
+    parser.add_argument("--host", type=str,
+                        default=os.environ.get("OLLAMA_HOST", "http://localhost:11434"),
+                        help="Ollama API host (defaults to OLLAMA_HOST, then localhost).")
     parser.add_argument("--strip-cert-markers", action="store_true", help="Strip [P1]/[T1] markers before judging.")
     parser.add_argument("--labeled", action="store_true", help="Use labeled (Baseline vs. Optimized) headers instead of anonymous Candidate A/B.")
     parser.add_argument("--swap-positions", action="store_true", help="Run 2-pass swapped order (A,B and B,A) in anonymous mode.")
@@ -181,6 +186,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--allow-missing-original-task", action="store_true", help="Use the current suite as an explicitly unverified fallback when saved task text is missing.")
     parser.add_argument("--max-requests", type=int, help="Reject a run whose worst-case request count exceeds this limit.")
     args = parser.parse_args(argv)
+    api_key = os.environ.get("OLLAMA_API_KEY")
 
     if args.self_test:
         suite = unittest.defaultTestLoader.loadTestsFromTestCase(RejudgeSavedOutputsTests)
@@ -189,6 +195,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         validate_host(args.host, args.allow_remote_http)
+        validate_cloud_model(args.judge_model, args.host)
     except ValueError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
@@ -300,7 +307,8 @@ def main(argv: list[str] | None = None) -> int:
                         atomic_write(output, json.dumps(state, indent=2))
                     else:
                         return result["response"]
-                result = call_ollama_chat(model=args.judge_model, messages=[{"role": "user", "content": prompt}], host=args.host, seed=args.seed)
+                result = call_ollama_chat(model=args.judge_model, messages=[{"role": "user", "content": prompt}],
+                                          host=args.host, seed=args.seed, api_key=api_key)
                 saved["passes"].append({"prompt": prompt, "mapping": mapping, "response": result})
                 atomic_write(output, json.dumps(state, indent=2))
                 try:
