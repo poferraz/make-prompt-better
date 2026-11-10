@@ -1,14 +1,14 @@
-![make-prompt-better: Keep the intent. Sharpen the ask. A reusable skill for clearer prompts.](https://raw.githubusercontent.com/poferraz/make-prompt-better/main/assets/prompt-cover.png)
+[![make-prompt-better: Keep the intent. Sharpen the ask. Interactive prompt study following "check my repo for everything" through a rewrite, sample audit report, rewind, and baseline.](https://raw.githubusercontent.com/poferraz/make-prompt-better/main/assets/prompt-study.svg)](https://make-prompt-better.vercel.app/)
 
 # make-prompt-better
 
-**Turn a rough request into clear instructions, with your important details intact.**
+**Keep the intent. _Sharpen the ask._**
 
-A skill is a reusable set of instructions for your AI assistant. This one helps it rewrite prompts for writing, research, code, and everyday work. You bring the request; the skill asks your assistant to preserve your requirements and make the result easier to review.
+Turn a rough request into clear instructions, with your important details intact. A skill is a reusable set of instructions for your AI assistant. This one helps it rewrite prompts for code, research, writing, and everyday work. You bring the request; the skill asks your assistant to preserve your requirements and make the result easier to review.
 
-**[Try it without installing](#try-it-without-installing)** · **[Install in your agent](#install-in-your-agent)** · **[Read the evidence](#what-the-evidence-says)**
+**[Open the interactive prompt study ↗](https://make-prompt-better.vercel.app/)** · **[Try it without installing](#try-it-without-installing)** · **[Install in your agent](#install-in-your-agent)** · **[Read the evidence](#what-the-evidence-says)**
 
-[MIT licensed](LICENSE) · [Source code](make-prompt-better/SKILL.md) · [CI on main](https://github.com/poferraz/make-prompt-better/actions/workflows/validate-skill.yml)
+[Live website](https://make-prompt-better.vercel.app/) · [MIT licensed](LICENSE) · [Source code](make-prompt-better/SKILL.md) · [CI on main](https://github.com/poferraz/make-prompt-better/actions/workflows/validate-skill.yml)
 
 ## Install in your agent
 
@@ -69,6 +69,19 @@ Choose your agent and add `--project` for project scope. This route needs neithe
 
 ## See what changes
 
+The [interactive prompt study](https://make-prompt-better.vercel.app/) (`PROMPT STUDIES / 001`) follows one rough request through an in-place rewrite, a sample audit report, a rewind, and an unchanged baseline:
+
+| Stage | Text |
+| --- | --- |
+| **01 · Original request** | `check my repo for everything` |
+| **02 · Rewritten prompt** | `Audit this repository for bugs, security risks, performance issues, and test gaps. Rank findings by severity. Cite files and lines, explain the impact, and suggest fixes. Don’t modify files.` |
+| **03 · With the skill** (`Sample audit report`) | **HIGH · Empty carts crash checkout** (`src/checkout.ts:42`) · Fix: handle an empty cart before calculating totals.<br>**MEDIUM · Payment retries lack tests** (`tests/payments.test.ts:81`) · Fix: add failure and recovery cases. |
+| **05 · Without the skill** (sent unchanged) | `I found an empty-cart bug and missing payment retry tests.` |
+
+The repository and findings in the study are fictional, and the walkthrough is an illustrative demo rather than a captured model run. For a full code-review certificate walkthrough, see a [complete request, rewrite, and requirement check](https://github.com/poferraz/make-prompt-better/blob/main/docs/demo.md).
+
+### Everyday writing example
+
 **Your request**
 
 > Write a friendly customer email about a one-day shipping delay. Orders will arrive Friday instead of Thursday. Apologize, stay under 100 words, and don't offer a discount.
@@ -79,11 +92,9 @@ Choose your agent and add `--project` for project scope. This route needs neithe
 
 The dates, apology, tone, length, and discount restriction all stay visible. You review the rewrite before using it. This is an editorial example; it is not a recorded model evaluation.
 
-For code, see a [complete request, rewrite, and requirement check](https://github.com/poferraz/make-prompt-better/blob/main/docs/demo.md).
-
 ## Try it without installing
 
-Paste this starter into your usual AI chat, followed by the request you want to improve:
+Paste this starter (the same **"Copy the starter"** prompt on [make-prompt-better.vercel.app](https://make-prompt-better.vercel.app/)) into your usual AI chat, followed by the request you want to improve:
 
 ```text
 Rewrite the request below into a clear prompt. Keep every fact, deliverable,

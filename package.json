@@ -36,6 +36,7 @@
     "type": "git",
     "url": "git+https://github.com/poferraz/make-prompt-better.git"
   },
+  "homepage": "https://make-prompt-better.vercel.app/",
   "keywords": [
     "prompt-engineering",
     "prompt-compiler",

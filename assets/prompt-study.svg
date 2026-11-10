@@ -1,0 +1,660 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%" role="img" aria-labelledby="studyTitle studyDesc">
+  <title id="studyTitle">make-prompt-better · Keep the intent. Sharpen the ask.</title>
+  <desc id="studyDesc">Interactive prompt study animation from make-prompt-better.vercel.app: follows the rough request "check my repo for everything" through an in-place rewrite, a structured sample audit report citing files and lines, a rewind, and the unstructured baseline response.</desc>
+
+  <defs>
+    <!-- Paper & stage gradients from style.css -->
+    <radialGradient id="stageGlow" cx="54%" cy="44%" r="62%">
+      <stop offset="0%" stop-color="#eaede1" />
+      <stop offset="100%" stop-color="#f6f5ed" />
+    </radialGradient>
+
+    <linearGradient id="backingGrad" x1="0%" y1="0%" x2="100%" y2="45%">
+      <stop offset="0%" stop-color="#8a9d80" />
+      <stop offset="43%" stop-color="#47664b" />
+      <stop offset="100%" stop-color="#31533e" />
+    </linearGradient>
+
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="12%" stop-color="#fffef7" />
+      <stop offset="78%" stop-color="#f5f5e8" />
+      <stop offset="100%" stop-color="#e6e9d8" />
+    </linearGradient>
+
+    <radialGradient id="leafLight" cx="42%" cy="38%" r="55%">
+      <stop offset="0%" stop-color="#fffef8" stop-opacity="0.95" />
+      <stop offset="60%" stop-color="#fffef8" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="pleatLight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#637c62" />
+      <stop offset="45%" stop-color="#b5c3a4" />
+      <stop offset="60%" stop-color="#d0d9bc" />
+      <stop offset="66%" stop-color="#789074" />
+      <stop offset="100%" stop-color="#536c51" />
+    </linearGradient>
+
+    <linearGradient id="cornerFold" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9dad91" />
+      <stop offset="48%" stop-color="#e1e7cf" />
+      <stop offset="50%" stop-color="#738a70" />
+      <stop offset="54%" stop-color="#f7f6ed" />
+    </linearGradient>
+
+    <!-- Dot-matrix field grid -->
+    <pattern id="fieldGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+      <circle cx="9" cy="9" r="0.9" fill="#8c9782" opacity="0.55" />
+    </pattern>
+
+    <!-- Bookbinding press grid -->
+    <pattern id="pressGrid" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M 16 0 L 0 0 0 16" fill="none" stroke="#ced5a5" stroke-width="1" stroke-opacity="0.16" />
+    </pattern>
+
+    <!-- Subtle paper fiber lines -->
+    <pattern id="paperGrain" width="16" height="4" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="16" y2="0" stroke="#65715d" stroke-width="1" stroke-opacity="0.035" />
+    </pattern>
+
+    <filter id="backingShadow" x="-8%" y="-8%" width="120%" height="125%">
+      <feDropShadow dx="4" dy="14" stdDeviation="9" flood-color="#243421" flood-opacity="0.26" />
+    </filter>
+
+    <filter id="leafShadow" x="-6%" y="-6%" width="116%" height="122%">
+      <feDropShadow dx="2" dy="12" stdDeviation="10" flood-color="#273921" flood-opacity="0.22" />
+    </filter>
+
+    <style>
+      .sans {
+        font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      }
+      .mono {
+        font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      }
+      .serif-italic {
+        font-family: Georgia, "Times New Roman", Times, serif;
+        font-style: italic;
+      }
+
+      /* 25-second master story loop matching scene.js chapters:
+         0% - 20%  (0s - 5s)   : 01 Source
+         20% - 31% (5s - 7.75s): 02 Rewrite (in-place expansion)
+         31% - 44% (7.75s - 11s): 02 Rewrite (settled clauses and dispatch)
+         44% - 68% (11s - 17s) : 03 Response (Sample audit report)
+         68% - 76% (17s - 19s) : 04 Rewind (restore original request)
+         76% - 100%(19s - 25s) : 05 Baseline (unstructured answer) */
+
+      .instrument-stage {
+        transform-origin: 600px 330px;
+        animation: stageBreathe 25s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
+
+      .concertina-spine {
+        transform-origin: 1030px 330px;
+        animation: spineFlex 25s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
+
+      .scene-1-source {
+        animation: visSource 25s linear infinite;
+      }
+      .scene-2a-mutating {
+        animation: visMutating 25s linear infinite;
+      }
+      .scene-2b-rewritten {
+        animation: visRewritten 25s linear infinite;
+      }
+      .scene-3-response {
+        animation: visResponse 25s linear infinite;
+      }
+      .scene-4-rewind {
+        animation: visRewind 25s linear infinite;
+      }
+      .scene-5-baseline {
+        animation: visBaseline 25s linear infinite;
+      }
+
+      .scope-sweep {
+        transform-origin: 348px 0px;
+        animation: sweepHighlight 25s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+      }
+
+      .finding-card-2 {
+        animation: card2Arrive 25s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+      }
+
+      .send-bar {
+        transform-origin: 140px 495px;
+        animation: sendPulse 25s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
+
+      .caret-blink {
+        animation: blink 1s step-end infinite;
+      }
+
+      .playhead-fill {
+        transform-origin: 166px 21px;
+        animation: scrubFill 25s linear infinite;
+      }
+
+      .playhead-Dot {
+        animation: scrubDot 25s linear infinite;
+      }
+
+      .ch-1 { animation: activeCh1 25s linear infinite; }
+      .ch-2 { animation: activeCh2 25s linear infinite; }
+      .ch-3 { animation: activeCh3 25s linear infinite; }
+      .ch-4 { animation: activeCh4 25s linear infinite; }
+      .ch-5 { animation: activeCh5 25s linear infinite; }
+
+      .ch-bar-1 { animation: barCh1 25s linear infinite; }
+      .ch-bar-2 { animation: barCh2 25s linear infinite; }
+      .ch-bar-3 { animation: barCh3 25s linear infinite; }
+      .ch-bar-4 { animation: barCh4 25s linear infinite; }
+      .ch-bar-5 { animation: barCh5 25s linear infinite; }
+
+      @keyframes stageBreathe {
+        0%, 100% { transform: translate(6px, 0px) rotate(-0.35deg) scale(1); }
+        18%, 22% { transform: translate(0px, -2px) rotate(0deg) scale(1.008); }
+        32%, 67% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+        72%      { transform: translate(-4px, 1px) rotate(-0.25deg) scale(0.996); }
+        78%, 95% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+      }
+
+      @keyframes spineFlex {
+        0%, 100% { transform: skewY(8deg) scaleX(0.92); }
+        25%, 66% { transform: skewY(4.5deg) scaleX(1.04); }
+        74%      { transform: skewY(7.5deg) scaleX(0.94); }
+      }
+
+      @keyframes sweepHighlight {
+        0%, 2%   { transform: scaleX(0); opacity: 0.2; }
+        10%, 20% { transform: scaleX(1); opacity: 1; }
+        21%, 100%{ transform: scaleX(1); opacity: 1; }
+      }
+
+      @keyframes visSource {
+        0%, 19.2%  { opacity: 1; }
+        20%, 100%  { opacity: 0; }
+      }
+
+      @keyframes visMutating {
+        0%, 19.2%  { opacity: 0; }
+        20%, 29.2% { opacity: 1; }
+        30%, 100%  { opacity: 0; }
+      }
+
+      @keyframes visRewritten {
+        0%, 29.2%  { opacity: 0; }
+        30%, 43.2% { opacity: 1; }
+        44%, 100%  { opacity: 0; }
+      }
+
+      @keyframes visResponse {
+        0%, 43.2%  { opacity: 0; }
+        44%, 67.2% { opacity: 1; }
+        68%, 100%  { opacity: 0; }
+      }
+
+      @keyframes card2Arrive {
+        0%, 46.5%  { opacity: 0; transform: translateY(8px); }
+        49.5%, 67.2%{ opacity: 1; transform: translateY(0px); }
+        68%, 100%  { opacity: 0; transform: translateY(0px); }
+      }
+
+      @keyframes visRewind {
+        0%, 67.2%  { opacity: 0; }
+        68%, 75.2% { opacity: 1; }
+        76%, 100%  { opacity: 0; }
+      }
+
+      @keyframes visBaseline {
+        0%, 75.2%  { opacity: 0; }
+        76%, 99.2% { opacity: 1; }
+        100%       { opacity: 0; }
+      }
+
+      @keyframes sendPulse {
+        0%, 40%    { transform: scaleX(0); opacity: 0; }
+        42.5%      { transform: scaleX(1); opacity: 1; }
+        44.5%, 73% { transform: scaleX(0); opacity: 0; }
+        75.5%      { transform: scaleX(1); opacity: 1; }
+        77.5%, 100%{ transform: scaleX(0); opacity: 0; }
+      }
+
+      @keyframes blink {
+        0%, 49% { opacity: 1; }
+        50%, 100% { opacity: 0; }
+      }
+
+      @keyframes scrubFill {
+        0%   { transform: scaleX(0); }
+        100% { transform: scaleX(1); }
+      }
+
+      @keyframes scrubDot {
+        0%   { transform: translateX(0px); }
+        100% { transform: translateX(804px); }
+      }
+
+      @keyframes activeCh1 {
+        0%, 19.5% { fill: #f1f6dc; font-weight: 700; }
+        20%, 100% { fill: #becfb9; font-weight: 500; }
+      }
+      @keyframes activeCh2 {
+        0%, 19.5% { fill: #becfb9; font-weight: 500; }
+        20%, 43.5%{ fill: #f1f6dc; font-weight: 700; }
+        44%, 100% { fill: #becfb9; font-weight: 500; }
+      }
+      @keyframes activeCh3 {
+        0%, 43.5% { fill: #becfb9; font-weight: 500; }
+        44%, 67.5%{ fill: #f1f6dc; font-weight: 700; }
+        68%, 100% { fill: #becfb9; font-weight: 500; }
+      }
+      @keyframes activeCh4 {
+        0%, 67.5% { fill: #becfb9; font-weight: 500; }
+        68%, 75.5%{ fill: #f1f6dc; font-weight: 700; }
+        76%, 100% { fill: #becfb9; font-weight: 500; }
+      }
+      @keyframes activeCh5 {
+        0%, 75.5% { fill: #becfb9; font-weight: 500; }
+        76%, 100% { fill: #f1f6dc; font-weight: 700; }
+      }
+
+      @keyframes barCh1 {
+        0%, 19.5% { opacity: 1; }
+        20%, 100% { opacity: 0; }
+      }
+      @keyframes barCh2 {
+        0%, 19.5% { opacity: 0; }
+        20%, 43.5%{ opacity: 1; }
+        44%, 100% { opacity: 0; }
+      }
+      @keyframes barCh3 {
+        0%, 43.5% { opacity: 0; }
+        44%, 67.5%{ opacity: 1; }
+        68%, 100% { opacity: 0; }
+      }
+      @keyframes barCh4 {
+        0%, 67.5% { opacity: 0; }
+        68%, 75.5%{ opacity: 1; }
+        76%, 100% { opacity: 0; }
+      }
+      @keyframes barCh5 {
+        0%, 75.5% { opacity: 0; }
+        76%, 100% { opacity: 1; }
+      }
+
+      /* Accessibility fallback: show Chapter 03 (Sample audit report with docked prompt requirements) */
+      @media (prefers-reduced-motion: reduce) {
+        .instrument-stage, .concertina-spine, .scope-sweep, .finding-card-2,
+        .send-bar, .caret-blink, .playhead-fill, .playhead-Dot,
+        .ch-1, .ch-2, .ch-3, .ch-4, .ch-5,
+        .ch-bar-1, .ch-bar-2, .ch-bar-3, .ch-bar-4, .ch-bar-5 {
+          animation: none !important;
+        }
+        .scene-1-source, .scene-2a-mutating, .scene-2b-rewritten, .scene-4-rewind, .scene-5-baseline {
+          opacity: 0 !important;
+        }
+        .scene-3-response, .finding-card-2, .ch-bar-3 {
+          opacity: 1 !important;
+        }
+        .ch-bar-1, .ch-bar-2, .ch-bar-4, .ch-bar-5 {
+          opacity: 0 !important;
+        }
+        .playhead-fill {
+          transform: scaleX(0.56) !important;
+        }
+        .playhead-Dot {
+          transform: translateX(450px) !important;
+        }
+      }
+    </style>
+  </defs>
+
+  <!-- 1. PAPER CANVAS -->
+  <rect width="1200" height="675" rx="8" fill="url(#stageGlow)" />
+  <rect x="0.5" y="0.5" width="1199" height="674" rx="7.5" fill="none" stroke="#c6c9ba" stroke-width="1" />
+
+  <!-- 2. EDGE-PINNED MASTHEAD (matches index.html & style.css) -->
+  <g id="masthead">
+    <line x1="48" y1="62" x2="1152" y2="62" stroke="#c6c9ba" stroke-width="1" />
+
+    <!-- Brand mark (#fold) + wordmark -->
+    <g transform="translate(48, 17)">
+      <svg width="26" height="26" viewBox="0 0 36 36">
+        <path fill="#174c37" d="M1 6h17l-9 11H1zm0 14h8l9 10H1zm11-2L22 6h12L17 27z" />
+        <path fill="#174c37" opacity="0.55" d="m19 29 15-19v20H20z" />
+      </svg>
+      <text x="34" y="19" class="sans" font-size="18" font-weight="800" letter-spacing="-0.8" fill="#203e2c">make-prompt-better</text>
+      <line x1="220" y1="5" x2="220" y2="23" stroke="#c6c9ba" stroke-width="1" />
+      <text x="234" y="19" class="sans" font-size="15.5" font-weight="600" letter-spacing="-0.3" fill="#384437">Keep the intent. <tspan class="serif-italic" font-size="17" font-weight="400" fill="#174c37">Sharpen the ask.</tspan></text>
+    </g>
+
+    <!-- Masthead right controls -->
+    <g transform="translate(658, 13)">
+      <!-- Read the example button -->
+      <rect x="0" y="2" width="148" height="34" rx="4" fill="#f8f8f0" stroke="#a9b49f" stroke-width="1" />
+      <text x="14" y="24" class="sans" font-size="12.5" font-weight="600" fill="#2b4232">Read the example →</text>
+
+      <!-- Copy the starter primary pine button -->
+      <rect x="158" y="0" width="154" height="38" rx="4" fill="#174c37" stroke="#174c37" stroke-width="1" />
+      <text x="174" y="24" class="sans" font-size="13" font-weight="700" fill="#ffffff">Copy the starter</text>
+      <g transform="translate(285, 11)" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 2h8v10M2 5h7v9H2z" />
+      </g>
+
+      <!-- Live Vercel study badge -->
+      <line x1="326" y1="4" x2="326" y2="34" stroke="#c6c9ba" stroke-width="1" />
+      <text x="338" y="24" class="mono" font-size="11.5" font-weight="600" fill="#4c5a4b">vercel.app · live study ↗</text>
+    </g>
+  </g>
+
+  <!-- 3. SPECIMEN FIELD GRID & INSTRUMENT STAGE -->
+  <rect x="64" y="76" width="1072" height="492" fill="url(#fieldGrid)" />
+
+  <g class="instrument-stage">
+    <!-- Bookbinding press backing (rotated 1.35deg) -->
+    <g transform="translate(600, 322) rotate(1.35) translate(-600, -322)">
+      <rect x="116" y="102" width="944" height="452" rx="5" fill="url(#backingGrad)" stroke="#274a36" stroke-width="1.2" filter="url(#backingShadow)" />
+      <rect x="122" y="108" width="932" height="440" rx="3" fill="url(#pressGrid)" stroke="#37573f" stroke-width="5" />
+    </g>
+
+    <!-- Concertina accordion spine on right edge -->
+    <g class="concertina-spine">
+      <g transform="translate(1032, 106)">
+        <rect x="0"  y="0" width="6" height="432" fill="url(#pleatLight)" stroke="#456445" stroke-width="0.5" />
+        <rect x="6"  y="1" width="6" height="432" fill="url(#pleatLight)" stroke="#456445" stroke-width="0.5" />
+        <rect x="12" y="2" width="6" height="432" fill="url(#pleatLight)" stroke="#456445" stroke-width="0.5" />
+        <rect x="18" y="3" width="6" height="432" fill="url(#pleatLight)" stroke="#456445" stroke-width="0.5" />
+        <rect x="24" y="4" width="6" height="432" fill="url(#pleatLight)" stroke="#456445" stroke-width="0.5" />
+        <rect x="30" y="5" width="6" height="432" fill="url(#pleatLight)" stroke="#456445" stroke-width="0.5" />
+        <rect x="36" y="6" width="6" height="432" fill="url(#pleatLight)" stroke="#456445" stroke-width="0.5" />
+        <rect x="42" y="7" width="6" height="432" fill="url(#pleatLight)" stroke="#456445" stroke-width="0.5" />
+      </g>
+    </g>
+
+    <!-- Multi-layered paper deckle stack beneath main leaf -->
+    <rect x="104" y="102" width="934" height="442" rx="4" fill="#d4d7c6" stroke="#a7ad99" stroke-width="1" />
+    <rect x="102" y="99"  width="934" height="442" rx="4" fill="#d6d9c6" stroke="#a3aa95" stroke-width="1" />
+
+    <!-- Main Paper Leaf -->
+    <rect x="100" y="96" width="934" height="442" rx="4" fill="url(#leafGrad)" stroke="#c2c8b6" stroke-width="1.2" filter="url(#leafShadow)" />
+    <rect x="100" y="96" width="934" height="442" rx="4" fill="url(#leafLight)" />
+    <rect x="100" y="96" width="934" height="442" rx="4" fill="url(#paperGrain)" />
+
+    <!-- Subtle top-right corner fold accent -->
+    <polygon points="996,96 1034,96 1034,134" fill="url(#cornerFold)" opacity="0.85" />
+
+    <!-- Static Leaf Header Frame -->
+    <line x1="140" y1="146" x2="994" y2="146" stroke="#cbd2bf" stroke-width="1" />
+    <!-- Lines icon -->
+    <g transform="translate(140, 118)" stroke="#174c37" stroke-width="1.8" stroke-linecap="round">
+      <line x1="0" y1="2" x2="15" y2="2" />
+      <line x1="0" y1="7" x2="10" y2="7" />
+      <line x1="0" y1="12" x2="13" y2="12" />
+    </g>
+    <!-- Illustrative demo pill badge -->
+    <g transform="translate(320, 114)">
+      <rect x="0" y="0" width="150" height="22" rx="11" fill="#e6ecdc" stroke="#c3ceb7" stroke-width="1" />
+      <circle cx="13" cy="11" r="3.5" fill="#2d6847" />
+      <text x="23" y="15" class="mono" font-size="10.5" font-weight="500" letter-spacing="0.4" fill="#425542">Illustrative demo</text>
+    </g>
+
+    <!-- Static Leaf Footer Frame -->
+    <line x1="140" y1="496" x2="994" y2="496" stroke="#cbd2bf" stroke-width="1" />
+    <!-- Dispatch green progress bar along footer top border -->
+    <rect x="140" y="495" width="854" height="2.5" fill="#2d6e45" class="send-bar" />
+    <!-- Locator square icon -->
+    <g transform="translate(140, 511)">
+      <rect x="0" y="0" width="10" height="10" fill="none" stroke="#4e5e4b" stroke-width="1.2" />
+      <rect x="2.5" y="2.5" width="5" height="5" fill="#4e5e4b" />
+    </g>
+    <!-- Inspect button in footer right -->
+    <g transform="translate(910, 505)">
+      <rect x="0" y="0" width="84" height="22" rx="3" fill="#e9efe0" />
+      <text x="10" y="15" class="mono" font-size="10.5" font-weight="600" letter-spacing="0.8" fill="#174c37">INSPECT ⤢</text>
+    </g>
+
+    <!-- ======================================================================= -->
+    <!-- CHAPTER 01: SOURCE (0.0s - 5.0s)                                        -->
+    <!-- ======================================================================= -->
+    <g class="scene-1-source">
+      <text x="164" y="130" class="mono" font-size="12" font-weight="600" letter-spacing="1.1" fill="#174c37">ORIGINAL REQUEST</text>
+      <text x="936" y="130" class="mono" font-size="12" font-weight="500" letter-spacing="1" fill="#5e6c58">01 / 05</text>
+
+      <!-- Headline-scale prompt -->
+      <g transform="translate(140, 336)">
+        <!-- Pine highlight sweep behind "for everything" -->
+        <g class="scope-sweep">
+          <rect x="348" y="-52" width="354" height="68" rx="4" fill="#bdd4a6" />
+          <line x1="348" y1="16" x2="702" y2="16" stroke="#174c37" stroke-width="3.5" />
+        </g>
+
+        <text x="0" y="0" class="sans" font-size="58" font-weight="600" letter-spacing="-2.4" fill="#1d2a20">check my repo <tspan fill="#174c37" font-weight="700">for everything</tspan></text>
+        <rect x="708" y="-46" width="3.5" height="54" fill="#174c37" class="caret-blink" />
+      </g>
+
+      <text x="160" y="520" class="mono" font-size="11" font-weight="500" letter-spacing="1" fill="#4e5e4b">SELECT VAGUE SCOPE · “FOR EVERYTHING”</text>
+    </g>
+
+    <!-- ======================================================================= -->
+    <!-- CHAPTER 02A: IN-PLACE REWRITE EXPANSION (5.0s - 7.5s)                   -->
+    <!-- ======================================================================= -->
+    <g class="scene-2a-mutating">
+      <text x="164" y="130" class="mono" font-size="12" font-weight="600" letter-spacing="1.1" fill="#174c37">REWRITTEN PROMPT</text>
+      <text x="936" y="130" class="mono" font-size="12" font-weight="500" letter-spacing="1" fill="#5e6c58">02 / 05</text>
+
+      <g transform="translate(140, 272)">
+        <!-- Active anchor tag pill above "repository" -->
+        <rect x="144" y="-62" width="122" height="20" rx="3" fill="#174c37" />
+        <text x="153" y="-48" class="mono" font-size="10" font-weight="600" fill="#f6f5ed">repo → repository</text>
+
+        <!-- Pine edit-anchor box around "repository" -->
+        <rect x="144" y="-36" width="178" height="48" rx="3" fill="#cbe0b6" />
+        <line x1="144" y1="12" x2="322" y2="12" stroke="#174c37" stroke-width="3" />
+
+        <!-- Struck-through pending scope "for everything" -->
+        <rect x="326" y="-34" width="222" height="44" rx="3" fill="#e2ead6" />
+
+        <text x="0" y="0" class="sans" font-size="36" font-weight="600" letter-spacing="-1.1" fill="#1d2a20">Audit this <tspan fill="#133d29" font-weight="700">repo</tspan><tspan fill="#174c37" font-weight="800">sitory</tspan><tspan dx="10" fill="#596d57" text-decoration="line-through">for everything</tspan></text>
+
+        <!-- Second line unfolding in pine edit-anchor -->
+        <rect x="0" y="28" width="798" height="46" rx="3" fill="#cbe0b6" />
+        <line x1="0" y1="74" x2="798" y2="74" stroke="#174c37" stroke-width="3" />
+        <text x="10" y="62" class="sans" font-size="31" font-weight="650" letter-spacing="-0.8" fill="#133d29">for bugs, security risks, performance issues, and test gaps.</text>
+        <rect x="805" y="34" width="3" height="34" fill="#174c37" class="caret-blink" />
+      </g>
+
+      <text x="160" y="520" class="mono" font-size="11" font-weight="500" letter-spacing="1" fill="#4e5e4b">RESOLVE “REPO” → “REPOSITORY” · REPLACE “FOR EVERYTHING”</text>
+    </g>
+
+    <!-- ======================================================================= -->
+    <!-- CHAPTER 02B: SETTLED REWRITTEN PROMPT (7.5s - 11.0s)                    -->
+    <!-- ======================================================================= -->
+    <g class="scene-2b-rewritten">
+      <text x="164" y="130" class="mono" font-size="12" font-weight="600" letter-spacing="1.1" fill="#174c37">REWRITTEN PROMPT</text>
+      <text x="936" y="130" class="mono" font-size="12" font-weight="500" letter-spacing="1" fill="#5e6c58">02 / 05</text>
+
+      <g transform="translate(140, 240)">
+        <!-- Line 1 -->
+        <text x="0" y="0" class="sans" font-size="30" font-weight="600" letter-spacing="-0.8" fill="#1d2a20">Audit this repository for <tspan fill="#17432f" font-weight="700">bugs, security risks, performance</tspan></text>
+        <line x1="304.5" y1="6" x2="739.6" y2="6" stroke="#2b6747" stroke-width="2.2" stroke-opacity="0.65" />
+
+        <!-- Line 2 -->
+        <text x="0" y="46" class="sans" font-size="30" font-weight="600" letter-spacing="-0.8" fill="#1d2a20"><tspan fill="#17432f" font-weight="700">issues, and test gaps</tspan>. Rank findings by <tspan fill="#17432f" font-weight="700">severity</tspan>.</text>
+        <line x1="0" y1="52" x2="274.5" y2="52" stroke="#2b6747" stroke-width="2.2" stroke-opacity="0.65" />
+        <line x1="502.7" y1="52" x2="608.2" y2="52" stroke="#2b6747" stroke-width="2.2" stroke-opacity="0.65" />
+
+        <!-- Line 3 -->
+        <text x="0" y="92" class="sans" font-size="30" font-weight="600" letter-spacing="-0.8" fill="#1d2a20"><tspan fill="#17432f" font-weight="700">Cite files and lines</tspan>, explain the impact, and <tspan fill="#17432f" font-weight="700">suggest fixes</tspan>.</text>
+        <line x1="0" y1="98" x2="238.1" y2="98" stroke="#2b6747" stroke-width="2.2" stroke-opacity="0.65" />
+        <line x1="548.4" y1="98" x2="725.6" y2="98" stroke="#2b6747" stroke-width="2.2" stroke-opacity="0.65" />
+
+        <!-- Line 4: settled boundary inside pine anchor -->
+        <rect x="0" y="114" width="257" height="42" rx="3" fill="#cbe0b6" />
+        <line x1="0" y1="156" x2="257" y2="156" stroke="#174c37" stroke-width="2.5" />
+        <text x="10" y="144" class="sans" font-size="30" font-weight="700" letter-spacing="-0.8" fill="#133d29">Don’t modify files.</text>
+        <rect x="265" y="120" width="3" height="32" fill="#174c37" class="caret-blink" />
+      </g>
+
+      <text x="160" y="520" class="mono" font-size="11" font-weight="500" letter-spacing="1" fill="#4e5e4b">REWRITTEN PROMPT READY · SUBMITTING ↵</text>
+    </g>
+
+    <!-- ======================================================================= -->
+    <!-- CHAPTER 03: RESPONSE · SAMPLE AUDIT REPORT (11.0s - 17.0s)              -->
+    <!-- ======================================================================= -->
+    <g class="scene-3-response">
+      <text x="164" y="130" class="mono" font-size="12" font-weight="600" letter-spacing="1.1" fill="#174c37">WITH THE SKILL</text>
+      <text x="936" y="130" class="mono" font-size="12" font-weight="500" letter-spacing="1" fill="#5e6c58">03 / 05</text>
+
+      <!-- Docked Prompt Bar (.prompt-dock) -->
+      <g transform="translate(140, 158)">
+        <rect x="0" y="0" width="854" height="38" rx="4" fill="#e9efe0" stroke="#c2ceb5" stroke-width="1" />
+        <text x="14" y="24" class="mono" font-size="10.5" font-weight="700" letter-spacing="0.9" fill="#174c37">PROMPT ASKED FOR</text>
+
+        <!-- 5 requirement pills -->
+        <g transform="translate(146, 7)">
+          <rect x="0" y="0" width="120" height="24" rx="3" fill="#d6e4c6" stroke="#9bb490" stroke-width="1" />
+          <text x="10" y="16" class="sans" font-size="12" font-weight="600" fill="#153f2c">bugs &amp; test gaps</text>
+
+          <rect x="128" y="0" width="68" height="24" rx="3" fill="#d6e4c6" stroke="#9bb490" stroke-width="1" />
+          <text x="138" y="16" class="sans" font-size="12" font-weight="600" fill="#153f2c">severity</text>
+
+          <rect x="204" y="0" width="90" height="24" rx="3" fill="#d6e4c6" stroke="#9bb490" stroke-width="1" />
+          <text x="215" y="16" class="sans" font-size="12" font-weight="600" fill="#153f2c">files &amp; lines</text>
+
+          <rect x="302" y="0" width="114" height="24" rx="3" fill="#d6e4c6" stroke="#9bb490" stroke-width="1" />
+          <text x="312" y="16" class="sans" font-size="12" font-weight="600" fill="#153f2c">suggested fixes</text>
+
+          <rect x="424" y="0" width="92" height="24" rx="3" fill="#d6e4c6" stroke="#9bb490" stroke-width="1" />
+          <text x="435" y="16" class="sans" font-size="12" font-weight="600" fill="#153f2c">no file edits</text>
+        </g>
+      </g>
+
+      <!-- Report Title -->
+      <text x="140" y="234" class="sans" font-size="23" font-weight="800" letter-spacing="-0.6" fill="#174c37">Sample audit report</text>
+
+      <!-- Finding 1: HIGH · Empty carts crash checkout -->
+      <g transform="translate(140, 250)">
+        <rect x="0" y="0" width="854" height="96" rx="4" fill="#f2f4e7" stroke="#c3ccb7" stroke-width="1" />
+        <rect x="18" y="18" width="52" height="24" rx="3" fill="#d6e4c6" stroke="#96b08a" stroke-width="1" />
+        <text x="28" y="34" class="mono" font-size="12" font-weight="700" letter-spacing="0.5" fill="#153f2c">HIGH</text>
+        <text x="80" y="36" class="sans" font-size="20" font-weight="750" fill="#1d2b20">· Empty carts crash checkout</text>
+        <text x="18" y="72" class="sans" font-size="16" font-weight="500" fill="#3c4a3b">Fix: handle an empty cart before calculating totals.</text>
+
+        <!-- File:line badge -->
+        <rect x="656" y="30" width="180" height="36" rx="3" fill="#dce8ce" stroke="#8fa983" stroke-width="1" />
+        <text x="670" y="53" class="mono" font-size="14" font-weight="500" fill="#153f2c">src/checkout.ts:42</text>
+      </g>
+
+      <!-- Finding 2: MEDIUM · Payment retries lack tests -->
+      <g class="finding-card-2">
+        <g transform="translate(140, 362)">
+          <rect x="0" y="0" width="854" height="96" rx="4" fill="#f2f4e7" stroke="#c3ccb7" stroke-width="1" />
+          <rect x="18" y="18" width="68" height="24" rx="3" fill="#d6e4c6" stroke="#96b08a" stroke-width="1" />
+          <text x="28" y="34" class="mono" font-size="12" font-weight="700" letter-spacing="0.5" fill="#153f2c">MEDIUM</text>
+          <text x="96" y="36" class="sans" font-size="20" font-weight="750" fill="#1d2b20">· Payment retries lack tests</text>
+          <text x="18" y="72" class="sans" font-size="16" font-weight="500" fill="#3c4a3b">Fix: add failure and recovery cases.</text>
+
+          <!-- File:line badge -->
+          <rect x="600" y="30" width="236" height="36" rx="3" fill="#dce8ce" stroke="#8fa983" stroke-width="1" />
+          <text x="613" y="53" class="mono" font-size="14" font-weight="500" fill="#153f2c">tests/payments.test.ts:81</text>
+        </g>
+      </g>
+
+      <text x="160" y="520" class="mono" font-size="11" font-weight="500" letter-spacing="1" fill="#4e5e4b">RETURNED FINDINGS · LINKED TO PROMPT</text>
+    </g>
+
+    <!-- ======================================================================= -->
+    <!-- CHAPTER 04: REWIND (17.0s - 19.0s)                                      -->
+    <!-- ======================================================================= -->
+    <g class="scene-4-rewind">
+      <text x="164" y="130" class="mono" font-size="12" font-weight="600" letter-spacing="1.1" fill="#174c37">REWINDING</text>
+      <text x="936" y="130" class="mono" font-size="12" font-weight="500" letter-spacing="1" fill="#5e6c58">04 / 05</text>
+
+      <g transform="translate(140, 336)">
+        <rect x="348" y="-52" width="354" height="68" rx="4" fill="#bdd4a6" />
+        <line x1="348" y1="16" x2="702" y2="16" stroke="#174c37" stroke-width="3.5" />
+        <text x="0" y="0" class="sans" font-size="58" font-weight="600" letter-spacing="-2.4" fill="#1d2a20">check my repo <tspan fill="#174c37" font-weight="700">for everything</tspan></text>
+        <rect x="708" y="-46" width="3.5" height="54" fill="#174c37" class="caret-blink" />
+      </g>
+
+      <text x="160" y="520" class="mono" font-size="11" font-weight="500" letter-spacing="1" fill="#4e5e4b">REWIND · RESTORE “CHECK MY REPO FOR EVERYTHING”</text>
+    </g>
+
+    <!-- ======================================================================= -->
+    <!-- CHAPTER 05: BASELINE · WITHOUT THE SKILL (19.0s - 25.0s)                -->
+    <!-- ======================================================================= -->
+    <g class="scene-5-baseline">
+      <text x="164" y="130" class="mono" font-size="12" font-weight="600" letter-spacing="1.1" fill="#174c37">WITHOUT THE SKILL</text>
+      <text x="936" y="130" class="mono" font-size="12" font-weight="500" letter-spacing="1" fill="#5e6c58">05 / 05</text>
+
+      <!-- Docked Unchanged Prompt Bar -->
+      <g transform="translate(140, 158)">
+        <rect x="0" y="0" width="854" height="38" rx="4" fill="#e9efe0" stroke="#c2ceb5" stroke-width="1" />
+        <text x="14" y="24" class="mono" font-size="10.5" font-weight="700" letter-spacing="0.9" fill="#174c37">SENT UNCHANGED</text>
+
+        <rect x="134" y="7" width="216" height="24" rx="3" fill="#dce6cf" />
+        <text x="144" y="23" class="sans" font-size="12.5" font-weight="700" fill="#1f3526">“check my repo for everything”</text>
+
+        <text x="364" y="23" class="sans" font-size="12.5" font-weight="500" fill="#4c5c4b">Same 2 issues found · no severity, file:line, or fix structure requested</text>
+      </g>
+
+      <!-- Unstructured baseline answer -->
+      <g transform="translate(140, 320)">
+        <text x="0" y="0" class="sans" font-size="38" font-weight="600" letter-spacing="-1.2" fill="#253528">I found an empty-cart bug and missing</text>
+        <text x="0" y="50" class="sans" font-size="38" font-weight="600" letter-spacing="-1.2" fill="#253528">payment retry tests.</text>
+      </g>
+
+      <text x="160" y="520" class="mono" font-size="11" font-weight="500" letter-spacing="1" fill="#4e5e4b">RETURNED FINDINGS · SAME ISSUES, UNSTRUCTURED</text>
+    </g>
+  </g>
+
+  <!-- 4. EDGE-PINNED PLAYBACK TRANSPORT BAR (matches index.html & style.css) -->
+  <g id="transport" transform="translate(48, 584)">
+    <rect x="0" y="0" width="1104" height="68" rx="5" fill="#193d2e" stroke="#284c38" stroke-width="1" />
+
+    <!-- Play/Pause button -->
+    <circle cx="36" cy="34" r="19" fill="#dce7c5" stroke="#d8e4c2" stroke-width="1" />
+    <rect x="31" y="27" width="3.5" height="14" rx="1" fill="#1d4430" />
+    <rect x="37.5" y="27" width="3.5" height="14" rx="1" fill="#1d4430" />
+
+    <!-- PLAYHEAD label & time -->
+    <text x="68" y="27" class="mono" font-size="9" font-weight="600" letter-spacing="1.3" fill="#c0d0b1">PLAYHEAD</text>
+    <text x="68" y="45" class="mono" font-size="12" font-weight="500" fill="#edf2dd">25s <tspan fill="#acbda6">/ LOOP</tspan></text>
+
+    <!-- Scrubber Track (x = 166 to 970, width = 804) -->
+    <rect x="166" y="21" width="804" height="2.5" fill="#748c74" />
+    <!-- Chapter boundary ticks at 20%, 44%, 68%, 76% -->
+    <rect x="326.8" y="19" width="2" height="6.5" fill="#b6c8aa" />
+    <rect x="519.8" y="19" width="2" height="6.5" fill="#b6c8aa" />
+    <rect x="712.7" y="19" width="2" height="6.5" fill="#b6c8aa" />
+    <rect x="777.0" y="19" width="2" height="6.5" fill="#b6c8aa" />
+
+    <!-- Animated Ink Progress & Playhead Thumb -->
+    <rect x="166" y="21" width="804" height="2.5" fill="#d7ebae" class="playhead-fill" />
+    <circle cx="166" cy="22.25" r="4.5" fill="#e9f6c6" class="playhead-Dot" />
+
+    <!-- 5 Chapter Buttons -->
+    <g transform="translate(166, 48)">
+      <text x="0" y="0" class="sans ch-1" font-size="12"><tspan class="mono" font-size="9.5" fill="#a2b99b">01 </tspan>Source</text>
+      <rect x="0" y="5" width="60" height="2" fill="#b9d9a2" class="ch-bar-1" />
+
+      <text x="190" y="0" class="sans ch-2" font-size="12"><tspan class="mono" font-size="9.5" fill="#a2b99b">02 </tspan>Rewrite</text>
+      <rect x="190" y="5" width="62" height="2" fill="#b9d9a2" class="ch-bar-2" />
+
+      <text x="384" y="0" class="sans ch-3" font-size="12"><tspan class="mono" font-size="9.5" fill="#a2b99b">03 </tspan>Response</text>
+      <rect x="384" y="5" width="74" height="2" fill="#b9d9a2" class="ch-bar-3" />
+
+      <text x="582" y="0" class="sans ch-4" font-size="12"><tspan class="mono" font-size="9.5" fill="#a2b99b">04 </tspan>Rewind</text>
+      <rect x="582" y="5" width="60" height="2" fill="#b9d9a2" class="ch-bar-4" />
+
+      <text x="736" y="0" class="sans ch-5" font-size="12"><tspan class="mono" font-size="9.5" fill="#a2b99b">05 </tspan>Baseline</text>
+      <rect x="736" y="5" width="66" height="2" fill="#b9d9a2" class="ch-bar-5" />
+    </g>
+
+    <!-- Replay circle button on right -->
+    <circle cx="1064" cy="34" r="18" fill="none" stroke="#6f8871" stroke-width="1.2" />
+    <path d="M1057 31 a7 7 0 1 1 1 6.5 M1057 31 h4.5 M1057 31 v-4.5" fill="none" stroke="#d7e5c9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>
