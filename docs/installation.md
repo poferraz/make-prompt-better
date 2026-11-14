@@ -1,6 +1,6 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). v4.5.1 is released on GitHub and npm. Both earlier release tags remain unchanged.
+For a first installation, start with the [quickstart](quickstart.md). v4.5.2 is available from GitHub and npm; v4.5.3 is prepared for publication. Earlier release tags remain unchanged.
 
 ## Distribution status
 
@@ -10,11 +10,11 @@ The unauthenticated public v4.5.1 package lifecycle passed on Linux and macOS on
 
 Run `npx make-prompt-better` in a terminal, approve npm's package prompt if shown, choose your agent and scope, and wait for the automatic file check. From a source checkout, run `node bin/cli.mjs`. The guide installs a copy, accepts numbers or names, and allows `q` to cancel before installation. With redirected input or output it shows help and changes no skill files.
 
-For explicit commands pinned to v4.5.1, use:
+For explicit commands pinned to the previously verified v4.5.2 release, use:
 
 ```bash
-npx --yes make-prompt-better@4.5.1 install --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.1 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.2 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.2 check --runtime codex --global --copy
 ```
 
 Choose your host and one scope. For a project, run from that project's directory and replace `--global` with `--project`. Add `--dry-run` to preview installation. Copy mode prevents the skill from depending on the npm cache. `--yes` accepts npm's execution prompt for this pinned package.
@@ -22,17 +22,17 @@ Choose your host and one scope. For a project, run from that project's directory
 To reinstall or update the selected copy, select the desired published package version and run:
 
 ```bash
-npx --yes make-prompt-better@4.5.1 update --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.1 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.2 update --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.2 check --runtime codex --global --copy
 ```
 
-`update` uses that selected package's files. For a future release, replace `4.5.1` in both commands with the desired published version. `npm update` alone does not refresh a copied skill. Existing edits are preserved in [recovery storage](#recovery).
+`update` uses that selected package's files. For a future release, replace `4.5.2` in both commands with the desired published version. `npm update` alone does not refresh a copied skill. Existing edits are preserved in [recovery storage](#recovery).
 
 To remove the selected installation:
 
 ```bash
-npx --yes make-prompt-better@4.5.1 uninstall --runtime codex --global --dry-run
-npx --yes make-prompt-better@4.5.1 uninstall --runtime codex --global
+npx --yes make-prompt-better@4.5.2 uninstall --runtime codex --global --dry-run
+npx --yes make-prompt-better@4.5.2 uninstall --runtime codex --global
 ```
 
 Use the same host and scope as your installation. Uninstall preserves recovery copies and does not clear npm's cache.
@@ -86,17 +86,17 @@ The cleanup covers direct children of the selected discovery roots. It does not 
 
 ## Update
 
-Choose a published version from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. Select v4.5.2 with these commands:
+Choose a published version from [GitHub releases](https://github.com/poferraz/make-prompt-better/releases). Review `git status --short` first. If it lists changes, commit or otherwise preserve them before switching versions. Select v4.5.3 with these commands:
 
 ```bash
 git status --short
-git fetch --depth 1 origin tag v4.5.2
-git switch --detach v4.5.2
+git fetch --depth 1 origin tag v4.5.3
+git switch --detach v4.5.3
 ./install.sh --runtime codex
 ./install.sh --runtime codex --check
 ```
 
-For a different release, replace `v4.5.2` in both Git commands with its published tag. A detached checkout is expected when selecting a tag; `git pull` is not the update path for that checkout. If Git reports a conflict, preserve your local changes and resolve it before updating the installation. A copy install uses a stable snapshot until you run the installer again. `--symlink` is optional for maintainers who want local edits to take effect immediately; it requires keeping the checkout at the same location. Use the same mode when checking a symlink installation: `./install.sh --runtime codex --symlink --check`.
+For a different release, replace `v4.5.3` in both Git commands with its published tag. A detached checkout is expected when selecting a tag; `git pull` is not the update path for that checkout. If Git reports a conflict, preserve your local changes and resolve it before updating the installation. A copy install uses a stable snapshot until you run the installer again. `--symlink` is optional for maintainers who want local edits to take effect immediately; it requires keeping the checkout at the same location. Use the same mode when checking a symlink installation: `./install.sh --runtime codex --symlink --check`.
 
 ## Check or uninstall
 

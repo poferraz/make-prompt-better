@@ -1,29 +1,15 @@
 ---
 name: make-prompt-better
-description: "Use when improving or rewriting prompts, system instructions, AGENTS.md or CLAUDE.md files, or agent workflows while preserving requirements and choosing clear task-appropriate structure."
+description: "Use when improving prompts, system instructions, AGENTS.md, CLAUDE.md, or agent workflows."
 ---
 
-# Make Prompt Better (v4.5.2)
+# Make Prompt Better (v4.5.3)
 
-## Overview
+## Purpose
 
 This skill rewrites prompts into structured, reviewable requests informed by eleven research principle groups. The groups cite fourteen papers, with publication status varying by source. Results depend on the host and model; review the rewritten prompt against the original request.
 
-## Research Foundation (11 Principle Groups)
-
-These studies motivate the workflow; the project's specific templates and thresholds are adaptations, not necessarily results measured in those studies. For summaries and citations, read `references/research-principles.md`.
-
-1. **[META] Semi-Formal Reasoning** (Ugare & Chandra, 2026, arXiv:2603.01896): The authors study structured reasoning on code analysis. This project adapts premises, traces, and conclusions; its own effects and cost depend on the task and model.
-2. **[GOAL-BLIND] Purpose-Conditioned Cognition** (Cao, Jiang & Xu, 2026, arXiv:2602.09504): The study investigates purpose-conditioned bias. This project separates pressure toward a desired finding from decision-relevant constraints, which must be preserved.
-3. **[ACE] Agentic Context Engineering** (Zhang, Hu et al., 2026, arXiv:2510.04618): The study investigates context adaptation. This project uses item identifiers (`[P1]`, `[T1]`) as a traceability adaptation, not as a separately measured effect.
-4. **[HIERARCHY] Instruction Hierarchy Failure** (Geng et al., 2025, arXiv:2502.15851): The authors study conflicts and framing in specific settings. This project's protocol framing is an adaptation and cannot guarantee compliance.
-5. **[CODE-SMELLS] LLM Integration Smells** (Mahmoudi et al., 2025, arXiv:2512.18020): The study examines LLM integration patterns. This project recommends an explicit schema for programmatic consumers as an adaptation.
-6. **[PRISM] Persona Calibration** (Hu, Rostami & Thomason, 2026, arXiv:2603.18507): The authors compare persona effects on selected accuracy and alignment tasks. This project's five-word threshold and routing are heuristics.
-7. **[VS] Verbalized Sampling** (Zhang et al., 2025, arXiv:2510.01171): The authors study sampling for open-ended diversity. This project's four-angle procedure and typicality threshold are heuristics, not calibrated probabilities.
-8. **[SLOPSHAPE] Structural Signatures of AI Writing** (Madler, 2026, arXiv:2609.15369; Russell et al., 2026): The study investigates structural features on specific datasets. This project's creative rules are adaptations, not a guarantee of human-like writing or detector outcomes.
-9. **[CONTEXT-FILES] Repository Context File Evaluation** (Gloaguen et al., 2026, arXiv:2602.11988v3): In the evaluated settings, generated context increased cost while average accuracy differences were not statistically significant. Prioritize useful commands and invariants while preserving explicitly requested sections.
-10. **[HARNESS] Harness Routing, Context-as-a-File & Plan Verification** (Lee et al., 2026, arXiv:2603.28052; Zhang et al., 2026, arXiv:2606.09498; Shao et al., 2026, arXiv:2609.37725; Nam et al., 2025, arXiv:2509.21825): These studies investigate different harness and context designs. This project's code-first gates and scratchpad rules are adaptations, not directly measured effects of those studies; Shao et al.'s reported result is on BrowseComp-Plus.
-11. **[SKILLS-SDO] Skill Residency & Positive Recipe Shaping** (Yin et al., 2026, arXiv:2608.12610): The study discusses skill metadata and attention. This project chooses positive observable-predicate recipes; a claimed negative-wording comparison was not located in that source.
+For citations, adaptation limits, and the eleven principle groups covering fourteen papers, consult the [research foundation](references/research-principles.md#research-foundation-11-principle-groups) when checking a methodological claim.
 
 ### The Prompt Structure Framework
 
@@ -38,9 +24,17 @@ These studies motivate the workflow; the project's specific templates and thresh
 
 ---
 
-## The Optimization Workflow
+## Prerequisites
 
-Follow these steps in order whenever a user asks to optimize, harden, or review a prompt or context file.
+Use the original request and supplied inputs. Rewriting text needs no API key or software installation. Working-context prompts need authorized artifact access; record unavailable inputs (Zhang, Hu et al., 2026; Ugare & Chandra, 2026).
+
+## Limitations
+
+A rewrite does not establish downstream execution, answer quality, host compatibility, or token savings. Keep the source-specific research qualifications (Ugare & Chandra, 2026; Gloaguen et al., 2026).
+
+## Instructions
+
+Apply the following steps in order to the requested prompt or context rewrite.
 
 ### Step 0: Requirement Preservation & Anti-Overhead Guardrail (`[ACE]`, `[META]`, `[HARNESS]`)
 
@@ -52,12 +46,12 @@ Before selecting a template, enforce two foundational checks (Ugare & Chandra, 2
 
 ### Step 1: Classify the Task Type & Target Environment (`[PRISM]`, `[HARNESS]`)
 
-Determine the primary cognitive demand of the prompt and the execution context:
+Determine the primary cognitive demand and execution context (Hu, Rostami & Thomason, 2026; Lee et al., 2026):
 - **Accuracy-dependent** (code verification, bug hunting, math, fact extraction, legal/medical/financial analysis, compliance): **Omit persona**.
 - **Mixed** (technical reports, architecture reviews, data analysis with executive presentation): **Minimal persona** (5 words or fewer, such as `"You are a systems analyst."`).
 - **Alignment-dependent** (formatting, tone translation, style guides): **Full persona**.
 - **Creative / Divergent** (copywriting, essays, storytelling, product messaging, ideation): **Minimal or Full persona**, routed to **Mode 4 (Creative & Divergent v2)**.
-- **Persistent Context / Agent Harness** (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, system prompts, multi-turn agent loops): **Omit persona**, routed to **Mode 3 (LRM / Harness Mode)**.
+- **Persistent Context / Agent Harness** (AGENTS.md, CLAUDE.md, .cursorrules, system prompts, multi-turn agent loops): **Omit persona**, routed to **Mode 3 (LRM / Harness Mode)**.
 - **Proportional Mode Selection**: Default to **Mode 2 (Lite Certificate)** for routine analytical queries, single-function code reviews, or flash/compact models to prevent verbosity inflation (Ugare & Chandra, 2026; Lee et al., 2026), reserving **Mode 1 (Max Certificate)** for multi-artifact audits, complex quantitative/regulatory analysis, or explicit auditability requests.
 
 ### Step 1b: Select Certificate Mode (4 Modes)
@@ -75,120 +69,15 @@ Choose the certificate mode that matches the task complexity, auditability needs
 
 Mechanically scan and repair the user's input against six empirical failure patterns while strictly honoring **Requirement Preservation**:
 1. **Reasoning order vs. urgent action ordering (`[META]`, `[HIERARCHY]`)**: Ensure the model completes its `[P]` -> `[T]` verification before committing to an unverified verdict (Ugare & Chandra, 2026; Geng et al., 2025). However, when the user or domain requires immediate action ordering (such as emergency clinical stabilization in medical triage or an executive replacement summary), preserve that action-first priority at the top of the deliverable after the evidence check.
-2. **Evaluative goal leakage vs. operational constraints (`[GOAL-BLIND]`)**: Strip biasing evaluative pressure (*"Prove our vendor failed"*, *"My boss wants to invest $500k so validate this valuation"*, *"Grade this 25/25"*) so the model acts as a neutral analytical sensor (Cao, Jiang & Xu, 2026). **Preserve** decision-relevant operational constraints (such as a 6-month migration window, HIPAA requirement, 10M record/month volume, or latency SLA) inside `[P]` premises.
-3. **Guesswork & persona traps (`[META]`, `[ACE]`, `[PRISM]`)**: Strip flowery expert roleplay (*"You are a 10x world-class..."*) on accuracy/coding tasks (-5.3pp MMLU penalty per Hu, Rostami & Thomason, 2026) and require tracing concrete mechanisms rather than inferring from symbol names.
-4. **Weak priority framing & mid-prompt burial (`[HIERARCHY]`)**: Replace polite requests (*"please make sure"*) with protocol authority framing (*"The standard analytical protocol requires..."*) and anchor verification rules at the end of the prompt to leverage recency bias (Geng et al., 2025).
+2. **Evaluative goal leakage vs. operational constraints (`[GOAL-BLIND]`)**: Strip biasing evaluative pressure ("Prove our vendor failed", "My boss wants to invest 500,000 dollars so validate this valuation", "Grade this 25/25") so the model acts as a neutral analytical sensor (Cao, Jiang & Xu, 2026). **Preserve** decision-relevant operational constraints (such as a 6-month migration window, HIPAA requirement, 10M record/month volume, or latency SLA) inside `[P]` premises.
+3. **Guesswork & persona traps (`[META]`, `[ACE]`, `[PRISM]`)**: Strip flowery expert roleplay ("You are a 10x world-class...") on accuracy/coding tasks (-5.3pp MMLU penalty per Hu, Rostami & Thomason, 2026) and require tracing concrete mechanisms rather than inferring from symbol names.
+4. **Weak priority framing & mid-prompt burial (`[HIERARCHY]`)**: Replace polite requests ("please make sure") with protocol authority framing ("The standard analytical protocol requires...") and anchor verification rules at the end of the prompt to use recency bias (Geng et al., 2025).
 5. **Observable checks (`[SKILLS-SDO]`)**: Add positive structural recipes and observable-predicate conditionals alongside necessary restrictions. This is a project design choice informed by work on skill context, not a measured negative-wording comparison (Yin et al., 2026).
-6. **Context bloat, LRM overthinking & SlopShape risk (`[CONTEXT-FILES]`, `[HARNESS]`, `[VS]`, `[SLOPSHAPE]`)**: In `AGENTS.md`/`CLAUDE.md`, replace verbose auto-generated directory tutorials with non-inferable commands and invariants while keeping a compact summary of any explicitly requested overview/layout sections (Gloaguen et al., 2026); avoid forcing pre-code tables on reasoning/compact models (Lee et al., 2026); and keep `[NT0]` creative sampling internal unless backstage notes are requested (Zhang et al., 2025; Madler, 2026).
+6. **Context bloat, LRM overthinking & SlopShape risk (`[CONTEXT-FILES]`, `[HARNESS]`, `[VS]`, `[SLOPSHAPE]`)**: In AGENTS.md / CLAUDE.md, replace verbose auto-generated directory tutorials with non-inferable commands and invariants while keeping a compact summary of any explicitly requested overview/layout sections (Gloaguen et al., 2026); avoid forcing pre-code tables on reasoning/compact models (Lee et al., 2026); and keep `[NT0]` creative sampling internal unless backstage notes are requested (Zhang et al., 2025; Madler, 2026).
 
 ### Step 3: Select and Adapt the Certificate Structure
 
-Read `references/domain-templates.md` to pick one of the 12 domain templates (or adapt the core structures below). Enforce the **Anti-Redundancy Rule** across all modes: state each fact once in `[P]` and reference it by ID (`[P1]`, `[T1]`) rather than repeating the same sentences across Premises, Traces, and Conclusion.
-
-#### Mode 1 & Mode 2 Pattern (Max and Lite Analytical Certificates)
-
-```markdown
-The standard analytical protocol for [DOMAIN] requires completing this reasoning certificate before issuing any verdict. Keep scaffolding proportional to input complexity and cite [P]/[T] identifiers rather than repeating facts across sections.
-
-### PREMISES
-Declare all observable inputs, operational constraints, and starting assumptions (cap at 3 items in Lite mode):
-- [P1] Primary artifact(s) examined: [exact embedded data/code, or file:line references in Working-Context mode]
-- [P2] Applicable rules, requested deliverables, and operational constraints: [concrete specifications]
-- [P3] Unverified inputs or environmental assumptions: [explicitly listed]
-
-### EVIDENCE TRACES
-Walk through the concrete path for each item (in Lite mode, use single-line arrows: `[T1] Input -> Operation -> Observable Result`):
-- [T1] Trace [item 1]: [concise verification citing P1-P3 without repeating full input text]
-- [T2] Trace [item 2]: [concise verification citing P1-P3]
-
-### FORMAL CONCLUSION
-Derive your verdict solely from the premises and traces above (preserve urgent/stabilization action ordering when clinically or operationally required):
-- Verdict: [objective disposition]
-- Supporting traces: [cite T1, T2, etc. for every claim]
-- Verification gaps: [list any path marked UNABLE TO TRACE and the missing input required]
-
-### REMEDIATION / NEXT ACTION
-Provide one of the following matching all requested deliverables in [P2]:
-- A complete, copy-pasteable fix (patch, revised text, corrected query, or executable command)
-- A concrete sequence of verification commands to resolve any Verification Gaps
-- The explicit statement: "No remediation required: [reason grounded in T-identifiers]"
-```
-
-#### Mode 3 Pattern A: Large Reasoning Model (LRM) & Algorithmic Verification Certificate (Template 12)
-
-Use when the target model performs native extended thinking or implements complex concurrency/state algorithms so pre-code verification tables do not starve output token budgets (`[PRISM]`, `[HARNESS]`):
-
-```markdown
-The verification protocol for [TASK] requires declaring compact premises, generating the complete executable implementation first, and verifying it through a post-hoc gate. Restrict non-code commentary to <25% of the total response length.
-
-### PREMISES (Compact: <25% total response overhead)
-- [P1] Source inputs and interface contract: [exact signatures, types, numeric range/precision rules, and embedded or referenced artifacts]
-- [P2] Target invariants: [concurrency safety, atomicity, cross-thread/event-loop semantics, timeout/cancellation rules, and edge boundaries]
-
-### 1. COMPLETE EXECUTABLE IMPLEMENTATION (Generated First)
-Provide the complete, copy-pasteable implementation satisfying [P1] and [P2] before emitting any verification tables or test prose.
-
-### 2. POST-HOC VERIFICATION GATE ([V1] -> [V2] -> [V3])
-- [V1] Concurrency & State Invariants: Check each invariant in [P2] (`[SATISFIED / VIOLATED] -> [exact line/mechanism in implementation]`).
-- [V2] Executable Self-Test Harness: Provide a runnable test block (`assert` / `asyncio.run`) exercising normal paths, fractional/boundary precision, timeout/cancellation, and concurrent contention from [P2].
-- [V3] Execution Status & Scope Limits: State whether [V2] was executed or remains unrun, and record any architectural or numerical boundaries outside scope.
-```
-
-#### Mode 3 Pattern B: Persistent Agent Context (`AGENTS.md` / `CLAUDE.md` / System Prompt, Template 11)
-
-Use when optimizing repository context files or coding-agent harnesses (`[CONTEXT-FILES]`, `[HARNESS]`):
-
-```markdown
-<!-- Context Architecture Contract: Discoverable directory tutorials and generic style prose are compacted per Gloaguen et al. (2026) to protect agent context window while preserving all requested sections. -->
-# [Project Name] Agent Operating Contract
-
-## 0. Scope, Stack & Layout (Include when overview, directory layout, or conventions are requested)
-- Stack & Overview: [1-2 line summary of architecture and core services]
-- Key Directories: [compact 1-line-per-folder mapping of requested paths, e.g., `app/api`, `app/models`, `app/services`, `tests/`]
-- Coding Conventions: [1-line rule, e.g., standard PEP8 enforced via linter; project-specific exceptions listed in Section 2]
-
-## 1. Environment & Execution Commands (Non-Inferable Only)
-- Setup / Environment: `[exact command, e.g., uv sync]`
-- Targeted Test Runner: `[exact command, e.g., pytest -m "not integration" --reuse-db]`
-- Migration / Typecheck / Lint Gate: `[exact command, e.g., ./scripts/migrate.sh check]`
-
-## 2. Hard Architectural Invariants
-- [I1] Boundary / State rule: [exact non-obvious constraint, e.g., never mutate Redis cache keys in `app/services/billing.py` without bumping `SCHEMA_EPOCH`]
-- [I2] Multi-file scratchpad rule: For tasks spanning 3+ files, maintain progress and intermediate findings in a scratchpad file rather than re-running broad repository searches.
-
-## 3. Verification Gate (Required Before Completion)
-- Run the exact commands from Section 1 before declaring the task complete.
-- Report each command's exit code and concise output summary; if a check fails or cannot run, report `VERIFICATION BLOCKED: [command + exact error]`.
-```
-
-#### Mode 4 Pattern: Creative & Divergent Certificate v2 (`[VS]` + `[SLOPSHAPE]`, Template 10)
-
-Use for creative writing, essays, blog posts, marketing copy, and open-ended ideation:
-
-```markdown
-You are a [specific practitioner role, <=5 words]. Follow the editorial craft protocol below to prepare and deliver the piece.
-
-### PREMISES
-- [P1] Reader & context: [who is reading and what concrete workday or lived situation they are in]
-- [P2] Supplied features & target shift: [preserve all supplied facts and translate them into grounded experiential detail; avoid unverified medical or quantitative guarantees]
-- [P3] Voice & format constraints: [perspective, length, format, and domain boundaries]
-
-### INTERNAL BACKSTAGE PREPARATION (Perform silently before drafting; emit in output ONLY if the user explicitly requested brainstorming/planning notes)
-- [NT0] Verbalized Distribution Sampling: Consider 3 to 4 structurally distinct entry angles with heuristic typicality estimates (p = likelihood a default LLM prompt would pick it) and select the strongest angle with p <= 0.20 that fulfills [P1]-[P3].
-- [NT1] Opening Anchor: Pick a specific moment, artifact, or lived friction to open the draft.
-- [NT2] Structural Trajectory: Map the progression so the core claim emerges from concrete details rather than being pre-announced.
-- [NT3] Register & Cadence: Use concrete nouns, varied paragraph lengths, and grounded practitioner voice.
-
-### STRUCTURAL RARITY CONTRACT ([SC0] anti-SlopShape rules for the final draft)
-Construct the final piece to satisfy these four discourse rules:
-1. Title & Opening: Open inside the specific moment or artifact from [NT1]; reserve the thesis until after the first concrete detail.
-2. Argument Flow: Build through direct feature-to-experience progression rather than a formulaic "Old Way vs. New Way" contrast.
-3. Voice: Write from a grounded practitioner perspective with varied sentence cadence rather than an institutional "editorial explainer" voice.
-4. Ending: Close on a concrete action or practical verification step rather than a summary paragraph that restates the thesis.
-
-### FINAL DELIVERABLE
-Output ONLY the finished piece embodying the selected [NT0] angle and [SC0] contract (do not print the [NT0]-[NT3] scaffold unless requested in the original prompt).
-```
+After the Step 0 short-return check, read the selected pattern in [Core Mode Patterns](references/domain-templates.md#core-mode-patterns) and the matching numbered domain template. Use its analytical, algorithmic, context-file, or creative pattern for the selected mode (Ugare & Chandra, 2026; Lee et al., 2026; Zhang et al., 2025). Enforce the **Anti-Redundancy Rule** across all modes: state each fact once in `[P]` and reference it by ID (`[P1]`, `[T1]`) rather than repeating the same sentences across Premises, Traces, and Conclusion.
 
 ### Step 4: Apply Requirement Preservation, Context Binding & Self-Check (`[SKILLS-SDO]`, `[META]`, `[ACE]`)
 
@@ -216,7 +105,7 @@ Verify that every conclusion claim cites a `[T]` or `[V]` identifier and that al
 Unless the user requests only a prompt, creative artifact, or other specific format, present the output in three clean tiers. Apply the Step 0 short-return path when it is selected. Clearly distinguish a rewritten prompt from the downstream task's completed result (Zhang, Hu et al., 2026; Ugare & Chandra, 2026):
 1. **Compact 6-Line Compiler Receipt**:
    ```text
-   [COMPILER RECEIPT // make-prompt-better v4.5.2]
+   [COMPILER RECEIPT // make-prompt-better v4.5.3]
    [MODE]         : Mode <1|2|3|4> (<Max|Lite|LRM-Harness|Creative-v2>) | Template <#>: <Name>
    [PERSONA]      : <Omitted (Accuracy/LRM) | Minimal <=5w (Mixed) | Full (Alignment)> [PRISM]
    [PRESERVATION] : <Checked requirements | Missing inputs | Not checked> [ACE, GOAL-BLIND]
@@ -226,8 +115,18 @@ Unless the user requests only a prompt, creative artifact, or other specific for
 2. **The Optimized Prompt**: In a clean, copy-pasteable code block preserving all substantive facts and requested deliverables.
 3. **Research Rationale & Trade-Off Note**: A concise bullet list mapping each change to its paper citation (`[META]`, `[GOAL-BLIND]`, `[ACE]`, `[HIERARCHY]`, `[CODE-SMELLS]`, `[PRISM]`, `[VS]`, `[SLOPSHAPE]`, `[CONTEXT-FILES]`, `[HARNESS]`, `[SKILLS-SDO]`), explicitly noting any scope/compactness trade-offs.
 
+## Examples
+
+Read the [annotated examples](references/examples.md) when a transformation would clarify the chosen mode. Preserve the original request when adapting one (Zhang, Hu et al., 2026).
+
+## Troubleshooting
+
+- Missing artifact: record the inaccessible path and request the input needed to complete the rewrite; keep the affected claim qualified (Zhang, Hu et al., 2026).
+- Excessive scaffolding: repeat Step 0 and use the short return or Lite mode while retaining every requested deliverable (Ugare & Chandra, 2026).
+- Missing mode detail: read only the relevant core pattern and domain template; apply the existing output-format override before adding a receipt (Yin et al., 2026).
+
 ## Reference Materials
 
-- `references/domain-templates.md`: 12 ready-to-use templates (Code Review, Document Analysis, Research Synthesis, Compliance, Decision-Making, Comparative Analysis, Medical Reasoning, Legal Analysis, Financial Due Diligence, Creative / Editorial Writing, Agentic System Prompt / `AGENTS.md`, and LRM & Algorithmic Implementation Verification Harness, plus Custom Domain Fallback and JSON Wrapper).
+- `references/domain-templates.md`: 12 numbered domain templates, the four core mode patterns, Custom Domain Fallback, and JSON Wrapper.
 - `references/research-principles.md`: Quick-reference index of 11 research principle groups and their project adaptations.
 - `references/examples.md`: 9 annotated before/after prompt transformations across analytical, agentic, and creative domains.

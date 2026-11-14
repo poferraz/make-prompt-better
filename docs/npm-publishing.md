@@ -2,9 +2,13 @@
 
 ## Current distribution
 
-Version 4.5.1 is available from GitHub and npm. The [publication workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42317679119) and [verification workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42318325467) record the public release checks. Its published archive and tags are immutable snapshots; changes on main apply to future releases. Public installation checks covered Linux and macOS. Filesystem installation checks do not establish host discovery, authenticated model invocation or prompt quality.
+Version 4.5.2 is available from GitHub and npm. The [OIDC publication job](https://github.com/poferraz/make-prompt-better/actions/runs/43644627255) succeeded with the bootstrap-token step skipped; the [public verification recovery](https://github.com/poferraz/make-prompt-better/actions/runs/43645387425) passed after the initial post-publish installation check failed. Public lifecycle checks passed on Linux and macOS, and registry signature and provenance checks passed on macOS. Version 4.5.3 is prepared and requires its own publication and public verification. Published archives and tags are immutable; filesystem checks do not establish live host discovery, model invocation, or prompt quality.
 
 Follow this runbook for future releases and record private verification data under `.private/`. Publish only deliberately reviewed release evidence. Each release channel requires authorization.
+
+## Historical distribution evidence
+
+The 4.5.1 [publication job](https://github.com/poferraz/make-prompt-better/actions/runs/42317679119) and [public verification recovery](https://github.com/poferraz/make-prompt-better/actions/runs/42318325467) retain the November 7, 2026 release record. Its guided-install, upgrade, and platform evidence remains specific to that version.
 
 ## Consumer installation
 
@@ -33,8 +37,9 @@ Prefer trusted publishing for ongoing releases. Configure the package's npm trus
 | Repository | `make-prompt-better` |
 | Workflow filename | `publish-npm.yml` |
 | Environment | `npm-publish` |
+| Allowed action | Direct `npm publish` |
 
-The OIDC step receives no `NPM_TOKEN`. Verify a separately authorized OIDC release before claiming this route works or retiring the temporary bootstrap credential. Bootstrap publication with signed provenance does not prove OIDC publishing authorization. [Trusted publisher setup and migration](https://docs.npmjs.com/trusted-publishers/).
+The OIDC step receives no `NPM_TOKEN`. Trusted publishing was verified by the successful 4.5.2 OIDC publish job linked above. Use OIDC for normal releases; retain the explicitly selected bootstrap-token route only as a temporary fallback. Each future release still requires authorization and verification. [Trusted publisher setup and migration](https://docs.npmjs.com/trusted-publishers/).
 
 ## Preflight and authentication
 
@@ -78,10 +83,10 @@ The environment reviewer approves before GitHub releases the secret. The check s
 4. Dispatch the maintained workflow from verified main, selecting the immutable source tag. Replace `vX.Y.Z` below with that new authorized version. Do not republish an existing version.
 
 ```bash
-gh workflow run publish-npm.yml --ref main -f operation=publish -f release_tag=vX.Y.Z -f auth_mode=bootstrap-token --repo poferraz/make-prompt-better
+gh workflow run publish-npm.yml --ref main -f operation=publish -f release_tag=vX.Y.Z -f auth_mode=oidc --repo poferraz/make-prompt-better
 ```
 
-After OIDC is configured and separately authorized, select `-f auth_mode=oidc`. A normal push or GitHub release does not automatically publish to npm.
+The normal command above selects trusted publishing. Select `-f auth_mode=bootstrap-token` only for a separately reviewed temporary fallback. A normal push or GitHub release does not automatically publish to npm.
 
 The guard requires the intended repository, stable tag, main ancestry, published GitHub release, exact-source main CI, unused registry version, and matching package version. It reads all CI run pages and rejects incomplete evidence or a failed latest run/attempt. It verifies executable modes, archive boundaries, lifecycle hooks, credential patterns, size, and installation behavior in temporary directories. It packs once and uploads that reviewed artifact. The protected publishing job downloads the same artifact, verifies its digest, and publishes with lifecycle scripts disabled and provenance requested.
 
@@ -95,7 +100,7 @@ This operation retains the stable-tag, source ancestry, exact-source CI, archive
 gh workflow run publish-npm.yml --ref main -f operation=verify-public -f release_tag=v4.5.1 --repo poferraz/make-prompt-better
 ```
 
-To run the public smoke locally from a full source checkout, supply the digest from the independently reviewed artifact, not solely from the registry being tested:
+To run public smoke locally, use the full immutable source checkout for the selected release tag and supply the digest from its independently reviewed artifact, not solely from the registry being tested. The historical example below requires the v4.5.1 checkout; newer archive validators can intentionally reject older package layouts:
 
 ```bash
 python3 scripts/public_npm_smoke.py --tag v4.5.1 --integrity 'sha512-QQkPL5XHZWWNS9EqUex/FCoGH10YYqKVhINkpQoqd+IK26veOCYfTrNOVMDGssNeUr6gjxKuftrlA3QXhxZQ8A=='
@@ -109,5 +114,5 @@ After this passes, follow the pinned customer commands in disposable user and pr
 
 - After a successful publish, use `verify-public` to retry failed verification. Never retry publication merely to make a run green.
 - A package correction needs a new reviewed version or an explicitly authorized deprecation. Do not overwrite a published version, move tags, or rely on unpublishing as routine rollback. Preserve the source fallback and recovery data.
-- OIDC publishing needs its own successful test. Token validity at publication does not establish future expiry, permissions, or account policy.
+- OIDC publishing was verified for 4.5.2. Future releases still require their own successful OIDC publication and public verification. Token checks alone do not establish publishing rights or future validity.
 - The recorded 4.5.0-to-4.5.1 upgrade does not establish every upgrade path. Native Windows, WSL, and broader host/model behavior need separate evidence. Filesystem tests do not expand those claims.

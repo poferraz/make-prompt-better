@@ -1,6 +1,6 @@
 # Domain-Specific Certificate Templates
 
-Reference library for the `make-prompt-better` skill (v4.5.2). Each template adapts semi-formal reasoning to a specific domain and incorporates:
+Reference library for the `make-prompt-better` skill (v4.5.3). Each template adapts semi-formal reasoning to a specific domain and incorporates:
 - **Requirement preservation** as the first invariant: every requested deliverable, sub-question, ordering rule, and operational constraint is retained (Zhang, Hu et al., 2026; Yin et al., 2026)
 - **Itemized identifiers** `[P1]`, `[T1]`, `[V1]` with anti-redundancy cross-referencing so facts are stated once and cited by ID rather than repeated across sections (Ugare & Chandra, 2026; Zhang, Hu et al., 2026)
 - **Dual context binding**: verbatim embedding in `[P]` for portable/isolated prompts, or exact `file:line` pointers for working-context coding agents (Ugare & Chandra, 2026; Lee et al., 2026)
@@ -545,4 +545,115 @@ When the optimized prompt feeds into an API pipeline or downstream parser, pair 
     "artifact_or_steps": "..."
   }
 }
+```
+
+---
+
+## Core Mode Patterns
+
+Read the pattern for the mode selected in the main skill, then adapt the matching numbered domain template. These patterns retain the project adaptations of Ugare & Chandra (2026), Hu, Rostami & Thomason (2026), Lee et al. (2026), Zhang et al. (2025), and Madler (2026).
+
+#### Mode 1 & Mode 2 Pattern (Max and Lite Analytical Certificates)
+
+```markdown
+The standard analytical protocol for [DOMAIN] requires completing this reasoning certificate before issuing any verdict. Keep scaffolding proportional to input complexity and cite [P]/[T] identifiers rather than repeating facts across sections.
+
+### PREMISES
+Declare all observable inputs, operational constraints, and starting assumptions (cap at 3 items in Lite mode):
+- [P1] Primary artifact(s) examined: [exact embedded data/code, or file:line references in Working-Context mode]
+- [P2] Applicable rules, requested deliverables, and operational constraints: [concrete specifications]
+- [P3] Unverified inputs or environmental assumptions: [explicitly listed]
+
+### EVIDENCE TRACES
+Walk through the concrete path for each item (in Lite mode, use single-line arrows: `[T1] Input -> Operation -> Observable Result`):
+- [T1] Trace [item 1]: [concise verification citing P1-P3 without repeating full input text]
+- [T2] Trace [item 2]: [concise verification citing P1-P3]
+
+### FORMAL CONCLUSION
+Derive your verdict solely from the premises and traces above (preserve urgent/stabilization action ordering when clinically or operationally required):
+- Verdict: [objective disposition]
+- Supporting traces: [cite T1, T2, etc. for every claim]
+- Verification gaps: [list any path marked UNABLE TO TRACE and the missing input required]
+
+### REMEDIATION / NEXT ACTION
+Provide one of the following matching all requested deliverables in [P2]:
+- A complete, copy-pasteable fix (patch, revised text, corrected query, or executable command)
+- A concrete sequence of verification commands to resolve any Verification Gaps
+- The explicit statement: "No remediation required: [reason grounded in T-identifiers]"
+```
+
+#### Mode 3 Pattern A: Large Reasoning Model (LRM) & Algorithmic Verification Certificate (Template 12)
+
+Use when the target model performs native extended thinking or implements complex concurrency/state algorithms so pre-code verification tables do not starve output token budgets (`[PRISM]`, `[HARNESS]`):
+
+```markdown
+The verification protocol for [TASK] requires declaring compact premises, generating the complete executable implementation first, and verifying it through a post-hoc gate. Restrict non-code commentary to <25% of the total response length.
+
+### PREMISES (Compact: <25% total response overhead)
+- [P1] Source inputs and interface contract: [exact signatures, types, numeric range/precision rules, and embedded or referenced artifacts]
+- [P2] Target invariants: [concurrency safety, atomicity, cross-thread/event-loop semantics, timeout/cancellation rules, and edge boundaries]
+
+### 1. COMPLETE EXECUTABLE IMPLEMENTATION (Generated First)
+Provide the complete, copy-pasteable implementation satisfying [P1] and [P2] before emitting any verification tables or test prose.
+
+### 2. POST-HOC VERIFICATION GATE ([V1] -> [V2] -> [V3])
+- [V1] Concurrency & State Invariants: Check each invariant in [P2] (`[SATISFIED / VIOLATED] -> [exact line/mechanism in implementation]`).
+- [V2] Executable Self-Test Harness: Provide a runnable test block (`assert` / `asyncio.run`) exercising normal paths, fractional/boundary precision, timeout/cancellation, and concurrent contention from [P2].
+- [V3] Execution Status & Scope Limits: State whether [V2] was executed or remains unrun, and record any architectural or numerical boundaries outside scope.
+```
+
+#### Mode 3 Pattern B: Persistent Agent Context (`AGENTS.md` / `CLAUDE.md` / System Prompt, Template 11)
+
+Use when optimizing repository context files or coding-agent harnesses (`[CONTEXT-FILES]`, `[HARNESS]`):
+
+```markdown
+<!-- Context Architecture Contract: Discoverable directory tutorials and generic style prose are compacted per Gloaguen et al. (2026) to protect agent context window while preserving all requested sections. -->
+# [Project Name] Agent Operating Contract
+
+## 0. Scope, Stack & Layout (Include when overview, directory layout, or conventions are requested)
+- Stack & Overview: [1-2 line summary of architecture and core services]
+- Key Directories: [compact 1-line-per-folder mapping of requested paths, e.g., `app/api`, `app/models`, `app/services`, `tests/`]
+- Coding Conventions: [1-line rule, e.g., standard PEP8 enforced via linter; project-specific exceptions listed in Section 2]
+
+## 1. Environment & Execution Commands (Non-Inferable Only)
+- Setup / Environment: `[exact command, e.g., uv sync]`
+- Targeted Test Runner: `[exact command, e.g., pytest -m "not integration" --reuse-db]`
+- Migration / Typecheck / Lint Gate: `[exact command, e.g., ./scripts/migrate.sh check]`
+
+## 2. Hard Architectural Invariants
+- [I1] Boundary / State rule: [exact non-obvious constraint, e.g., never mutate Redis cache keys in `app/services/billing.py` without bumping `SCHEMA_EPOCH`]
+- [I2] Multi-file scratchpad rule: For tasks spanning 3+ files, maintain progress and intermediate findings in a scratchpad file rather than re-running broad repository searches.
+
+## 3. Verification Gate (Required Before Completion)
+- Run the exact commands from Section 1 before declaring the task complete.
+- Report each command's exit code and concise output summary; if a check fails or cannot run, report `VERIFICATION BLOCKED: [command + exact error]`.
+```
+
+#### Mode 4 Pattern: Creative & Divergent Certificate v2 (`[VS]` + `[SLOPSHAPE]`, Template 10)
+
+Use for creative writing, essays, blog posts, marketing copy, and open-ended ideation:
+
+```markdown
+You are a [specific practitioner role, <=5 words]. Follow the editorial craft protocol below to prepare and deliver the piece.
+
+### PREMISES
+- [P1] Reader & context: [who is reading and what concrete workday or lived situation they are in]
+- [P2] Supplied features & target shift: [preserve all supplied facts and translate them into grounded experiential detail; avoid unverified medical or quantitative guarantees]
+- [P3] Voice & format constraints: [perspective, length, format, and domain boundaries]
+
+### INTERNAL BACKSTAGE PREPARATION (Perform silently before drafting; emit in output ONLY if the user explicitly requested brainstorming/planning notes)
+- [NT0] Verbalized Distribution Sampling: Consider 3 to 4 structurally distinct entry angles with heuristic typicality estimates (p = likelihood a default LLM prompt would pick it) and select the strongest angle with p <= 0.20 that fulfills [P1]-[P3].
+- [NT1] Opening Anchor: Pick a specific moment, artifact, or lived friction to open the draft.
+- [NT2] Structural Trajectory: Map the progression so the core claim emerges from concrete details rather than being pre-announced.
+- [NT3] Register & Cadence: Use concrete nouns, varied paragraph lengths, and grounded practitioner voice.
+
+### STRUCTURAL RARITY CONTRACT ([SC0] anti-SlopShape rules for the final draft)
+Construct the final piece to satisfy these four discourse rules:
+1. Title & Opening: Open inside the specific moment or artifact from [NT1]; reserve the thesis until after the first concrete detail.
+2. Argument Flow: Build through direct feature-to-experience progression rather than a formulaic "Old Way vs. New Way" contrast.
+3. Voice: Write from a grounded practitioner perspective with varied sentence cadence rather than an institutional "editorial explainer" voice.
+4. Ending: Close on a concrete action or practical verification step rather than a summary paragraph that restates the thesis.
+
+### FINAL DELIVERABLE
+Output ONLY the finished piece embodying the selected [NT0] angle and [SC0] contract (do not print the [NT0]-[NT3] scaffold unless requested in the original prompt).
 ```

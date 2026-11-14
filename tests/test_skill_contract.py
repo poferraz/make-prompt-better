@@ -10,6 +10,17 @@ CHECKER = ROOT / "tests/skill_contract.py"
 
 
 class SkillContractTests(unittest.TestCase):
+    def test_copied_skill_retains_repository_license(self):
+        with tempfile.TemporaryDirectory(prefix='licensed skill ') as tmp:
+            project = Path(tmp)
+            result = subprocess.run(
+                ['bash', str(ROOT / 'install.sh'), '--project', '--runtime', 'codex', '--copy'],
+                cwd=project, capture_output=True, text=True, timeout=20)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            copied = project / '.agents/skills/make-prompt-better/LICENSE'
+            self.assertTrue(copied.is_file(), 'A copied skill must carry its license evidence')
+            self.assertEqual(copied.read_bytes(), (ROOT / 'LICENSE').read_bytes())
+
     def test_documented_rewrite_retains_observable_requested_details(self):
         doc = (ROOT / "docs/demo.md").read_text()
         prompt = re.search(r"## Rewritten prompt\n\n```text\n(.*?)\n```", doc, re.S).group(1)

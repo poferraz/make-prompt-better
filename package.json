@@ -1,6 +1,6 @@
 {
   "name": "make-prompt-better",
-  "version": "4.5.2",
+  "version": "4.5.3",
   "description": "Research-grounded prompt and agent-context optimization with four task-proportional modes, requirement preservation, and deterministic linting.",
   "type": "module",
   "main": "bin/cli.mjs",
@@ -17,6 +17,7 @@
     "install.sh",
     "lint_context.py",
     "make-prompt-better/SKILL.md",
+    "make-prompt-better/LICENSE",
     "make-prompt-better/agents/openai.yaml",
     "make-prompt-better/references/domain-templates.md",
     "make-prompt-better/references/examples.md",

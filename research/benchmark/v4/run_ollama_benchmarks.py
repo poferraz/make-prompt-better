@@ -871,7 +871,7 @@ def _run_model_benchmark(
         metrics = {
             "model": model,
             "slug": slug,
-            "version": "4.5.2",
+            "version": "4.5.3",
             "source_state": "working tree; exact inputs are identified by manifest hashes",
             "manifest": manifest,
             "tests": {},

@@ -10,6 +10,7 @@ RUNTIME = frozenset({
     'lint_context.py', 'scripts/lint-prompt.mjs',
     '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json',
     'make-prompt-better/SKILL.md', 'make-prompt-better/agents/openai.yaml',
+    'make-prompt-better/LICENSE',
     'make-prompt-better/references/domain-templates.md',
     'make-prompt-better/references/research-principles.md',
     'make-prompt-better/references/examples.md',

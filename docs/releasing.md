@@ -1,6 +1,6 @@
 # Release checklist
 
-v4.5.1 was released on GitHub and npm on November 7, 2026 (UTC), after its release PR and exact-source main CI passed. Its public installation was verified separately; see the [distribution evidence](npm-publishing.md). Follow the gates below for future versions. Each release channel requires authorization. Keep v4.4.0, v4.5.0, and v4.5.1 immutable.
+v4.5.1 was released on GitHub and npm on November 7, 2026 (UTC), after its release PR and exact-source main CI passed. Its public installation was verified separately; see the [distribution evidence](npm-publishing.md). Follow the gates below for future versions. Each release channel requires authorization. Keep v4.4.0, v4.5.0, v4.5.1, and v4.5.2 immutable.
 
 Changing the benchmark runner's version label changes its source fingerprint. Review that diff before updating `research/benchmark/v4/checkpoint-migration-hashes.json`; never approve arbitrary runner changes just to pass a test. Run the benchmark provenance and rejudge tests to retain the migration guard. Keep historical evidence filenames and release assets at the original version. The current npm allowlist contains runtime files only; retain historical evidence through immutable Git references or release assets rather than adding it to the package.
 
@@ -15,6 +15,6 @@ Changing the benchmark runner's version label changes its source fingerprint. Re
 
 ## Current distribution boundaries
 
-Source installation and public npm 4.5.1 are available. Public lifecycle checks passed on Linux and macOS on 2026-11-07; the [distribution runbook](npm-publishing.md) links to the public verification workflow. Public installation needs no token. Publishing credentials belong in a protected maintainer workflow, never in the skill. Future releases need their own public verification. A custom social preview can be uploaded through repository settings; GitHub recommends 1280 by 640 pixels and a PNG, JPG, or GIF under 1 MB.
+Source installation and public npm 4.5.2 are available, with trusted OIDC publishing verified on November 14, 2026. Version 4.5.3 is prepared and requires its own publication and public checks. Public lifecycle checks for 4.5.2 passed on Linux and macOS; the [distribution runbook](npm-publishing.md) links to the public verification workflow. Public installation needs no token. Publishing credentials belong in a protected maintainer workflow, never in the skill. Future releases need their own public verification. A custom social preview can be uploaded through repository settings; GitHub recommends 1280 by 640 pixels and a PNG, JPG, or GIF under 1 MB.
 
 References: [GitHub release management](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository), [social preview requirements](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview).

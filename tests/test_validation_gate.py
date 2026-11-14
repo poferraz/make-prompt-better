@@ -82,6 +82,11 @@ class ValidationWorkflowTests(unittest.TestCase):
 
 
 class StructuralGateTests(unittest.TestCase):
+    def test_skill_entrypoint_leaves_margin_for_harness_read_cap(self):
+        skill = (ROOT / 'make-prompt-better/SKILL.md').read_bytes()
+        self.assertLessEqual(len(skill), 15000,
+                             'Move mode-specific detail to shipped references before the 16K reader cap')
+
     def test_validator_rejects_each_broken_contract_without_modifying_source(self):
         script = ROOT / 'scripts/validate_repo.py'
         self.assertTrue(script.is_file(), 'Structural validation must also be runnable locally')
@@ -107,6 +112,7 @@ class StructuralGateTests(unittest.TestCase):
                 original.replace('description: "Use when ', 'extra: field\ndescription: "Use when ', 1),
                 original.replace('description: "Use when ', 'description: "Use when ' + 'x' * 450, 1),
                 original + '\n' * (500 - len(original.splitlines())),
+                original + '\n' + 'x' * 15001,
             ]
             for index, mutated in enumerate(mutations):
                 with self.subTest(mutation=index):
@@ -117,6 +123,9 @@ class StructuralGateTests(unittest.TestCase):
             skill.write_text(original)
             templates = root / 'make-prompt-better/references/domain-templates.md'
             original_templates = templates.read_text()
+            templates.write_text(original_templates + '\n```markdown\n## 13. Example heading inside a prompt\n```\n')
+            self.assertIn('VALIDATED OK', validator.validate(root))
+            templates.write_text(original_templates)
             templates.write_text(original_templates + '\n## 13. Extra template\n')
             with self.assertRaises(ValueError):
                 validator.validate(root)

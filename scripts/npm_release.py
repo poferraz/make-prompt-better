@@ -27,6 +27,7 @@ EXECUTABLES = {'bin/cli.mjs', 'install.sh', 'lint_context.py'}
 REQUIRED_FILES = EXECUTABLES | {
     'package.json', 'README.md', 'LICENSE', 'scripts/lint-prompt.mjs',
     'make-prompt-better/SKILL.md', 'make-prompt-better/agents/openai.yaml',
+    'make-prompt-better/LICENSE',
     'make-prompt-better/references/domain-templates.md',
     'make-prompt-better/references/research-principles.md',
     'make-prompt-better/references/examples.md',
