@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Reduce the skill entrypoint to fit the evaluated harness read budget while retaining full mode patterns and research qualifications in existing bundled references.
+- Clarify example currency, target filenames, and prose quotation formatting so the unchanged security scanner can complete without treating examples as missing dependencies or shell fragments.
+- Include the MIT license in copied skill installations and npm archives. Preserve the two-field frontmatter contract.
+- Count domain-template headings outside fenced examples and enforce a 15,000-byte entrypoint budget with regression checks.
+
 ## [4.5.2] - 2026-11-14
 
 ### Fixed

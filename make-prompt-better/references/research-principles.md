@@ -128,3 +128,21 @@ arXiv: 2608.12610
 **Project adaptation:** Keep this project's skill description compact and trigger-focused. Express verification rules as observable-predicate recipes, for example: "When a trace lacks source evidence, record `UNABLE TO TRACE: [missing artifact]`." Retain necessary prohibitions and user constraints.
 
 **When to cite:** Discussing skill metadata and attention. The positive-recipe preference is a project choice, not an established result from the reviewed paper.
+
+---
+
+## Research Foundation (11 Principle Groups)
+
+These studies motivate the workflow; the project's specific templates and thresholds are adaptations, not necessarily results measured in those studies. For summaries and citations, read `references/research-principles.md`.
+
+1. **[META] Semi-Formal Reasoning** (Ugare & Chandra, 2026, arXiv:2603.01896): The authors study structured reasoning on code analysis. This project adapts premises, traces, and conclusions; its own effects and cost depend on the task and model.
+2. **[GOAL-BLIND] Purpose-Conditioned Cognition** (Cao, Jiang & Xu, 2026, arXiv:2602.09504): The study investigates purpose-conditioned bias. This project separates pressure toward a desired finding from decision-relevant constraints, which must be preserved.
+3. **[ACE] Agentic Context Engineering** (Zhang, Hu et al., 2026, arXiv:2510.04618): The study investigates context adaptation. This project uses item identifiers (`[P1]`, `[T1]`) as a traceability adaptation, not as a separately measured effect.
+4. **[HIERARCHY] Instruction Hierarchy Failure** (Geng et al., 2025, arXiv:2502.15851): The authors study conflicts and framing in specific settings. This project's protocol framing is an adaptation and cannot guarantee compliance.
+5. **[CODE-SMELLS] LLM Integration Smells** (Mahmoudi et al., 2025, arXiv:2512.18020): The study examines LLM integration patterns. This project recommends an explicit schema for programmatic consumers as an adaptation.
+6. **[PRISM] Persona Calibration** (Hu, Rostami & Thomason, 2026, arXiv:2603.18507): The authors compare persona effects on selected accuracy and alignment tasks. This project's five-word threshold and routing are heuristics.
+7. **[VS] Verbalized Sampling** (Zhang et al., 2025, arXiv:2510.01171): The authors study sampling for open-ended diversity. This project's four-angle procedure and typicality threshold are heuristics, not calibrated probabilities.
+8. **[SLOPSHAPE] Structural Signatures of AI Writing** (Madler, 2026, arXiv:2609.15369; Russell et al., 2026): The study investigates structural features on specific datasets. This project's creative rules are adaptations, not a guarantee of human-like writing or detector outcomes.
+9. **[CONTEXT-FILES] Repository Context File Evaluation** (Gloaguen et al., 2026, arXiv:2602.11988v3): In the evaluated settings, generated context increased cost while average accuracy differences were not statistically significant. Prioritize useful commands and invariants while preserving explicitly requested sections.
+10. **[HARNESS] Harness Routing, Context-as-a-File & Plan Verification** (Lee et al., 2026, arXiv:2603.28052; Zhang et al., 2026, arXiv:2606.09498; Shao et al., 2026, arXiv:2609.37725; Nam et al., 2025, arXiv:2509.21825): These studies investigate different harness and context designs. This project's code-first gates and scratchpad rules are adaptations, not directly measured effects of those studies; Shao et al.'s reported result is on BrowseComp-Plus.
+11. **[SKILLS-SDO] Skill Residency & Positive Recipe Shaping** (Yin et al., 2026, arXiv:2608.12610): The study discusses skill metadata and attention. This project chooses positive observable-predicate recipes; a claimed negative-wording comparison was not located in that source.

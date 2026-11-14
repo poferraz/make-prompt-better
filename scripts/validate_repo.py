@@ -28,8 +28,11 @@ def validate(root=ROOT):
         raise ValueError('Frontmatter must match the agent contract')
     if len(skill.splitlines()) >= 500:
         raise ValueError('SKILL.md must be under 500 lines')
+    if len(skill.encode('utf-8')) > 15000:
+        raise ValueError('SKILL.md must fit the 15000-byte entrypoint budget')
     templates = (root / 'make-prompt-better/references/domain-templates.md').read_text(encoding='utf-8')
-    if len(re.findall(r'^## \d+\. .+$', templates, re.M)) != 12:
+    headings = re.sub(r'```.*?```', '', templates, flags=re.S)
+    if len(re.findall(r'^## \d+\. .+$', headings, re.M)) != 12:
         raise ValueError('Exactly 12 domain templates are required')
     for name in CORE_FILES:
         path = root / name

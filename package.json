@@ -17,6 +17,7 @@
     "install.sh",
     "lint_context.py",
     "make-prompt-better/SKILL.md",
+    "make-prompt-better/LICENSE",
     "make-prompt-better/agents/openai.yaml",
     "make-prompt-better/references/domain-templates.md",
     "make-prompt-better/references/examples.md",

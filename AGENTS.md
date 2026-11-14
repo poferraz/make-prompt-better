@@ -13,7 +13,7 @@ This file follows **Template 11 (`[CONTEXT-FILES]`, Gloaguen et al., 2026, arXiv
 ## 2. Hard Architectural & Editorial Invariants
 - [I1] Punctuation rule: Never use em dashes or en dashes as sentence punctuation in any Markdown file; use commas, colons, or semicolons. Hyphens in compound words (`semi-formal`, `goal-blind`) are permitted.
 - [I2] Universal `agentskills.io` frontmatter: `make-prompt-better/SKILL.md` must contain only `name: make-prompt-better` and a single-line double-quoted `description` starting with `"Use when..."` (under 450 characters, zero colons inside the description string).
-- [I3] Progressive disclosure ceiling: Keep `make-prompt-better/SKILL.md` under 500 lines; place domain templates, research summaries, and before/after examples in `make-prompt-better/references/`.
+- [I3] Progressive disclosure ceiling: Keep `make-prompt-better/SKILL.md` under 500 lines and at most 15,000 UTF-8 bytes to leave margin under the evaluated 16,000-character harness read cap; place domain templates, research summaries, and before/after examples in `make-prompt-better/references/`.
 - [I4] Requirement preservation, attribution & goal-blindness: Preserve every user-requested deliverable, ordering requirement, and operational constraint (`[REQ-PRESERVE]`, Invariant #1); cite at least one of the 11 research papers in `(Author, Year)` format for every methodological rule; keep prompt templates goal-blind (Cao, Jiang & Xu, 2026) and use positive observable-predicate recipes (Yin et al., 2026).
 
 - [I5] Internal storage: Keep plans, audits, drafts, research records and generated output under the single ignored `.private/` root. Keep its inventory local; never force-add it or depend on it for public validation. Essential usage guides stay in `docs/`.
