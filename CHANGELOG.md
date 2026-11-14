@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.2] - 2026-11-14
+
+### Fixed
+- Preserve requested deadlines, audiences, evaluation criteria, and commercial objectives in bundled prompt examples while avoiding predetermined verdicts.
+
+### Changed
+- Release the runtime-only npm archive allowlist, updated research references, homepage metadata, and README improvements already merged since 4.5.1.
+- Synchronize release metadata and pinned source commands for 4.5.2. Existing npm installation evidence retains its original version labels until this release passes public verification.
+
+### Release operations
+- Use the existing protected GitHub Actions OIDC publishing path with the newly configured npm trusted publisher. Publication, activation, and public installation require successful workflow evidence.
+- Installer and CLI behavior are unchanged. No new model-outcome evaluation is included in this patch.
+
 ## [4.5.1] - 2026-11-07
 
 Released on GitHub and npm on November 7, 2026 (UTC). Unauthenticated public installation passed on Linux and macOS. The bare npx guide passed in both scopes on macOS, including repeat/recovery, a 4.5.0-to-4.5.1 upgrade, uninstall, registry signatures, and provenance verification. See the [public verification workflow](https://github.com/poferraz/make-prompt-better/actions/runs/42318325467) and [workflow recovery record](docs/npm-publishing.md). The existing v4.4.0 and v4.5.0 releases remain unchanged.
