@@ -28,8 +28,8 @@ The guide supports Codex, Claude Code, Cursor, Gemini CLI, Antigravity, and Qwen
 Select an agent and scope explicitly, and pin the package version:
 
 ```bash
-npx --yes make-prompt-better@4.5.1 install --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.1 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.2 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.2 check --runtime codex --global --copy
 ```
 
 Replace `codex` with your agent. For one project, run inside it and replace `--global` with `--project`. Choose one scope. [Public verification evidence](https://github.com/poferraz/make-prompt-better/blob/main/docs/npm-publishing.md).
@@ -37,7 +37,7 @@ Replace `codex` with your agent. For one project, run inside it and replace `--g
 </details>
 
 <details>
-<summary><strong>Run the v4.5.2 guide from this checkout</strong></summary>
+<summary><strong>Run the v4.5.3 guide from this checkout</strong></summary>
 
 Run the guide in your terminal:
 
@@ -52,10 +52,10 @@ For project scope, run it from the intended project by its absolute path. Redire
 <details>
 <summary><strong>Install from a tagged source release without Node</strong></summary>
 
-Install the [v4.5.2 release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.2) with Git and Bash:
+Install the [v4.5.3 release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.3) with Git and Bash:
 
 ```bash
-git clone --branch v4.5.2 --depth 1 https://github.com/poferraz/make-prompt-better.git
+git clone --branch v4.5.3 --depth 1 https://github.com/poferraz/make-prompt-better.git
 cd make-prompt-better
 ./install.sh --runtime codex
 ./install.sh --runtime codex --check

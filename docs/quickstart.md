@@ -27,8 +27,8 @@ This confirms files in the selected locations. Next, open the skill picker and c
 For automation or a pinned version, select the agent and scope explicitly:
 
 ```bash
-npx --yes make-prompt-better@4.5.1 install --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.1 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.2 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.2 check --runtime codex --global --copy
 ```
 
 Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. These commands install for your user account. For one project, run them inside that project and replace `--global` with `--project`. Choose one scope. `--yes` accepts npm's execution prompt; copy mode keeps the skill after the npm cache is cleared. [Update, uninstall, and recovery](installation.md).
@@ -37,10 +37,10 @@ Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or 
 
 A terminal is the app where you run the commands below. Git downloads the repository. Bash runs its installer. On Windows, use a WSL terminal; native PowerShell installation is untested.
 
-Install the [v4.5.2 source release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.2):
+Install the [v4.5.3 source release](https://github.com/poferraz/make-prompt-better/releases/tag/v4.5.3):
 
 ```bash
-git clone --branch v4.5.2 --depth 1 https://github.com/poferraz/make-prompt-better.git
+git clone --branch v4.5.3 --depth 1 https://github.com/poferraz/make-prompt-better.git
 cd make-prompt-better
 ./install.sh --runtime codex --dry-run
 ./install.sh --runtime codex
