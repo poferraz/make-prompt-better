@@ -71,7 +71,7 @@ jobs:
           from scripts.file_scope import codeql_config
           Path('.private/quality-artifacts/codeql.json').write_text(json.dumps(codeql_config(Path.cwd())))
           PY
-      - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
+      - uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: none
