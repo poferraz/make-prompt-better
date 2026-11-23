@@ -17,7 +17,7 @@ RUNTIME = frozenset({
 })
 REVIEW_DOCS = frozenset({
     'AGENTS.md', 'CLAUDE.md', 'SECURITY.md', 'pyproject.toml', '.coveragerc',
-    '.gitignore', '.gitattributes', '.github/dependabot.yml',
+    '.gitignore', '.gitattributes', '.github/dependabot.yml', '.github/coverage/package.json',
     'docs/testing.md', 'docs/benchmark-runs.md', 'docs/continuous-quality.md',
     'docs/installation.md', 'docs/compatibility.md', 'docs/releasing.md',
     'docs/quickstart.md', 'docs/demo.md', 'docs/npm-publishing.md',

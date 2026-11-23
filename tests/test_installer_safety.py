@@ -19,6 +19,70 @@ def install(project, *args, env=None):
 
 
 class InstallerSafetyTests(unittest.TestCase):
+    def test_consumer_project_recovery_is_private_to_ordinary_git_staging(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            subprocess.run(["git", "init", "--quiet"], cwd=project, check=True)
+            state = project / ".make-prompt-better"
+            old = state / "backups/earlier/payload"
+            old.parent.mkdir(parents=True)
+            old.write_text("older local edit")
+            target = project / ".claude/skills/make-prompt-better"
+            target.mkdir(parents=True)
+            (target / "private-note").write_text("local edit")
+            result = install(project, "--runtime", "claude")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            receipt, = old.parent.parent.glob("*/original-path.txt")
+            self.assertTrue((receipt.parent / "payload/private-note").is_file())
+            for private_file in (old, receipt, receipt.parent / "payload/private-note"):
+                subprocess.run(["git", "check-ignore", "-q", str(private_file)], cwd=project, check=True)
+            status = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard"], cwd=project, text=True)
+            self.assertIn(".claude/skills/make-prompt-better/SKILL.md", status)
+            self.assertNotIn(".make-prompt-better/", status)
+            self.assertFalse((project / ".gitignore").exists())
+
+    def test_existing_custom_or_linked_recovery_ignore_is_left_intact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            state = project / ".make-prompt-better"
+            state.mkdir()
+            ignore = state / ".gitignore"
+            other = project / "local-rules"
+            other.write_text("custom\n")
+            ignore.symlink_to(other)
+            for linked in (True, False):
+                if not linked:
+                    ignore.unlink()
+                    ignore.write_text("custom\n")
+                result = install(project, "--runtime", "claude")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(ignore.is_symlink(), linked)
+                self.assertEqual(ignore.read_text(), "custom\n")
+                self.assertEqual(other.read_text(), "custom\n")
+                self.assertFalse((project / ".claude").exists())
+
+    def test_antigravity_migrates_each_scopes_old_install_and_preserves_user_edits(self):
+        for scope, new_root, old_root in (
+                ("project", ".agents/skills", ".agent/skills"),
+                ("global", ".gemini/config/skills", ".gemini/antigravity/skills")):
+            with self.subTest(scope=scope), tempfile.TemporaryDirectory() as tmp:
+                base = Path(tmp)
+                old = base / old_root / "make-prompt-better"
+                old.mkdir(parents=True)
+                (old / "SKILL.md").write_text("---\nname: make-prompt-better\n---\nlocal edits")
+                args = ["bash", str(INSTALLER), "--" + scope, "--runtime", "antigravity"]
+                env = dict(os.environ, HOME=tmp)
+                for extra in ([], ["--check"]):
+                    result = subprocess.run(args + extra, cwd=base, env=env, capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                current = base / new_root / "make-prompt-better/SKILL.md"
+                self.assertTrue(current.is_file())
+                self.assertFalse(old.exists())
+                saved, = (base / ".make-prompt-better/backups").glob("*/payload/SKILL.md")
+                self.assertIn("local edits", saved.read_text())
+                subprocess.run(args + ["--uninstall"], cwd=base, env=env, capture_output=True, check=True)
+                self.assertFalse(current.exists())
+
     def test_dry_run_reports_preview_without_claiming_installation(self):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)

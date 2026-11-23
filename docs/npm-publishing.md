@@ -2,11 +2,13 @@
 
 ## Current distribution
 
-Version 4.5.2 is available from GitHub and npm. The [OIDC publication job](https://github.com/poferraz/make-prompt-better/actions/runs/43644627255) succeeded with the bootstrap-token step skipped; the [public verification recovery](https://github.com/poferraz/make-prompt-better/actions/runs/43645387425) passed after the initial post-publish installation check failed. Public lifecycle checks passed on Linux and macOS, and registry signature and provenance checks passed on macOS. Version 4.5.3 is prepared and requires its own publication and public verification. Published archives and tags are immutable; filesystem checks do not establish live host discovery, model invocation, or prompt quality.
+Version 4.5.3 was released on November 14, 2026. The release workflow published the reviewed package with trusted OIDC identity, verified its public registry identity and integrity, and passed a public installation check. [v4.5.3 publication and public installation check](https://github.com/poferraz/make-prompt-better/actions/runs/43649748831)
 
 Follow this runbook for future releases and record private verification data under `.private/`. Publish only deliberately reviewed release evidence. Each release channel requires authorization.
 
 ## Historical distribution evidence
+
+For 4.5.2, the [OIDC publication job](https://github.com/poferraz/make-prompt-better/actions/runs/43644627255) succeeded with the bootstrap-token step skipped; the [public verification recovery](https://github.com/poferraz/make-prompt-better/actions/runs/43645387425) passed after the initial post-publish installation check failed. Public lifecycle checks passed on Linux and macOS, and registry signature and provenance checks passed on macOS.
 
 The 4.5.1 [publication job](https://github.com/poferraz/make-prompt-better/actions/runs/42317679119) and [public verification recovery](https://github.com/poferraz/make-prompt-better/actions/runs/42318325467) retain the November 7, 2026 release record. Its guided-install, upgrade, and platform evidence remains specific to that version.
 
@@ -39,7 +41,7 @@ Prefer trusted publishing for ongoing releases. Configure the package's npm trus
 | Environment | `npm-publish` |
 | Allowed action | Direct `npm publish` |
 
-The OIDC step receives no `NPM_TOKEN`. Trusted publishing was verified by the successful 4.5.2 OIDC publish job linked above. Use OIDC for normal releases; retain the explicitly selected bootstrap-token route only as a temporary fallback. Each future release still requires authorization and verification. [Trusted publisher setup and migration](https://docs.npmjs.com/trusted-publishers/).
+The OIDC step receives no `NPM_TOKEN`. Trusted publishing was verified by the successful 4.5.3 OIDC publish job linked above. Use OIDC for normal releases; retain the explicitly selected bootstrap-token route only as a temporary fallback. Each future release still requires authorization and verification. [Trusted publisher setup and migration](https://docs.npmjs.com/trusted-publishers/).
 
 ## Preflight and authentication
 
@@ -114,5 +116,5 @@ After this passes, follow the pinned customer commands in disposable user and pr
 
 - After a successful publish, use `verify-public` to retry failed verification. Never retry publication merely to make a run green.
 - A package correction needs a new reviewed version or an explicitly authorized deprecation. Do not overwrite a published version, move tags, or rely on unpublishing as routine rollback. Preserve the source fallback and recovery data.
-- OIDC publishing was verified for 4.5.2. Future releases still require their own successful OIDC publication and public verification. Token checks alone do not establish publishing rights or future validity.
+- OIDC publishing was verified for 4.5.2 and 4.5.3. Future releases still require their own successful OIDC publication and public verification. Token checks alone do not establish publishing rights or future validity.
 - The recorded 4.5.0-to-4.5.1 upgrade does not establish every upgrade path. Native Windows, WSL, and broader host/model behavior need separate evidence. Filesystem tests do not expand those claims.

@@ -33,6 +33,17 @@ class FakeOllama(BaseHTTPRequestHandler):
 
 
 class HttpServiceTests(unittest.TestCase):
+    def test_authenticated_remote_http_fails_before_recording_or_sending(self):
+        host = 'http://benchmark.example.invalid'
+        runner.validate_host(host, allow_remote_http=True)
+        observer = mock.Mock()
+        with mock.patch.object(runner, 'open_ollama_request') as transport:
+            with self.assertRaisesRegex(ValueError, 'HTTPS'):
+                runner.call_ollama_chat('model', [], host=host, api_key='fixture-only',
+                                        request_observer=observer)
+        observer.assert_not_called()
+        transport.assert_not_called()
+
     @mock.patch.object(runner.time, 'sleep')
     def test_real_http_retry_stream_and_request_payload(self, _sleep):
         FakeOllama.requests = []

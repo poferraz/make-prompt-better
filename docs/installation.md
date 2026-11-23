@@ -1,38 +1,38 @@
 # Install, update, and recover
 
-For a first installation, start with the [quickstart](quickstart.md). v4.5.2 is available from GitHub and npm; v4.5.3 is prepared for publication. Earlier release tags remain unchanged.
+For a first installation, start with the [quickstart](quickstart.md). The published release is v4.5.3. The current source installer includes the [recovery and Antigravity changes](#current-source-installer) described below.
 
 ## Distribution status
 
-The unauthenticated public v4.5.1 package lifecycle passed on Linux and macOS on 2026-11-07. The bare npx guide passed in project and user scopes on macOS, as did an upgrade from 4.5.0 with edited-copy recovery; see the [evidence and limits](npm-publishing.md). An npm installation requires Node.js 22+ and Bash and does not activate the skill by itself. Public consumers do not need a publisher token.
+The 4.5.3 release workflow verified the public package identity and integrity and installed it without an npm credential. The npm installer requires Node.js 22+ and Bash. After it finishes, reload your agent and confirm the skill appears in its picker. [v4.5.3 publication and public installation check](https://github.com/poferraz/make-prompt-better/actions/runs/43649748831)
 
 ## Install from npm
 
 Run `npx make-prompt-better` in a terminal, approve npm's package prompt if shown, choose your agent and scope, and wait for the automatic file check. From a source checkout, run `node bin/cli.mjs`. The guide installs a copy, accepts numbers or names, and allows `q` to cancel before installation. With redirected input or output it shows help and changes no skill files.
 
-For explicit commands pinned to the previously verified v4.5.2 release, use:
+For the published release, run these commands in a terminal.
 
 ```bash
-npx --yes make-prompt-better@4.5.2 install --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.2 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.3 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.3 check --runtime codex --global --copy
 ```
 
-Choose your host and one scope. For a project, run from that project's directory and replace `--global` with `--project`. Add `--dry-run` to preview installation. Copy mode prevents the skill from depending on the npm cache. `--yes` accepts npm's execution prompt for this pinned package.
+Choose your host and one scope. For a project, run from that project's directory and replace `--global` with `--project`. Add `--dry-run` to preview installation. Default copy mode is portable when you commit a project. An explicit `--symlink` points to the source path on your machine and can expose that path in a shared repository. `--yes` accepts npm's execution prompt for this pinned package.
 
 To reinstall or update the selected copy, select the desired published package version and run:
 
 ```bash
-npx --yes make-prompt-better@4.5.2 update --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.2 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.3 update --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.3 check --runtime codex --global --copy
 ```
 
-`update` uses that selected package's files. For a future release, replace `4.5.2` in both commands with the desired published version. `npm update` alone does not refresh a copied skill. Existing edits are preserved in [recovery storage](#recovery).
+`update` uses that selected package's files. For a future release, replace `4.5.3` in both commands with the desired published version. `npm update` alone does not refresh a copied skill. Existing edits are preserved in [recovery storage](#recovery).
 
 To remove the selected installation:
 
 ```bash
-npx --yes make-prompt-better@4.5.2 uninstall --runtime codex --global --dry-run
-npx --yes make-prompt-better@4.5.2 uninstall --runtime codex --global
+npx --yes make-prompt-better@4.5.3 uninstall --runtime codex --global --dry-run
+npx --yes make-prompt-better@4.5.3 uninstall --runtime codex --global
 ```
 
 Use the same host and scope as your installation. Uninstall preserves recovery copies and does not clear npm's cache.
@@ -73,6 +73,21 @@ A global installation is available to your user account. A project installation 
 Replace `/path/to/make-prompt-better` with your actual checkout. Supported runtime selectors are `claude`, `gemini`, `antigravity`, `codex`, `cursor`, and `qwen`. The default runtime is `all`: it installs the shared `.agents` copy and skips other unconfigured global agent folders. `--all` creates those folders too. `--help` lists the options.
 
 The installer needs Bash and standard filesystem utilities. macOS and Linux are intended shell environments; Windows users need WSL. Native PowerShell and other hosts are untested. Node.js 22+ and Python 3.10+ are required only for the corresponding optional tools.
+
+## Current source installer
+
+To use the changes below, run `git clone --branch main https://github.com/poferraz/make-prompt-better.git` to get the current installer. From the directory of your target project, run the installer by its full path. Replace `/path/to/make-prompt-better` with the location of your checkout.
+
+```bash
+/path/to/make-prompt-better/install.sh --runtime antigravity --project --dry-run
+/path/to/make-prompt-better/install.sh --runtime antigravity --project
+/path/to/make-prompt-better/install.sh --runtime antigravity --project --check
+```
+
+- Antigravity uses `.agents/skills/make-prompt-better` in a project and `~/.gemini/config/skills/make-prompt-better` for your account. Codex shares the project destination. Gemini shares the account destination when installed there. Uninstalling a shared copy affects each host that uses it. Selecting Antigravity or all hosts migrates recognized copies in the older `.agent/skills` or `~/.gemini/antigravity/skills` locations to recovery storage. [Antigravity skill locations](https://antigravity.google/docs/skills)
+- When the installer creates project recovery or staging files, it first adds `.make-prompt-better/.gitignore`. Ordinary Git staging skips the untracked contents, including existing backups. Previously tracked files stay tracked. Inspect `git ls-files -- .make-prompt-better` if the project used an earlier installer.
+
+The published 4.5.3 installer predates these changes.
 
 ## One active Codex copy
 

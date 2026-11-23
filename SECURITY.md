@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in this repository, report it privately by emailing snarls.working2l@icloud.com.
+Report a vulnerability privately through [GitHub Security Advisories](https://github.com/poferraz/make-prompt-better/security/advisories/new).
 
 Do not file a public GitHub issue for security vulnerabilities.
 

@@ -91,33 +91,42 @@ STATE_DIR="${BASE_DIR}/.make-prompt-better"
 BACKUP_ROOT="${STATE_DIR}/backups"
 
 TARGETS=()
+# Some hosts discover the same physical skill directory.
+add_target() {
+  local existing
+  for existing in ${TARGETS[@]+"${TARGETS[@]}"}; do
+    [[ "${existing}" != "$1" ]] || return 0
+  done
+  TARGETS+=("$1")
+}
+
 add_targets_for_runtime() {
   local rt="$1"
   case "${rt}" in
     claude)
-      TARGETS+=("${BASE_DIR}/.claude/skills/make-prompt-better")
+      add_target "${BASE_DIR}/.claude/skills/make-prompt-better"
       ;;
     gemini)
-      TARGETS+=("${BASE_DIR}/.gemini/skills/make-prompt-better")
+      add_target "${BASE_DIR}/.gemini/skills/make-prompt-better"
       if [[ "${SCOPE}" == "global" ]]; then
-        TARGETS+=("${BASE_DIR}/.gemini/config/skills/make-prompt-better")
+        add_target "${BASE_DIR}/.gemini/config/skills/make-prompt-better"
       fi
       ;;
     antigravity)
       if [[ "${SCOPE}" == "global" ]]; then
-        TARGETS+=("${BASE_DIR}/.gemini/antigravity/skills/make-prompt-better")
+        add_target "${BASE_DIR}/.gemini/config/skills/make-prompt-better"
       else
-        TARGETS+=("${BASE_DIR}/.agent/skills/make-prompt-better")
+        add_target "${BASE_DIR}/.agents/skills/make-prompt-better"
       fi
       ;;
     codex)
-      TARGETS+=("${BASE_DIR}/.agents/skills/make-prompt-better")
+      add_target "${BASE_DIR}/.agents/skills/make-prompt-better"
       ;;
     cursor)
-      TARGETS+=("${BASE_DIR}/.cursor/skills/make-prompt-better")
+      add_target "${BASE_DIR}/.cursor/skills/make-prompt-better"
       ;;
     qwen)
-      TARGETS+=("${BASE_DIR}/.qwen/skills/make-prompt-better")
+      add_target "${BASE_DIR}/.qwen/skills/make-prompt-better"
       ;;
   esac
 }
@@ -146,9 +155,31 @@ check_parent_path() {
   done
 }
 
+prepare_state_dir() {
+  check_parent_path "${STATE_DIR}/.gitignore"
+  mkdir -p "${STATE_DIR}"
+  [[ "${SCOPE}" == "project" ]] || return 0
+
+  # Consumer projects do not inherit this package's .gitignore. Install a
+  # complete ignore file atomically, without replacing user files or symlinks.
+  local ignore="${STATE_DIR}/.gitignore" candidate
+  if [[ ! -e "${ignore}" && ! -L "${ignore}" ]]; then
+    candidate="$(mktemp "${STATE_DIR}/.ignore.XXXXXXXX")"
+    printf '*\n' > "${candidate}"
+    chmod 644 "${candidate}"
+    ln "${candidate}" "${ignore}" 2>/dev/null || :
+    rm "${candidate}"
+  fi
+  if [[ -L "${ignore}" || ! -f "${ignore}" ]] || ! printf '*\n' | cmp -s - "${ignore}"; then
+    echo "Error: Recovery storage needs a regular .gitignore containing only an asterisk: ${ignore}" >&2
+    return 1
+  fi
+}
+
 backup_existing() {
   local destination="$1" receipt
   check_parent_path "${BACKUP_ROOT}/receipt"
+  prepare_state_dir
   mkdir -p "${BACKUP_ROOT}"
   receipt="$(mktemp -d "${BACKUP_ROOT}/$(basename "${destination}").XXXXXXXX")"
   printf '%s\n' "${destination}" > "${receipt}/original-path.txt"
@@ -176,8 +207,15 @@ DUPLICATES=()
 find_duplicates() {
   local canonical="$1" root candidate
   local roots=("$(dirname "${canonical}")")
-  if [[ "${canonical}" == "${BASE_DIR}/.agents/skills/make-prompt-better" ]]; then
+  if [[ ( "${RUNTIME}" == "codex" || "${RUNTIME}" == "all" ) && "${canonical}" == "${BASE_DIR}/.agents/skills/make-prompt-better" ]]; then
     roots+=("${BASE_DIR}/.codex/skills")
+  fi
+  if [[ "${RUNTIME}" == "antigravity" || "${RUNTIME}" == "all" ]]; then
+    if [[ "${SCOPE}" == "project" && "${canonical}" == "${BASE_DIR}/.agents/skills/make-prompt-better" ]]; then
+      roots+=("${BASE_DIR}/.agent/skills")
+    elif [[ "${SCOPE}" == "global" && "${canonical}" == "${BASE_DIR}/.gemini/config/skills/make-prompt-better" ]]; then
+      roots+=("${BASE_DIR}/.gemini/antigravity/skills")
+    fi
   fi
   DUPLICATES=()
   for root in "${roots[@]}"; do
@@ -259,6 +297,11 @@ cleanup() {
 trap cleanup EXIT
 
 check_parent_path "${BACKUP_ROOT}/receipt"
+
+# Protect existing untracked receipts on the first mutating project operation.
+if [[ "${SCOPE}" == "project" && -d "${STATE_DIR}" && "${DRY_RUN}" != true && "${CHECK}" != true ]]; then
+  prepare_state_dir
+fi
 
 # Coordinate migration with older installers that lock the legacy Codex target.
 if [[ ( "${RUNTIME}" == "all" || "${RUNTIME}" == "codex" ) && -d "${BASE_DIR}/.codex/skills" && "${DRY_RUN}" != true && "${CHECK}" != true ]]; then
@@ -342,7 +385,7 @@ for target in "${TARGETS[@]}"; do
     continue
   fi
   if [[ "${UNINSTALL}" != true ]]; then
-    mkdir -p "${STATE_DIR}"
+    prepare_state_dir
     stage_dir="$(mktemp -d "${STATE_DIR}/.make-prompt-better.stage.XXXXXXXX")"
     if [[ "${MODE}" == "symlink" ]]; then
       ln -s "${SKILL_SRC}" "${stage_dir}/skill"

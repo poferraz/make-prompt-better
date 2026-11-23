@@ -49,22 +49,21 @@ jobs:
             --models "$EVAL_MODEL" --judge-model "$EVAL_JUDGE" --host "$OLLAMA_HOST" \
             --seeds 42,43,44 --tests 1,2 --max-requests 400 --deadline-seconds 900 \
             --max-output-tokens 4096 --output-dir .private/quality-artifacts/campaign
-      - name: Retain trend summaries
+      - name: Prepare aggregate results for the public artifact
+        if: always()
+        run: |
+          campaign=.private/quality-artifacts/campaign
+          if [[ -f "$campaign/summary.json" ]]; then
+            jq '{protocol, expected_pairs, completed_pairs, task_clusters, mean_candidate_minus_baseline,
+                 task_cluster_95_ci, inference_status, preservation_failures, telemetry_incomplete,
+                 failed_cell_count: (.failed_cells | length), missing_pair_count: (.missing_pairs | length)}' \
+              "$campaign/summary.json" > "$campaign/public-summary.json"
+          fi
+      - name: Retain aggregate results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: evaluation-summary-${{ github.run_id }}-${{ github.run_attempt }}
           include-hidden-files: true
-          path: |
-            candidate/.private/quality-artifacts/campaign/summary.json
-            candidate/.private/quality-artifacts/campaign/manifest.json
-            candidate/.private/quality-artifacts/campaign/state.json
+          path: candidate/.private/quality-artifacts/campaign/public-summary.json
           retention-days: 90
-      - name: Retain curated raw experiment evidence
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: evaluation-runs-${{ github.run_id }}-${{ github.run_attempt }}
-          include-hidden-files: true
-          path: candidate/.private/quality-artifacts/campaign/runs/
-          retention-days: 14

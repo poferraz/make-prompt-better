@@ -33,7 +33,7 @@ To contribute a new domain certificate template:
    - **FORMAL CONCLUSION**: Must reference traces and remain goal-blind (per Cao, Jiang & Xu, 2026)
    - **REMEDIATION / NEXT ACTION** and **TRACEABILITY SELF-CHECK** blocks
    - **Persona guidance line**: State whether to OMIT, use MINIMAL, or use FULL persona (per PRISM: Hu, Rostami & Thomason, 2026)
-3. The current contract requires exactly 12 templates. Propose additions in an issue first; an accepted expansion must update the count in the skill, README, both agent contracts, and CI together.
+3. The current contract requires exactly 12 templates. Propose additions in an issue first; an accepted expansion must update the count in the skill, agent contracts, and validation rules together.
 4. Add a before/after example in `make-prompt-better/references/examples.md` if the domain is commonly used
 5. Verify: numbered identifiers present, authority framing used, goal-blind conclusion, persona guidance stated
 
@@ -45,7 +45,7 @@ To incorporate a new paper into the methodology:
 2. Add the paper to the Research Foundation section in `make-prompt-better/SKILL.md`
 3. Update the Prompt Structure Framework table in `make-prompt-better/SKILL.md` if the paper affects component mapping
 4. Keep full citations, arXiv links and methodological limits in the functional research reference
-5. Update the research overview in `README.md` when its paper count or source link changes; keep full citations in the functional research reference
+5. Update the README when a new research result changes a user-facing claim. Keep full citations and source links in the research reference.
 6. Record relevant cost/benefit limitations beside the affected functional reference or template
 7. Verify consistent citation across all files using the format: (Author, Year)
 
@@ -79,7 +79,7 @@ Preserve requested deliverables and decision-relevant constraints such as deadli
 
 ## Local Verification
 
-From a full source checkout, run `npm run verify` for structural validation, release metadata, lint, Bash syntax, benchmark tests, and installer/package integration. `npm run verify:fast` is a shorter feedback loop, not release approval. Before declaring changes complete, run the exact validation command in [AGENTS.md](../AGENTS.md) and `./install.sh`. The latter syncs your local agent installations; use an isolated temporary home for testing-only work. For a preview, use `./install.sh --dry-run`.
+From a full source checkout, run `npm run verify` for structural validation, release metadata, lint, Bash syntax, benchmark tests, and installer/package integration. `npm run verify:fast` is a shorter feedback loop, not release approval. Test installer changes in a disposable project or isolated user directory. Preview the selected target with `--dry-run` and use `--check` to compare the installed files. See the [agent verification commands](../AGENTS.md).
 
 Every PR to main must pass `validate`, which waits for source verification, the complete Linux/macOS regression and coverage matrix, and npm artifact preflight. Failures, skipped jobs and cancellations block that check. There are no path filters, so documentation changes receive the same gate. A successful local run does not establish hosted CI or public npm installation.
 
