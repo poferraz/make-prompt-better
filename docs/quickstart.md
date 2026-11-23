@@ -10,7 +10,7 @@ Open a terminal and run:
 npx make-prompt-better
 ```
 
-You need Node.js 22+ and Bash. Approve npm's package prompt if it appears. Choose your coding agent and whether the skill should be available in this project or across your user account. Enter a number or name; `q` cancels. The guide installs a copy, verifies it, and prints the next step. No publisher token is needed. [Public v4.5.1 verification](npm-publishing.md).
+You need Node.js 22+ and Bash. Approve npm's package prompt if it appears. Choose your coding agent and whether the skill should be available in this project or across your user account. Enter a number or name; `q` cancels. The guide installs a copy, verifies it, and prints the next step. No publisher token is needed. [Published version and source-only changes](installation.md).
 
 Choose one route and one scope. A user installation works across your projects; a project installation belongs to one repository. Installing both can produce two entries in a host that loads both scopes.
 
@@ -27,8 +27,8 @@ This confirms files in the selected locations. Next, open the skill picker and c
 For automation or a pinned version, select the agent and scope explicitly:
 
 ```bash
-npx --yes make-prompt-better@4.5.2 install --runtime codex --global --copy
-npx --yes make-prompt-better@4.5.2 check --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.3 install --runtime codex --global --copy
+npx --yes make-prompt-better@4.5.3 check --runtime codex --global --copy
 ```
 
 Replace `codex` with your host: `claude`, `cursor`, `gemini`, `antigravity`, or `qwen`. These commands install for your user account. For one project, run them inside that project and replace `--global` with `--project`. Choose one scope. `--yes` accepts npm's execution prompt; copy mode keeps the skill after the npm cache is cleared. [Update, uninstall, and recovery](installation.md).

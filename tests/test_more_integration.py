@@ -17,7 +17,7 @@ class GlobalInstallerTests(unittest.TestCase):
     def test_each_runtime_copy_and_uninstall_in_isolated_home(self):
         targets = {
             'claude': ['.claude/skills'], 'gemini': ['.gemini/skills', '.gemini/config/skills'],
-            'antigravity': ['.gemini/antigravity/skills'], 'codex': ['.agents/skills'],
+            'antigravity': ['.gemini/config/skills'], 'codex': ['.agents/skills'],
             'cursor': ['.cursor/skills'], 'qwen': ['.qwen/skills'],
         }
         with tempfile.TemporaryDirectory(prefix='global home spaces ') as tmp:

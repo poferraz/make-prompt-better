@@ -8,7 +8,7 @@ assignees: ''
 
 ## Description
 
-A clear description of what is wrong.
+Describe what went wrong using a synthetic example. Remove credentials, private prompts and personal filesystem paths. Use the private security report form for vulnerabilities.
 
 ## What File Is Affected
 

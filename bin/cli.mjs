@@ -76,7 +76,9 @@ function detectedRuntimes() {
   const found = Object.entries(folders)
     .filter(([, folder]) => roots.some((root) => fs.existsSync(path.join(root, folder))))
     .map(([runtime]) => runtime);
-  if (fs.existsSync(path.join(process.cwd(), ".agent")) ||
+  if (fs.existsSync(path.join(process.cwd(), ".agents", "skills")) ||
+      fs.existsSync(path.join(process.cwd(), ".agent")) ||
+      fs.existsSync(path.join(os.homedir(), ".gemini", "config", "skills")) ||
       fs.existsSync(path.join(os.homedir(), ".gemini", "antigravity"))) found.push("antigravity");
   return found;
 }

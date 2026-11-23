@@ -58,11 +58,9 @@ representative at an online or offline event.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-snarls.working2l@icloud.com.
+To report harassment or abuse on GitHub, use the reporting menu on the relevant content or profile. [GitHub reporting instructions](https://docs.github.com/en/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam)
 
-All complaints will be reviewed and investigated promptly and fairly.
+Project maintainers review reports they receive and apply the guidelines below.
 
 All community leaders are obligated to respect the privacy and security of the
 reporter of any incident.

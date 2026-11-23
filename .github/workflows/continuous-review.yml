@@ -45,7 +45,7 @@ jobs:
         with:
           name: review-scope-${{ github.run_id }}-${{ github.run_attempt }}
           include-hidden-files: true
-          path: .private/quality-artifacts/
+          path: .private/quality-artifacts/scope.json
           retention-days: 30
 
   security:
@@ -107,5 +107,5 @@ jobs:
         with:
           name: model-review-${{ github.run_id }}-${{ github.run_attempt }}
           include-hidden-files: true
-          path: .private/quality-artifacts/
+          path: .private/quality-artifacts/model-review.json
           retention-days: 30

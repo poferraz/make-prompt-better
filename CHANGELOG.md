@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- Protect project recovery copies from accidental Git staging. Use the current Antigravity installation locations and preserve edited files when migrating.
+- Require HTTPS for authenticated off-host benchmark requests. Public evaluation artifacts contain aggregate results only.
+
 ## [4.5.3] - 2026-11-14
 
 ### Fixed

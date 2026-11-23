@@ -263,7 +263,7 @@ def sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def validate_host(host: str, allow_remote_http: bool = False) -> None:
+def validate_host(host: str, allow_remote_http: bool = False, *, authenticated: bool = False) -> None:
     parsed = urllib.parse.urlsplit(host)
     if (parsed.scheme not in {"http", "https"} or not parsed.hostname or
             parsed.username or parsed.password or parsed.query or parsed.fragment):
@@ -273,8 +273,11 @@ def validate_host(host: str, allow_remote_http: bool = False) -> None:
         loopback = hostname == "localhost" or ipaddress.ip_address(hostname).is_loopback
     except ValueError:
         loopback = hostname == "localhost"
-    if parsed.scheme == "http" and not loopback and not allow_remote_http:
-        raise ValueError("remote cleartext HTTP requires --allow-remote-http")
+    if parsed.scheme == "http" and not loopback:
+        if authenticated:
+            raise ValueError("remote endpoints require HTTPS when sending an API key")
+        if not allow_remote_http:
+            raise ValueError("remote cleartext HTTP requires --allow-remote-http")
 
 
 def build_manifest(model: str, skill_bundle: str, test_ids: list[int], host: str,
@@ -426,6 +429,8 @@ def call_ollama_chat(
     *,
     retain_terminal_metadata: bool = False,
 ) -> dict[str, Any]:
+    if api_key:
+        validate_host(host, authenticated=True)
     validate_cloud_model(model, host)
     if max_response_bytes <= 0:
         raise ValueError("Response size limit must be positive")

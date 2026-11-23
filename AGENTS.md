@@ -20,5 +20,5 @@ This file follows **Template 11 (`[CONTEXT-FILES]`, Gloaguen et al., 2026, arXiv
 
 ## 3. Mandatory Verification Gate
 Before declaring any change complete:
-1. Run the validation command and `./install.sh` from Section 1.
+1. Run `npm run verify`. Its installer tests use temporary destinations.
 2. Confirm exit code 0 and cite the command output in your response.
